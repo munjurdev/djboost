@@ -28,9 +28,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/munjuralom/djboost"
-Repository = "https://github.com/munjuralom/djboost"
-"Bug Tracker" = "https://github.com/munjuralom/djboost/issues"
+Homepage = "https://github.com/munjurdev/djboost"
+Repository = "https://github.com/munjurdev/djboost"
+"Bug Tracker" = "https://github.com/munjurdev/djboost/issues"
 
 [project.scripts]
 djboost = "djboost.cli:app"
