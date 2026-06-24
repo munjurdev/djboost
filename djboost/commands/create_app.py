@@ -81,10 +81,61 @@ from . import views
 app_name = '{app_name}'
 
 urlpatterns = [
-    # path('', views.MyView.as_view(), name='my-view'),
+    # path('', views.MyView.as_view(), name='list'),
 ]
 """
     urls_path.write_text(content, encoding="utf-8")
+
+
+def create_app_views(app_name: str):
+    views_path = Path("apps") / app_name / "views.py"
+    content = f"""from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+
+class {app_name.capitalize()}ListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({{"success": True, "message": "List {app_name}"}})
+
+
+class {app_name.capitalize()}DetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        return Response({{"success": True, "message": f"Detail {app_name} {{pk}}"}})
+"""
+    views_path.write_text(content, encoding="utf-8")
+
+
+def create_app_serializers(app_name: str):
+    serializers_path = Path("apps") / app_name / "serializers.py"
+    content = f"""from rest_framework import serializers
+# from .models import {app_name.capitalize()}
+
+
+# class {app_name.capitalize()}Serializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = {app_name.capitalize()}
+#         fields = '__all__'
+"""
+    serializers_path.write_text(content, encoding="utf-8")
+
+
+def create_app_tests(app_name: str):
+    tests_path = Path("apps") / app_name / "tests.py"
+    content = f"""from django.test import TestCase
+
+
+class {app_name.capitalize()}Tests(TestCase):
+
+    def test_placeholder(self):
+        \"\"\"Replace this with real tests.\"\"\"
+        self.assertTrue(True)
+"""
+    tests_path.write_text(content, encoding="utf-8")
 
 
 def create_app_command(name: str = typer.Argument(..., help="The name of the Django app to create")):
@@ -125,6 +176,15 @@ def create_app_command(name: str = typer.Argument(..., help="The name of the Dja
         update_settings(project_name, name)
         update_urls(project_name, name)
         create_app_urls(name)
+        create_app_views(name)
+        create_app_serializers(name)
+        create_app_tests(name)
         print(f"[bold green]✅ App '{name}' created and configured successfully![/bold green]")
+        print()
+        print("[cyan]Generated files:[/cyan]")
+        print(f"  apps/{name}/views.py       — APIView boilerplate")
+        print(f"  apps/{name}/serializers.py — ModelSerializer template")
+        print(f"  apps/{name}/urls.py        — URL patterns")
+        print(f"  apps/{name}/tests.py       — Test boilerplate")
     except Exception as e:
         print(f"[red]Error during auto-configuration: {str(e)}[/red]")

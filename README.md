@@ -1,38 +1,45 @@
 # djboost 🚀
 
-`djboost` is a CLI tool that generates a fully-configured, production-ready Django project in one command. No more repetitive boilerplate setup.
+[![PyPI version](https://badge.fury.io/py/djboost.svg)](https://pypi.org/project/djboost/)
+[![Python](https://img.shields.io/pypi/pyversions/djboost)](https://pypi.org/project/djboost/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-With a single command you get Django REST Framework, JWT Authentication, Celery, Redis, WebSockets (Channels), Docker, Swagger docs, and more — all pre-wired and ready to go.
+**One command. Production-ready Django.**
 
-## ✨ Features
-
-- **API Ready** — Django REST Framework + Simple JWT pre-configured
-- **API Docs** — Auto-generated Swagger UI and ReDoc via `drf-spectacular`
-- **Async Tasks** — Celery + Redis integrated out of the box
-- **WebSockets** — Django Channels with Daphne and Redis channel layers
-- **Environment Variables** — `python-decouple` with a generated `.env` file
-- **Database** — Pre-configured for PostgreSQL (SQLite default for dev)
-- **CORS & Security** — `django-cors-headers` + standard security headers
-- **Docker** — Ready-to-use `Dockerfile` and `docker-compose.yml`
-- **Static Files** — Whitenoise configured for efficient static file serving
-- **Code Quality** — `pre-commit` with `black`, `flake8`, and `isort`
-- **Testing** — `pytest` + `pytest-django` with coverage pre-configured
-- **CI/CD** — Modular GitHub Actions and GitLab CI pipelines
-- **Custom Exception Handling** — Global DRF exception handler included
-
----
-
-## � Installation
+`djboost` generates a fully-configured Django project in seconds — DRF, JWT, Celery, Redis, WebSockets, Docker, Swagger, and more. All pre-wired and ready to go. No boilerplate. No config hunting.
 
 ```bash
 pip install djboost
+djboost create project myproject
 ```
+
+That's it. Your project is ready.
 
 ---
 
-## 🚀 Quick Start
+## What you get
 
-### Step 1 — Create a virtual environment and activate it
+| Feature | Details |
+|---|---|
+| **REST API** | Django REST Framework + Simple JWT pre-configured |
+| **API Docs** | Swagger UI + ReDoc at `/api/schema/swagger-ui/` |
+| **Async Tasks** | Celery + Redis, including Celery Beat schedule |
+| **WebSockets** | Django Channels + Daphne ASGI server |
+| **Database** | PostgreSQL config ready (SQLite default for dev) |
+| **Environment** | `python-decouple` with fully pre-filled `.env` |
+| **Docker** | `Dockerfile` + `docker-compose.yml` with 4 services |
+| **Security** | CORS, CSRF, XSS headers, throttling all configured |
+| **Static Files** | Whitenoise for efficient static file serving |
+| **Code Quality** | `pre-commit` with `black`, `flake8`, `isort` |
+| **Testing** | `pytest` + `pytest-django` with coverage |
+| **CI/CD** | GitHub Actions and GitLab CI pipelines |
+| **Exception Handling** | Global DRF handler → `{"success": false, "message": "..."}` |
+
+---
+
+## Quick Start
+
+### 1 — Create a virtual environment
 
 ```bash
 python -m venv env
@@ -44,102 +51,84 @@ env\Scripts\activate
 source env/bin/activate
 ```
 
-### Step 2 — Install djboost
+### 2 — Install djboost
 
 ```bash
 pip install djboost
 ```
 
-### Step 3 — Navigate to an empty folder and create your project
+### 3 — Create your project
+
+Navigate to an **empty folder** and run:
 
 ```bash
-# Create a project with a custom name
 djboost create project myproject
-
-# Or use the default name 'core'
-djboost create project
 ```
 
-This single command will automatically:
-
-1. Install Django and run `startproject`
-2. Update `settings.py` with all advanced configurations
-3. Generate `.env`, `Dockerfile`, `docker-compose.yml`, and `.gitignore`
-4. Generate `pytest.ini` and `.pre-commit-config.yaml`
-5. Create `/apps`, `/static`, and `/media` directories
-6. Install all required dependencies
-7. Initialize a `git` repository and set up `pre-commit` hooks
-8. Freeze dependencies into `requirements.txt`
+This single command will:
+1. Install Django and scaffold the project
+2. Configure `settings.py` with 50+ production settings
+3. Generate `.env` pre-filled with all required keys
+4. Create `Dockerfile` + `docker-compose.yml` (web, db, redis, celery)
+5. Set up `pytest.ini`, `.pre-commit-config.yaml`, `.gitignore`
+6. Install all 19 dependencies with version pinning
+7. Freeze `requirements.txt`
 
 ---
 
-## 🧱 Creating Apps
-
-Apps are created inside the `apps/` directory to keep your project root clean. Settings and URLs are auto-configured.
+## Creating Apps
 
 ```bash
-# Navigate to your project root first
 cd myproject
-
-# Create a new app
 djboost create app users
 ```
 
-This will:
-- Create `apps/users/` with standard Django app structure
-- Auto-add `'apps.users'` to `INSTALLED_APPS`
-- Auto-map `api/users/` in `urls.py`
-- Create a starter `urls.py` inside the app
+This creates `apps/users/` and auto-generates:
+
+```
+apps/users/
+  views.py        ← APIView boilerplate (List + Detail)
+  serializers.py  ← ModelSerializer template
+  urls.py         ← URL patterns
+  tests.py        ← Test boilerplate
+  models.py
+  admin.py
+  apps.py         ← name auto-set to 'apps.users'
+```
+
+Also automatically:
+- Adds `'apps.users'` to `INSTALLED_APPS`
+- Maps `/api/users/` in `urls.py`
 
 ---
 
-## � Managing CI/CD Pipelines
+## CI/CD Pipelines
 
-CI/CD is modular — add or remove it any time after project creation.
-
-### Add a pipeline
+Add or remove CI/CD any time — it's modular.
 
 ```bash
-djboost add cicd github   # GitHub Actions
-djboost add cicd gitlab   # GitLab CI
-```
+djboost add cicd github    # GitHub Actions
+djboost add cicd gitlab    # GitLab CI
 
-### Remove a pipeline
-
-```bash
 djboost remove cicd github
 djboost remove cicd gitlab
 ```
 
 ---
 
-## 🏃 Running Your Project
-
-### Locally
+## Running Your Project
 
 ```bash
-# Apply migrations
 python manage.py migrate
-
-# Start the dev server
 python manage.py runserver
 ```
 
-### API Documentation
-
-Once your server is running:
-
-| Interface | URL |
+| URL | Description |
 |---|---|
-| Swagger UI | `http://127.0.0.1:8000/api/schema/swagger-ui/` |
-| ReDoc | `http://127.0.0.1:8000/api/schema/redoc/` |
-| OpenAPI Schema | `http://127.0.0.1:8000/api/schema/` |
-
-### Testing
-
-```bash
-pytest
-```
+| `http://127.0.0.1:8000/` | Health check |
+| `http://127.0.0.1:8000/admin/` | Django Admin |
+| `http://127.0.0.1:8000/api/schema/swagger-ui/` | Swagger UI |
+| `http://127.0.0.1:8000/api/schema/redoc/` | ReDoc |
 
 ### With Docker
 
@@ -147,32 +136,32 @@ pytest
 docker-compose up --build
 ```
 
-This spins up PostgreSQL, Redis, Celery worker, and a Daphne ASGI server together.
+Spins up PostgreSQL, Redis, Celery worker, and Daphne ASGI server.
 
 ---
 
-## ⚙️ CLI Reference
+## CLI Reference
 
 ```
-djboost --help
 djboost --version
+djboost --help
 
-djboost create project [NAME]     Create a new Django project
-djboost create app NAME           Create a new app inside apps/
+djboost create project [NAME]      Create a new Django project (default: core)
+djboost create app NAME            Create a new app inside apps/
 
-djboost add cicd github|gitlab    Add a CI/CD pipeline
-djboost remove cicd github|gitlab Remove a CI/CD pipeline
+djboost add cicd github|gitlab     Add CI/CD pipeline
+djboost remove cicd github|gitlab  Remove CI/CD pipeline
 ```
 
 ---
 
-## 🐍 Requirements
+## Requirements
 
 - Python 3.10+
-- Virtual environment (required — djboost will warn you if not activated)
+- Virtual environment (djboost will warn you if not activated)
 
 ---
 
-## 📄 License
+## License
 
-MIT
+MIT — [Munjur Alom](https://github.com/munjurdev)

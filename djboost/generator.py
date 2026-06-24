@@ -51,7 +51,7 @@ def update_settings_file(settings_path: str, name: str):
     # 1. Add imports at the top
     content = content.replace(
         "from pathlib import Path",
-        "from pathlib import Path\nfrom datetime import timedelta\nfrom celery.schedules import crontab\nfrom decouple import config"
+        "from pathlib import Path\nfrom datetime import timedelta\nfrom decouple import config\n\ntry:\n    from celery.schedules import crontab\nexcept ImportError:\n    pass"
     )
 
     # 2. Update SECRET_KEY, DEBUG, ALLOWED_HOSTS
@@ -260,25 +260,25 @@ def create_directories():
 
 def install_dependencies():
     packages = [
-        "djangorestframework",
-        "djangorestframework-simplejwt",
-        "django-cors-headers",
-        "python-decouple",
-        "psycopg2-binary",
-        "Pillow",
-        "celery",
-        "redis",
-        "daphne",
-        "channels",
-        "channels-redis",
-        "whitenoise",
-        "drf-spectacular",
-        "pytest",
-        "pytest-django",
-        "pytest-cov",
-        "black",
-        "flake8",
-        "isort",
+        "djangorestframework>=3.14,<4",
+        "djangorestframework-simplejwt>=5.3,<6",
+        "django-cors-headers>=4.3,<5",
+        "python-decouple>=3.8,<4",
+        "psycopg2-binary>=2.9,<3",
+        "Pillow>=10.0,<12",
+        "celery>=5.3,<6",
+        "redis>=5.0,<6",
+        "daphne>=4.0,<5",
+        "channels>=4.0,<5",
+        "channels-redis>=4.1,<5",
+        "whitenoise>=6.6,<7",
+        "drf-spectacular>=0.27,<1",
+        "pytest>=7.4,<9",
+        "pytest-django>=4.7,<5",
+        "pytest-cov>=4.1,<6",
+        "black>=23.0,<25",
+        "flake8>=6.0,<8",
+        "isort>=5.12,<6",
     ]
     total = len(packages)
     print("[cyan]📦 Installing dependencies...[/cyan]")
