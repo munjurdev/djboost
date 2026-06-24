@@ -21,7 +21,7 @@ remove.command("cicd")(remove_cicd_command)
 
 def version_callback(value: bool):
     if value:
-        typer.echo("djboost version 0.1.0")
+        typer.echo("djboost version 0.1.1")
         raise typer.Exit()
 
 

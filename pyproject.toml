@@ -1,13 +1,13 @@
 [project]
 name = "djboost"
-version = "0.1.0"
+version = "0.1.1"
 description = "Django project generator CLI — production-ready Django projects in one command"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 
 authors = [
-    { name = "Munjur Alom" }
+    { name = "Munjur Alom", email = "munjuralom.devs@gmail.com" }
 ]
 
 dependencies = [

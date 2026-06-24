@@ -287,15 +287,18 @@ def install_dependencies():
         "isort",
     ]
     print("[cyan]📦 Installing dependencies...[/cyan]")
-    result = subprocess.run(
-        [sys.executable, "-m", "pip", "install"] + packages,
-        capture_output=True, text=True
-    )
-    if result.returncode != 0:
-        print(f"[red]Error installing dependencies:\n{result.stderr}[/red]")
-        import typer
-        raise typer.Exit(1)
-    print("[green]✔ Dependencies installed.[/green]")
+    for i, package in enumerate(packages, 1):
+        print(f"[cyan]   [{i}/{len(packages)}] Installing {package}...[/cyan]", end="\r")
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "install", package, "-q"],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f"\n[red]Error installing {package}:\n{result.stderr}[/red]")
+            import typer
+            raise typer.Exit(1)
+    print(" " * 60, end="\r")  # clear the last line
+    print("[green]✔ All dependencies installed.[/green]")
 
 
 def generate_env_file(secret_key: str, name: str):
@@ -861,20 +864,11 @@ def create_project(name: str):
     generate_pytest_ini(name)
     generate_pre_commit_config()
 
-    # Initialize git and install pre-commit
-    try:
-        subprocess.run(["git", "init"], check=True, capture_output=True)
-        subprocess.run(
-            [sys.executable, "-m", "pre_commit", "install"],
-            check=True, capture_output=True
-        )
-    except Exception:
-        pass
-
     print()
     print(f"[bold green]✅ Project '{name}' created successfully![/bold green]")
     print()
     print("[cyan]Next steps:[/cyan]")
     print(f"  1. Update your [bold].env[/bold] file with DB credentials")
-    print(f"  2. Run [bold]python manage.py migrate[/bold]")
-    print(f"  3. Run [bold]python manage.py runserver[/bold]")
+    print(f"  2. Run [bold]git init[/bold]")
+    print(f"  3. Run [bold]python manage.py migrate[/bold]")
+    print(f"  4. Run [bold]python manage.py runserver[/bold]")
