@@ -4,9 +4,6 @@ import subprocess
 import re
 from pathlib import Path
 from rich import print
-from rich.console import Console
-
-console = Console()
 
 
 def check_virtual_environment():
@@ -72,7 +69,6 @@ def update_settings_file(settings_path: str, name: str):
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'channels',
-    'channels_redis',
     'drf_spectacular',"""
     content = re.sub(
         r"['\"]django\.contrib\.staticfiles['\"],",
@@ -102,7 +98,7 @@ def update_settings_file(settings_path: str, name: str):
 
     # 6. Update WSGI / ASGI
     content = re.sub(
-        rf"WSGI_APPLICATION\s*=\s*['\"]{name}\.wsgi\.application['\"]",
+        r"WSGI_APPLICATION\s*=\s*['\"]" + re.escape(name) + r"\.wsgi\.application['\"]",
         f"WSGI_APPLICATION = '{name}.wsgi.application'\nASGI_APPLICATION = '{name}.asgi.application'",
         content
     )
@@ -264,7 +260,6 @@ def create_directories():
 
 def install_dependencies():
     packages = [
-        "Django",
         "djangorestframework",
         "djangorestframework-simplejwt",
         "django-cors-headers",
@@ -281,23 +276,22 @@ def install_dependencies():
         "pytest",
         "pytest-django",
         "pytest-cov",
-        "pre-commit",
         "black",
         "flake8",
         "isort",
     ]
+    total = len(packages)
     print("[cyan]📦 Installing dependencies...[/cyan]")
     for i, package in enumerate(packages, 1):
-        print(f"[cyan]   [{i}/{len(packages)}] Installing {package}...[/cyan]", end="\r")
+        print(f"[cyan]   [{i}/{total}] {package}[/cyan]")
         result = subprocess.run(
             [sys.executable, "-m", "pip", "install", package, "-q"],
             capture_output=True, text=True
         )
         if result.returncode != 0:
-            print(f"\n[red]Error installing {package}:\n{result.stderr}[/red]")
+            print(f"[red]Error installing {package}:\n{result.stderr}[/red]")
             import typer
             raise typer.Exit(1)
-    print(" " * 60, end="\r")  # clear the last line
     print("[green]✔ All dependencies installed.[/green]")
 
 
