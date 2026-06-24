@@ -72,7 +72,8 @@ This single command will:
 4. Create `Dockerfile` + `docker-compose.yml` (web, db, redis, celery)
 5. Set up `pytest.ini`, `.pre-commit-config.yaml`, `.gitignore`
 6. Install all 19 dependencies with version pinning
-7. Freeze `requirements.txt`
+7. Generate `tasks.py` with Celery sample task
+8. Freeze `requirements.txt`
 
 ---
 

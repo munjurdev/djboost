@@ -59,8 +59,12 @@ def update_urls(project_name: str, app_name: str):
         print(f"[yellow]App '{app_name}' is already mapped in urls.py[/yellow]")
         return
 
+    # Ensure 'include' is imported
     if "include" not in content:
-        content = re.sub(r"(from django\.urls import.*?path)", r"\1, include", content)
+        content = content.replace(
+            "from django.urls import path",
+            "from django.urls import path, include"
+        )
 
     if "urlpatterns = [" in content:
         content = content.replace(
