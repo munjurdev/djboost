@@ -5,6 +5,7 @@ from pathlib import Path
 import typer
 from rich import print
 from djboost.generator import check_virtual_environment, validate_name
+from djboost.generators.app_structure import generate_standard_app
 
 
 def get_project_name():
@@ -77,71 +78,6 @@ def update_urls(project_name: str, app_name: str):
         print("[yellow]Warning: Could not find urlpatterns in urls.py[/yellow]")
 
 
-def create_app_urls(app_name: str):
-    urls_path = Path("apps") / app_name / "urls.py"
-    content = f"""from django.urls import path
-from . import views
-
-app_name = '{app_name}'
-
-urlpatterns = [
-    # path('', views.MyView.as_view(), name='list'),
-]
-"""
-    urls_path.write_text(content, encoding="utf-8")
-
-
-def create_app_views(app_name: str):
-    views_path = Path("apps") / app_name / "views.py"
-    content = f"""from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
-
-class {app_name.capitalize()}ListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response({{"success": True, "message": "List {app_name}"}})
-
-
-class {app_name.capitalize()}DetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, pk):
-        return Response({{"success": True, "message": f"Detail {app_name} {{pk}}"}})
-"""
-    views_path.write_text(content, encoding="utf-8")
-
-
-def create_app_serializers(app_name: str):
-    serializers_path = Path("apps") / app_name / "serializers.py"
-    content = f"""from rest_framework import serializers
-# from .models import {app_name.capitalize()}
-
-
-# class {app_name.capitalize()}Serializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = {app_name.capitalize()}
-#         fields = '__all__'
-"""
-    serializers_path.write_text(content, encoding="utf-8")
-
-
-def create_app_tests(app_name: str):
-    tests_path = Path("apps") / app_name / "tests.py"
-    content = f"""from django.test import TestCase
-
-
-class {app_name.capitalize()}Tests(TestCase):
-
-    def test_placeholder(self):
-        \"\"\"Replace this with real tests.\"\"\"
-        self.assertTrue(True)
-"""
-    tests_path.write_text(content, encoding="utf-8")
-
-
 def create_app_command(name: str = typer.Argument(..., help="The name of the Django app to create")):
     check_virtual_environment()
     validate_name(name, "app name")
@@ -157,38 +93,34 @@ def create_app_command(name: str = typer.Argument(..., help="The name of the Dja
 
     Path("apps").mkdir(exist_ok=True)
 
-    print(f"[cyan]Creating app '{name}'...[/cyan]")
-    result = subprocess.run(
-        [sys.executable, "manage.py", "startapp", name, f"apps/{name}"],
-        capture_output=True, text=True
-    )
-    if result.returncode != 0:
-        print(f"[red]Error creating app:\n{result.stderr}[/red]")
-        raise typer.Exit(1)
+    # Generate standard app structure
+    generate_standard_app(name)
 
-    (Path(f"apps/{name}") / "__init__.py").touch()
-
-    # Fix apps.py name
-    apps_py_path = Path(f"apps/{name}/apps.py")
-    if apps_py_path.exists():
-        apps_content = apps_py_path.read_text(encoding="utf-8")
-        apps_content = re.sub(rf"name\s*=\s*['\"]{name}['\"]", f"name = 'apps.{name}'", apps_content)
-        apps_py_path.write_text(apps_content, encoding="utf-8")
-
+    # Update project settings and URLs
     try:
         project_name = get_project_name()
         update_settings(project_name, name)
         update_urls(project_name, name)
-        create_app_urls(name)
-        create_app_views(name)
-        create_app_serializers(name)
-        create_app_tests(name)
-        print(f"[bold green]✅ App '{name}' created and configured successfully![/bold green]")
+        
         print()
-        print("[cyan]Generated files:[/cyan]")
-        print(f"  apps/{name}/views.py       — APIView boilerplate")
-        print(f"  apps/{name}/serializers.py — ModelSerializer template")
-        print(f"  apps/{name}/urls.py        — URL patterns")
-        print(f"  apps/{name}/tests.py       — Test boilerplate")
+        print("[bold green]✅ Standard app created successfully![/bold green]")
+        print()
+        print("[cyan]Structure:[/cyan]")
+        print(f"  apps/{name}/")
+        print(f"    ├── views/           ← Multiple view files")
+        print(f"    ├── serializers/     ← Multiple serializer files")
+        print(f"    ├── service/         ← Business logic")
+        print(f"    ├── permissions.py   ← Custom permissions")
+        print(f"    ├── tasks.py         ← Celery tasks")
+        print(f"    ├── models.py        ← Database models")
+        print(f"    ├── admin.py         ← Admin config")
+        print(f"    ├── urls.py          ← URL patterns")
+        print(f"    ├── apps.py          ← App config")
+        print(f"    └── tests.py         ← Tests")
+        print()
+        print("[cyan]Next steps:[/cyan]")
+        print(f"  1. Run [bold]python manage.py makemigrations {name}[/bold]")
+        print("  2. Run [bold]python manage.py migrate[/bold]")
+        print("  3. Run [bold]python manage.py runserver[/bold]")
     except Exception as e:
         print(f"[red]Error during auto-configuration: {str(e)}[/red]")

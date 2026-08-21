@@ -22,6 +22,7 @@ from djboost.generators.project_files import (
     create_tasks_file,
     update_init_file,
     update_urls_file,
+    create_common_service_files,
 )
 from djboost.generators.quality import (
     generate_gitignore,
@@ -77,6 +78,7 @@ def create_project(name: str):
     update_init_file(name)
     update_urls_file(name)
     create_directories()
+    create_common_service_files()
 
     # ── Step 3: Install all dependencies ─────────────────────────────────────
     install_dependencies()

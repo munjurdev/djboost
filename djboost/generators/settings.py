@@ -132,7 +132,7 @@ REST_FRAMEWORK = {{
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'EXCEPTION_HANDLER': '{name}.utils.custom_exception_handler',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGINATION_CLASS': 'apps.common.service.pagination.CustomPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
