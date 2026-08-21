@@ -491,7 +491,7 @@ def send_otp_email_task(user_id, otp_code, purpose):
     user = User.objects.get(id=user_id)
 
     # TODO: Implement email sending logic
-    # from apps.common.service.email import mail_service
+    # from common.email import mail_service
     # if purpose == "SIGNUP":
     #     mail_service.send_signup_otp(user, otp_code)
     # elif purpose == "RESET_PASSWORD":

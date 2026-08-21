@@ -1,6 +1,7 @@
 import typer
 from rich import print
-from djboost.generator import generate_github_actions, generate_gitlab_ci, check_virtual_environment
+from djboost.generator import check_virtual_environment
+from djboost.generators.cicd import generate_github_actions, generate_gitlab_ci
 
 def add_cicd_command(provider: str = typer.Argument(..., help="The CI/CD provider to add (github or gitlab)")):
     check_virtual_environment()

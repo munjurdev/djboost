@@ -16,11 +16,7 @@ def update_settings_file(settings_path: str, name: str) -> str:
         (
             "from pathlib import Path\n"
             "from datetime import timedelta\n"
-            "from decouple import config\n\n"
-            "try:\n"
-            "    from celery.schedules import crontab\n"
-            "except ImportError:\n"
-            "    pass"
+            "from decouple import config"
         )
     )
 
@@ -39,12 +35,11 @@ def update_settings_file(settings_path: str, name: str) -> str:
         "    'rest_framework',\n"
         "    'rest_framework_simplejwt',\n"
         "    'rest_framework_simplejwt.token_blacklist',\n"
-        "    'channels',\n"
         "    'drf_spectacular',"
     )
     content = re.sub(
         r"['\"]django\.contrib\.staticfiles['\"],",
-        f"'daphne',\n    'django.contrib.staticfiles',\n{apps_addition}",
+        f"'django.contrib.staticfiles',\n{apps_addition}",
         content
     )
 
@@ -98,14 +93,6 @@ def _build_extra_config(name: str) -> str:
     """Return the extra settings block appended at the end of settings.py."""
     return f"""
 
-# ── Caching (Redis) ───────────────────────────────────────────────────────────
-CACHES = {{
-    "default": {{
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": config("REDIS_URL", default="redis://127.0.0.1:6379/1"),
-    }}
-}}
-
 # ── Security & Performance ────────────────────────────────────────────────────
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -116,23 +103,13 @@ STORAGES = {{
     }},
 }}
 
-# ── Django Channels ───────────────────────────────────────────────────────────
-CHANNEL_LAYERS = {{
-    "default": {{
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {{
-            "hosts": [(config("REDIS_HOST", default="127.0.0.1"), config("REDIS_PORT", default=6379, cast=int))],
-        }},
-    }},
-}}
-
 # ── REST Framework ────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {{
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'EXCEPTION_HANDLER': '{name}.utils.custom_exception_handler',
-    'DEFAULT_PAGINATION_CLASS': 'apps.common.service.pagination.CustomPagination',
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
@@ -191,26 +168,6 @@ LOGGING = {{
     }},
     "loggers": {{
         "django": {{"handlers": ["console"], "level": "INFO"}},
-        "celery": {{"handlers": ["console"], "level": "INFO"}},
-    }},
-}}
-
-# ── Celery ────────────────────────────────────────────────────────────────────
-CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
-CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0")
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-CELERY_TASK_TIME_LIMIT = 5 * 60
-CELERY_TASK_SOFT_TIME_LIMIT = 60
-CELERY_WORKER_PREFETCH_MULTIPLIER = 1
-
-CELERY_BEAT_SCHEDULE = {{
-    "sample_task": {{
-        "task": "{name}.tasks.sample_task",
-        "schedule": crontab(minute="*/15"),
     }},
 }}
 """

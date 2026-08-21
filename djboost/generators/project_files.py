@@ -7,16 +7,14 @@ def create_directories():
     os.makedirs("apps", exist_ok=True)
     os.makedirs("static", exist_ok=True)
     os.makedirs("media", exist_ok=True)
-    os.makedirs("apps/common", exist_ok=True)
-    os.makedirs("apps/common/service", exist_ok=True)
+    os.makedirs("common", exist_ok=True)
     # Create __init__.py files
     Path("apps/__init__.py").touch()
-    Path("apps/common/__init__.py").touch()
-    Path("apps/common/service/__init__.py").touch()
+    Path("common/__init__.py").touch()
 
 
 def create_utils_file(name: str):
-    """Global DRF exception handler — always returns clean JSON."""
+    """Create core/utils.py with exception handler."""
     content = '''from rest_framework.views import exception_handler
 
 
@@ -37,7 +35,7 @@ def custom_exception_handler(exc, context):
         logger = logging.getLogger(__name__)
 
         if isinstance(exc, DjangoValidationError):
-            message = exc.messages[0] if hasattr(exc, 'messages') and exc.messages else str(exc)
+            message = exc.messages[0] if hasattr(exc, \'messages\') and exc.messages else str(exc)
             return Response({
                 "success": False,
                 "message": message,
@@ -55,15 +53,11 @@ def custom_exception_handler(exc, context):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     data = response.data
-
     message = "Something went wrong."
     errors = None
 
-    # Case 1: {"detail": "..."}
     if isinstance(data, dict) and "detail" in data:
         message = str(data["detail"])
-
-    # Case 2: Serializer validation errors
     elif isinstance(data, dict):
         errors = data
         first_field = next(iter(data))
@@ -71,12 +65,9 @@ def custom_exception_handler(exc, context):
         if isinstance(first_error, (list, tuple)):
             first_error = first_error[0]
         message = str(first_error)
-
-    # Case 3: List errors
     elif isinstance(data, list):
         message = str(data[0])
 
-    # Friendly messages
     message = str(message)
     if "JSON parse error" in message:
         message = "Invalid JSON format in request body."
@@ -95,6 +86,178 @@ def custom_exception_handler(exc, context):
 '''
     with open(f"{name}/utils.py", "w", encoding="utf-8") as f:
         f.write(content)
+
+
+def create_common_files():
+    """Create common/ package with responses.py, pagination.py, exceptions.py."""
+    
+    # common/responses.py
+    responses_content = '''from rest_framework.response import Response
+from rest_framework import status
+
+
+def success_response(message="Success", data=None, status_code=status.HTTP_200_OK):
+    """Standard success response format."""
+    return Response(
+        {
+            "success": True,
+            "message": message,
+            "data": data,
+        },
+        status=status_code,
+    )
+
+
+def error_response(message="Error", errors=None, status_code=status.HTTP_400_BAD_REQUEST):
+    """Standard error response format."""
+    return Response(
+        {
+            "success": False,
+            "message": message,
+            "data": None,
+            "errors": errors,
+        },
+        status=status_code,
+    )
+'''
+    with open("common/responses.py", "w", encoding="utf-8") as f:
+        f.write(responses_content)
+
+    # common/pagination.py
+    pagination_content = '''from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+
+
+class CustomPagination(PageNumberPagination):
+    """
+    Custom pagination with standard response format.
+    
+    Usage in views:
+        from common.pagination import CustomPagination
+        paginator = CustomPagination()
+        response = paginator.paginate_data(queryset, request, MySerializer)
+    """
+    page_size = 10
+    page_size_query_param = \'page_size\'
+    max_page_size = 100
+
+    def get_paginated_response(self, data, additional_meta=None):
+        meta = {
+            \'count\': self.page.paginator.count,
+            \'total_pages\': self.page.paginator.num_pages,
+            \'current_page\': self.page.number,
+            \'page_size\': self.page.paginator.per_page,
+        }
+        if additional_meta:
+            meta.update(additional_meta)
+
+        return Response({
+            \'success\': True,
+            \'message\': \'Data retrieved successfully.\',
+            \'data\': data,
+            \'meta\': meta,
+        })
+
+    def paginate_data(
+        self,
+        queryset,
+        request,
+        serializer_class,
+        many=False,
+        context=None,
+        message=\'Data retrieved successfully.\',
+        additional_meta=None,
+        status_code=status.HTTP_200_OK,
+    ):
+        """One-liner pagination + serialization + response."""
+        page = self.paginate_queryset(queryset, request)
+        serializer = serializer_class(
+            page if page is not None else queryset,
+            many=many,
+            context=context,
+        )
+
+        response = self.get_paginated_response(serializer.data, additional_meta)
+        response.status_code = status_code
+        response.data[\'message\'] = message
+        return response
+'''
+    with open("common/pagination.py", "w", encoding="utf-8") as f:
+        f.write(pagination_content)
+
+    # common/exceptions.py
+    exceptions_content = '''from rest_framework.views import exception_handler
+
+
+def custom_exception_handler(exc, context):
+    """
+    Global DRF exception handler.
+    Always returns: {"success": false, "message": "...", "errors": null, "data": null}
+    """
+    response = exception_handler(exc, context)
+
+    if response is None:
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        from rest_framework.response import Response
+        from rest_framework import status
+        import traceback
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        if isinstance(exc, DjangoValidationError):
+            message = exc.messages[0] if hasattr(exc, \'messages\') and exc.messages else str(exc)
+            return Response({
+                "success": False,
+                "message": message,
+                "errors": None,
+                "data": None,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        logger.error(f"Unhandled Exception: {exc}\\n{traceback.format_exc()}")
+
+        return Response({
+            "success": False,
+            "message": "Internal Server Error. Please try again later.",
+            "errors": None,
+            "data": None,
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    data = response.data
+    message = "Something went wrong."
+    errors = None
+
+    if isinstance(data, dict) and "detail" in data:
+        message = str(data["detail"])
+    elif isinstance(data, dict):
+        errors = data
+        first_field = next(iter(data))
+        first_error = data[first_field]
+        if isinstance(first_error, (list, tuple)):
+            first_error = first_error[0]
+        message = str(first_error)
+    elif isinstance(data, list):
+        message = str(data[0])
+
+    message = str(message)
+    if "JSON parse error" in message:
+        message = "Invalid JSON format in request body."
+    elif message == "Authentication credentials were not provided.":
+        message = "Authentication is required."
+    elif message == "Not found.":
+        message = "The requested resource was not found."
+
+    response.data = {
+        "success": False,
+        "message": message,
+        "errors": errors,
+        "data": None,
+    }
+    return response
+'''
+    with open("common/exceptions.py", "w", encoding="utf-8") as f:
+        f.write(exceptions_content)
 
 
 def create_celery_file(name: str):
@@ -177,191 +340,4 @@ urlpatterns = [
     with open(f"{name}/urls.py", "w", encoding="utf-8") as f:
         f.write(content)
 
-
-def create_common_service_files():
-    """Create apps/common/service/ with responses.py and pagination.py."""
-    
-    # responses.py
-    responses_content = '''from rest_framework.response import Response
-from rest_framework import status
-
-
-def success_response(message="Success", data=None, status_code=status.HTTP_200_OK):
-    """Standard success response format."""
-    return Response(
-        {
-            "success": True,
-            "message": message,
-            "data": data,
-        },
-        status=status_code,
-    )
-
-
-def error_response(message="Error", errors=None, status_code=status.HTTP_400_BAD_REQUEST):
-    """Standard error response format."""
-    return Response(
-        {
-            "success": False,
-            "message": message,
-            "data": None,
-            "errors": errors,
-        },
-        status=status_code,
-    )
-'''
-    with open("apps/common/service/responses.py", "w", encoding="utf-8") as f:
-        f.write(responses_content)
-
-    # pagination.py
-    pagination_content = '''from rest_framework import status
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
-
-
-class CustomPagination(PageNumberPagination):
-    """
-    Custom pagination with standard response format.
-    
-    Usage in views:
-        paginator = CustomPagination()
-        response = paginator.paginate_data(queryset, request, MySerializer)
-    """
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-    def get_paginated_response(self, data, additional_meta=None):
-        meta = {
-            'count': self.page.paginator.count,
-            'total_pages': self.page.paginator.num_pages,
-            'current_page': self.page.number,
-            'page_size': self.page.paginator.per_page,
-        }
-        if additional_meta:
-            meta.update(additional_meta)
-
-        return Response({
-            'success': True,
-            'message': 'Data retrieved successfully.',
-            'data': data,
-            'meta': meta,
-        })
-
-    def paginate_data(
-        self,
-        queryset,
-        request,
-        serializer_class,
-        many=False,
-        context=None,
-        message='Data retrieved successfully.',
-        additional_meta=None,
-        status_code=status.HTTP_200_OK,
-    ):
-        """
-        One-liner pagination + serialization + response.
-        
-        Usage:
-            paginator = CustomPagination()
-            return paginator.paginate_data(
-                queryset=queryset,
-                request=request,
-                serializer_class=UserSerializer,
-            )
-        """
-        page = self.paginate_queryset(queryset, request)
-        serializer = serializer_class(
-            page if page is not None else queryset,
-            many=many,
-            context=context,
-        )
-
-        response = self.get_paginated_response(serializer.data, additional_meta)
-        response.status_code = status_code
-        response.data['message'] = message
-        return response
-'''
-    with open("apps/common/service/pagination.py", "w", encoding="utf-8") as f:
-        f.write(pagination_content)
-
-    # exceptions.py
-    exceptions_content = '''from rest_framework.views import exception_handler
-
-
-def custom_exception_handler(exc, context):
-    """
-    Global DRF exception handler.
-    Always returns: {"success": false, "message": "...", "errors": null, "data": null}
-    """
-    response = exception_handler(exc, context)
-
-    if response is None:
-        from django.core.exceptions import ValidationError as DjangoValidationError
-        from rest_framework.response import Response
-        from rest_framework import status
-        import traceback
-        import logging
-
-        logger = logging.getLogger(__name__)
-
-        if isinstance(exc, DjangoValidationError):
-            message = exc.messages[0] if hasattr(exc, \'messages\') and exc.messages else str(exc)
-            return Response({
-                "success": False,
-                "message": message,
-                "errors": None,
-                "data": None,
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        logger.error(f"Unhandled Exception: {exc}\\n{traceback.format_exc()}")
-
-        return Response({
-            "success": False,
-            "message": "Internal Server Error. Please try again later.",
-            "errors": None,
-            "data": None,
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    data = response.data
-
-    message = "Something went wrong."
-    errors = None
-
-    # Case 1: {"detail": "..."}
-    if isinstance(data, dict) and "detail" in data:
-        message = str(data["detail"])
-
-    # Case 2: Serializer validation errors
-    elif isinstance(data, dict):
-        errors = data
-        first_field = next(iter(data))
-        first_error = data[first_field]
-        if isinstance(first_error, (list, tuple)):
-            first_error = first_error[0]
-        message = str(first_error)
-
-    # Case 3: List errors
-    elif isinstance(data, list):
-        message = str(data[0])
-
-    # Friendly messages
-    message = str(message)
-    if "JSON parse error" in message:
-        message = "Invalid JSON format in request body."
-    elif message == "Authentication credentials were not provided.":
-        message = "Authentication is required."
-    elif message == "Not found.":
-        message = "The requested resource was not found."
-
-    response.data = {
-        "success": False,
-        "message": message,
-        "errors": errors,
-        "data": None,
-    }
-    return response
-'''
-    with open("apps/common/service/exceptions.py", "w", encoding="utf-8") as f:
-        f.write(exceptions_content)
 

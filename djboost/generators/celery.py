@@ -102,6 +102,13 @@ def update_settings_celery(name: str):
         print("[yellow]Warning: Celery is already configured in settings.py. Skipping.[/yellow]")
         return True
     
+    # Add crontab import
+    if "from celery.schedules import crontab" not in content:
+        content = content.replace(
+            "from decouple import config",
+            "from decouple import config\nfrom celery.schedules import crontab"
+        )
+    
     # Add Celery settings at the end
     celery_settings = """
 

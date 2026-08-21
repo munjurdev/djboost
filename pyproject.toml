@@ -1,6 +1,6 @@
 [project]
 name = "djboost"
-version = "0.3.0"
+version = "0.3.1"
 description = "Django project generator CLI — production-ready Django projects in one command"
 readme = "README.md"
 requires-python = ">=3.10"

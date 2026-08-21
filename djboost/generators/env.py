@@ -18,13 +18,6 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:8000
 # DB_PORT=5432
 # CONN_MAX_AGE=600
 
-# ── Redis ─────────────────────────────────────────────────────────────────────
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_URL=redis://localhost:6379/1
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
-
 # ── Email (SMTP) ──────────────────────────────────────────────────────────────
 EMAIL_USE_SSL=True
 EMAIL_HOST=smtp.gmail.com

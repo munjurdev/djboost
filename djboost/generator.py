@@ -14,22 +14,17 @@ from djboost.generators.validators import check_virtual_environment, validate_na
 from djboost.generators.settings import update_settings_file
 from djboost.generators.dependencies import install_dependencies, freeze_requirements
 from djboost.generators.env import generate_env_file
-from djboost.generators.docker import generate_docker_files
 from djboost.generators.project_files import (
     create_directories,
     create_utils_file,
-    create_celery_file,
-    create_tasks_file,
-    update_init_file,
+    create_common_files,
     update_urls_file,
-    create_common_service_files,
 )
 from djboost.generators.quality import (
     generate_gitignore,
     generate_pytest_ini,
     generate_pre_commit_config,
 )
-from djboost.generators.cicd import generate_github_actions, generate_gitlab_ci
 
 
 def create_project(name: str):
@@ -47,7 +42,7 @@ def create_project(name: str):
         import typer
         raise typer.Exit(1)
 
-    print(f"\n[bold green]🚀 Creating Django project: {name}[/bold green]\n")
+    print(f"\n[bold green]🚀 Start to Creating Django project: {name}[/bold green]\n")
 
     # ── Step 1: Install Django & scaffold ────────────────────────────────────
     print("[cyan]📦 Installing Django...[/cyan]")
@@ -73,12 +68,9 @@ def create_project(name: str):
     print("[cyan]⚙️  Configuring settings...[/cyan]")
     secret_key = update_settings_file(f"{name}/settings.py", name)
     create_utils_file(name)
-    create_celery_file(name)
-    create_tasks_file(name)
-    update_init_file(name)
     update_urls_file(name)
     create_directories()
-    create_common_service_files()
+    create_common_files()
 
     # ── Step 3: Install all dependencies ─────────────────────────────────────
     install_dependencies()
@@ -87,7 +79,6 @@ def create_project(name: str):
     print("[cyan]📝 Generating config files...[/cyan]")
     generate_env_file(secret_key, name)
     freeze_requirements()
-    generate_docker_files(name)
     generate_gitignore()
     generate_pytest_ini(name)
     generate_pre_commit_config()

@@ -74,7 +74,7 @@ This single command will:
 3. Generate `.env` pre-filled with all required keys
 4. Set up `pytest.ini`, `.pre-commit-config.yaml`, `.gitignore`
 5. Install only 13 essential dependencies (add more later as needed)
-6. Create `apps/common/service/` with response helpers and pagination
+6. Create `common/` package with response helpers, pagination, and exception handler
 7. Freeze `requirements.txt`
 
 ---
@@ -283,8 +283,8 @@ All responses follow a consistent format:
 ### Usage in Views
 
 ```python
-from apps.common.service.responses import success_response, error_response
-from apps.common.service.pagination import CustomPagination
+from common.responses import success_response, error_response
+from common.pagination import CustomPagination
 
 # Success response
 return success_response(message="User created", data=user_data)
