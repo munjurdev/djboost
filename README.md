@@ -4,9 +4,9 @@
 [![Python](https://img.shields.io/pypi/pyversions/djboost)](https://pypi.org/project/djboost/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**One command. Production-ready Django REST API.**
+**A CLI-based Django project generator for quickly scaffolding production-oriented backend projects.**
 
-`djboost` generates a fully-configured Django REST API project in seconds — DRF, JWT, pagination, standard response format, and more. Add Celery, Docker, Swagger anytime with `djboost add`. No boilerplate. No config hunting.
+`djboost` helps developers quickly scaffold production-oriented backend projects with APIs, authentication, background tasks, documentation, Docker, testing, security defaults, and CI/CD. Instead of repeatedly configuring the same backend infrastructure from scratch, djboost provides a consistent foundation that developers can customize for their projects.
 
 ```bash
 pip install djboost

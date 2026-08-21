@@ -322,7 +322,6 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 from django.http import JsonResponse
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 
 def root_view(request):
@@ -332,9 +331,6 @@ def root_view(request):
 urlpatterns = [
     path('', root_view, name='home'),
     path('admin/', admin.site.urls),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 """
     with open(f"{name}/urls.py", "w", encoding="utf-8") as f:
