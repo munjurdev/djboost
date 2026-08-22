@@ -1,8 +1,8 @@
 import typer
 from rich import print
 from djboost.generator import check_virtual_environment
-from djboost.generators.celery import get_project_name
-from djboost.generators.celery_beat import (
+from djboost.generators.celery import (
+    get_project_name,
     generate_celery_beat_config,
     add_crontab_import,
 )

@@ -42,10 +42,15 @@ def create_project(name: str):
         import typer
         raise typer.Exit(1)
 
-    print(f"\n[bold green]🚀 Start to Creating Django project: {name}[/bold green]\n")
+    # Beautiful header
+    print()
+    print("[bold green]╔══════════════════════════════════════════════════════════╗[/bold green]")
+    print("[bold green]║           🚀 djboost — Creating Project                 ║[/bold green]")
+    print("[bold green]╚══════════════════════════════════════════════════════════╝[/bold green]")
+    print()
 
-    # ── Step 1: Install Django & scaffold ────────────────────────────────────
-    print("[cyan]📦 Installing Django...[/cyan]")
+    # Step 1: Install Django
+    print("[cyan]━━━ Step 1/6: Installing Django ━━━[/cyan]")
     result = subprocess.run(
         [sys.executable, "-m", "pip", "install", "Django", "-q"],
         capture_output=True, text=True
@@ -54,7 +59,11 @@ def create_project(name: str):
         print(f"[red]Failed to install Django:\n{result.stderr}[/red]")
         import typer
         raise typer.Exit(1)
+    print("[green]   ✔ Django installed[/green]")
+    print()
 
+    # Step 2: Create project
+    print("[cyan]━━━ Step 2/6: Creating project structure ━━━[/cyan]")
     result = subprocess.run(
         [sys.executable, "-m", "django", "startproject", name, "."],
         capture_output=True, text=True
@@ -63,32 +72,81 @@ def create_project(name: str):
         print(f"[red]Failed to scaffold project:\n{result.stderr}[/red]")
         import typer
         raise typer.Exit(1)
+    print(f"[green]   ✔ Created {name}/ directory[/green]")
+    print("[green]   ✔ Created manage.py[/green]")
+    print("[green]   ✔ Created settings.py[/green]")
+    print("[green]   ✔ Created urls.py[/green]")
+    print("[green]   ✔ Created wsgi.py + asgi.py[/green]")
+    print()
 
-    # ── Step 2: Patch settings & project files ───────────────────────────────
-    print("[cyan]⚙️  Configuring settings...[/cyan]")
+    # Step 3: Configure settings
+    print("[cyan]━━━ Step 3/6: Configuring settings ━━━[/cyan]")
     secret_key = update_settings_file(f"{name}/settings.py", name)
+    print("[green]   ✔ Added DRF + JWT + CORS + Security[/green]")
     create_utils_file(name)
+    print("[green]   ✔ Created exception handler[/green]")
     update_urls_file(name)
+    print("[green]   ✔ Created root URLs[/green]")
     create_directories()
+    print("[green]   ✔ Created apps/ directory[/green]")
+    print("[green]   ✔ Created media/ directory[/green]")
+    print("[green]   ✔ Created static/ directory[/green]")
     create_common_files()
+    print("[green]   ✔ Created common/ package[/green]")
+    print("[green]     ├── responses.py[/green]")
+    print("[green]     ├── pagination.py[/green]")
+    print("[green]     └── exceptions.py[/green]")
+    print()
 
-    # ── Step 3: Install all dependencies ─────────────────────────────────────
+    # Step 4: Install dependencies
+    print("[cyan]━━━ Step 4/6: Installing dependencies ━━━[/cyan]")
     install_dependencies()
+    print()
 
-    # ── Step 4: Generate config files ────────────────────────────────────────
-    print("[cyan]📝 Generating config files...[/cyan]")
+    # Step 5: Generate config files
+    print("[cyan]━━━ Step 5/6: Generating config files ━━━[/cyan]")
     generate_env_file(secret_key, name)
+    print("[green]   ✔ Created .env[/green]")
     freeze_requirements()
+    print("[green]   ✔ Created requirements.txt[/green]")
     generate_gitignore()
+    print("[green]   ✔ Created .gitignore[/green]")
     generate_pytest_ini(name)
+    print("[green]   ✔ Created pytest.ini[/green]")
     generate_pre_commit_config()
+    print("[green]   ✔ Created .pre-commit-config.yaml[/green]")
+    print()
 
-    # ── Done ─────────────────────────────────────────────────────────────────
+    # Step 6: Summary
+    print("[cyan]━━━ Step 6/6: Summary ━━━[/cyan]")
     print()
-    print(f"[bold green]✅ Project '{name}' created successfully![/bold green]")
+    print("[bold green]╔══════════════════════════════════════════════════════════╗[/bold green]")
+    print("[bold green]║           ✅ Project Created Successfully!              ║[/bold green]")
+    print("[bold green]╚══════════════════════════════════════════════════════════╝[/bold green]")
     print()
-    print("[cyan]Next steps:[/cyan]")
-    print("  1. Update [bold].env[/bold] with your DB credentials")
-    print("  2. Run [bold]git init[/bold]")
-    print("  3. Run [bold]python manage.py migrate[/bold]")
-    print("  4. Run [bold]python manage.py runserver[/bold]")
+    print("[cyan]📁 Project Structure:[/cyan]")
+    print(f"   {name}/")
+    print("   ├── settings.py      ✔ Configured")
+    print("   ├── urls.py          ✔ Ready")
+    print("   ├── utils.py         ✔ Exception handler")
+    print("   ├── apps/            ✔ Ready for apps")
+    print("   ├── common/          ✔ Response helpers")
+    print("   ├── media/           ✔ File uploads")
+    print("   ├── static/          ✔ Static files")
+    print("   ├── .env             ✔ Environment vars")
+    print("   ├── .gitignore       ✔ Git ignore")
+    print("   └── requirements.txt ✔ 13 packages")
+    print()
+    print("[cyan]🚀 Next steps:[/cyan]")
+    print(f"   1. cd {name}")
+    print("   2. python manage.py migrate")
+    print("   3. python manage.py runserver")
+    print()
+    print("[cyan]📌 Optional commands:[/cyan]")
+    print("   djboost create app products    # Create an app")
+    print("   djboost create accounts        # Create auth system")
+    print("   djboost add celery             # Add background tasks")
+    print("   djboost add docker             # Add Docker")
+    print("   djboost add api-docs both      # Add Swagger + ReDoc")
+    print("   djboost doctor                 # Check project health")
+    print()

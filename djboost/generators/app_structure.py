@@ -85,23 +85,24 @@ def create_app_serializers(app_name: str):
     
     # serializers/{app_name}.py
     serializer_content = f"""from rest_framework import serializers
-# from apps.{app_name}.models import {app_name.capitalize()}
+from apps.{app_name}.models import {app_name.capitalize()}
 
 
 class {app_name.capitalize()}Serializer(serializers.ModelSerializer):
     \"\"\"Serializer for {app_name} detail view.\"\"\"
     
     class Meta:
-        # model = {app_name.capitalize()}
+        model = {app_name.capitalize()}
         fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class {app_name.capitalize()}ListSerializer(serializers.ModelSerializer):
     \"\"\"Serializer for {app_name} list view (lighter version).\"\"\"
     
     class Meta:
-        # model = {app_name.capitalize()}
-        fields = ['id', 'name', 'created_at']
+        model = {app_name.capitalize()}
+        fields = ['id', 'name', 'is_active', 'created_at']
 """
     Path(f"apps/{app_name}/serializers/{app_name}.py").write_text(serializer_content, encoding="utf-8")
     
@@ -143,9 +144,16 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 
 
 def create_app_tasks(app_name: str):
-    """Create tasks.py with Celery task template."""
+    """Create tasks.py — Celery tasks if Celery is installed, otherwise a placeholder."""
     
-    content = f'''"""
+    # Check if Celery is installed
+    requirements_path = Path("requirements.txt")
+    has_celery = False
+    if requirements_path.exists():
+        has_celery = "celery" in requirements_path.read_text(encoding="utf-8").lower()
+    
+    if has_celery:
+        content = f'''"""
 Celery background tasks for the {app_name} app.
 
 Tasks are auto-discovered by Celery via autodiscover_tasks().
@@ -174,6 +182,18 @@ def sample_{app_name}_task(item_id):
     logger.info(f"Processing {app_name} item: {{item_id}}")
     return f"Done: {{item_id}}"
 '''
+    else:
+        content = f'''"""
+Background tasks for the {app_name} app.
+
+Add your Celery tasks here after running: djboost add celery
+"""
+
+import logging
+
+logger = logging.getLogger(__name__)
+'''
+    
     path = Path(f"apps/{app_name}/tasks.py")
     path.write_text(content, encoding="utf-8")
     
@@ -230,7 +250,7 @@ app_name = '{app_name}'
 
 urlpatterns = [
     path('', {app_name}.{app_name.capitalize()}ListView.as_view(), name='list'),
-    path('/<uuid:pk>/', {app_name}.{app_name.capitalize()}DetailView.as_view(), name='detail'),
+    path('<uuid:pk>/', {app_name}.{app_name.capitalize()}DetailView.as_view(), name='detail'),
 ]
 """
     path = Path(f"apps/{app_name}/urls.py")
@@ -341,11 +361,60 @@ class {app_name.capitalize()}Config(AppConfig):
 
 
 def create_standard_tests(app_name: str):
-    """Create tests.py - fresh default Django test file."""
+    """Create tests.py with meaningful smoke tests."""
     
-    content = """from django.test import TestCase
+    content = f"""from django.test import TestCase
+from django.urls import reverse, resolve
+from rest_framework.test import APITestCase
+from rest_framework import status
+from apps.{app_name}.models import {app_name.capitalize()}
+from apps.{app_name}.views.{app_name} import {app_name.capitalize()}ListView, {app_name.capitalize()}DetailView
 
-# Create your tests here.
+
+class {app_name.capitalize()}ModelTest(TestCase):
+    \"\"\"Smoke tests for {app_name} model.\"\"\"
+
+    def test_create_{app_name}(self):
+        \"\"\"Test creating a {app_name} instance.\"\"\"
+        obj = {app_name.capitalize()}.objects.create(
+            name='Test {app_name}',
+            description='Test description',
+        )
+        self.assertEqual(str(obj), 'Test {app_name}')
+        self.assertTrue(obj.is_active)
+
+    def test_{app_name}_default_values(self):
+        \"\"\"Test default field values.\"\"\"
+        obj = {app_name.capitalize()}.objects.create(name='Test')
+        self.assertTrue(obj.is_active)
+        self.assertEqual(obj.description, '')
+
+
+class {app_name.capitalize()}URLTest(TestCase):
+    \"\"\"Test URL resolution.\"\"\"
+
+    def test_list_url_resolves(self):
+        \"\"\"Test list URL resolves to correct view.\"\"\"
+        url = reverse('apps.{app_name}:list')
+        resolver = resolve(url)
+        self.assertEqual(resolver.func.cls, {app_name.capitalize()}ListView)
+
+    def test_detail_url_resolves(self):
+        \"\"\"Test detail URL resolves to correct view.\"\"\"
+        obj = {app_name.capitalize()}.objects.create(name='Test')
+        url = reverse('apps.{app_name}:detail', kwargs={{'pk': obj.pk}})
+        resolver = resolve(url)
+        self.assertEqual(resolver.func.cls, {app_name.capitalize()}DetailView)
+
+
+class {app_name.capitalize()}APITest(APITestCase):
+    \"\"\"Smoke tests for {app_name} API endpoints.\"\"\"
+
+    def test_list_unauthenticated(self):
+        \"\"\"Test list endpoint requires authentication.\"\"\"
+        url = reverse('apps.{app_name}:list')
+        response = self.client.get(url)
+        self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
 """
     path = Path(f"apps/{app_name}/tests.py")
     path.write_text(content, encoding="utf-8")
@@ -402,12 +471,12 @@ def generate_standard_app(app_name: str):
     print(f"    ├── serializers/     ← Multiple serializer files")
     print(f"    ├── service/         ← Business logic")
     print(f"    ├── permissions.py   ← Custom permissions")
-    print(f"    ├── tasks.py         ← Celery tasks")
+    print(f"    ├── tasks.py         ← Celery tasks (auto-detects)")
     print(f"    ├── models.py        ← Database models")
     print(f"    ├── admin.py         ← Admin config")
     print(f"    ├── urls.py          ← URL patterns")
     print(f"    ├── apps.py          ← App config")
-    print(f"    └── tests.py         ← Tests")
+    print(f"    └── tests.py         ← Smoke tests")
     print()
     print("[cyan]Next steps:[/cyan]")
     print(f"  1. Run [bold]python manage.py makemigrations {app_name}[/bold]")

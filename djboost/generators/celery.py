@@ -1,3 +1,4 @@
+"""Celery generators — add, beat, remove — all in one file."""
 import re
 from pathlib import Path
 from rich import print
@@ -18,7 +19,9 @@ def get_project_name():
     return None
 
 
-def generate_celery_files(name: str):
+# ── ADD CELERY ────────────────────────────────────────────────────────────────
+
+def generate_celery_files(name):
     """Generate Celery app configuration and tasks file."""
     
     # Create celery.py
@@ -88,7 +91,7 @@ __all__ = ('celery_app',)
         print(f"[green]✔ Created {name}/__init__.py[/green]")
 
 
-def update_settings_celery(name: str):
+def update_settings_celery(name):
     """Add Celery settings to settings.py if not present."""
     settings_path = Path(f"{name}/settings.py")
     if not settings_path.exists():
@@ -97,19 +100,16 @@ def update_settings_celery(name: str):
     
     content = settings_path.read_text(encoding="utf-8")
     
-    # Check if Celery is already configured
     if "CELERY_BROKER_URL" in content:
         print("[yellow]Warning: Celery is already configured in settings.py. Skipping.[/yellow]")
         return True
     
-    # Add crontab import
     if "from celery.schedules import crontab" not in content:
         content = content.replace(
             "from decouple import config",
             "from decouple import config\nfrom celery.schedules import crontab"
         )
     
-    # Add Celery settings at the end
     celery_settings = """
 
 # ── Celery (Background Tasks) ────────────────────────────────────────────────
@@ -138,5 +138,187 @@ CELERY_BEAT_SCHEDULE = {
     return True
 
 
-# Note: Celery packages (celery, redis) are installed via
-# djboost.generators.dependencies.install_optional_packages('celery')
+# ── ADD CELERY BEAT ───────────────────────────────────────────────────────────
+
+def generate_celery_beat_config(name):
+    """Add Celery Beat schedule settings to settings.py."""
+    settings_path = Path(f"{name}/settings.py")
+    if not settings_path.exists():
+        print(f"[red]Error: {name}/settings.py not found.[/red]")
+        return False
+    
+    content = settings_path.read_text(encoding="utf-8")
+    
+    if "CELERY_BEAT_SCHEDULE" in content and "schedule" in content:
+        print("[yellow]Warning: Celery Beat is already configured in settings.py. Skipping.[/yellow]")
+        return True
+    
+    if "CELERY_BROKER_URL" not in content:
+        print("[red]Error: Celery is not configured. Please run 'djboost add celery' first.[/red]")
+        return False
+    
+    beat_pattern = r"\nCELERY_BEAT_SCHEDULE\s*=\s*\{[^}]*\}"
+    content = re.sub(beat_pattern, "", content, flags=re.DOTALL)
+    
+    beat_settings = """
+
+# ── Celery Beat Schedule ─────────────────────────────────────────────────────
+CELERY_BEAT_SCHEDULE = {
+    # "sample-periodic-task": {
+    #     "task": "{name}.tasks.sample_task",
+    #     "schedule": crontab(minute="*/15"),
+    # },
+    # "daily-cleanup": {
+    #     "task": "{name}.tasks.cleanup_task",
+    #     "schedule": crontab(hour=0, minute=0),
+    # },
+}
+"""
+    
+    content += beat_settings
+    settings_path.write_text(content, encoding="utf-8")
+    print(f"[green]✔ Added Celery Beat schedule to {name}/settings.py[/green]")
+    return True
+
+
+def add_crontab_import(name):
+    """Ensure crontab is imported in settings.py."""
+    settings_path = Path(f"{name}/settings.py")
+    if not settings_path.exists():
+        return False
+    
+    content = settings_path.read_text(encoding="utf-8")
+    
+    if "crontab" in content and "import" in content:
+        print("[yellow]Warning: crontab already imported in settings.py. Skipping.[/yellow]")
+        return True
+    
+    try_import = """
+try:
+    from celery.schedules import crontab
+except ImportError:
+    pass
+"""
+    
+    content = content.replace(
+        "from decouple import config",
+        "from decouple import config\n" + try_import
+    )
+    
+    settings_path.write_text(content, encoding="utf-8")
+    print(f"[green]✔ Added crontab import to {name}/settings.py[/green]")
+    return True
+
+
+# ── REMOVE CELERY ─────────────────────────────────────────────────────────────
+
+def remove_celery_files(name):
+    """Remove Celery-related files from the project."""
+    files_to_remove = [
+        Path(f"{name}/celery.py"),
+        Path(f"{name}/tasks.py"),
+    ]
+    
+    removed_files = []
+    for file_path in files_to_remove:
+        if file_path.exists():
+            file_path.unlink()
+            removed_files.append(str(file_path))
+            print(f"[green]✔ Removed {file_path}[/green]")
+        else:
+            print(f"[yellow]Warning: {file_path} not found. Skipping.[/yellow]")
+    
+    return removed_files
+
+
+def remove_celery_from_init(name):
+    """Remove Celery app from __init__.py."""
+    init_path = Path(f"{name}/__init__.py")
+    if not init_path.exists():
+        print(f"[yellow]Warning: {name}/__init__.py not found. Skipping.[/yellow]")
+        return False
+    
+    content = init_path.read_text(encoding="utf-8")
+    
+    if "celery_app" not in content:
+        print(f"[yellow]Warning: Celery not configured in {name}/__init__.py. Skipping.[/yellow]")
+        return True
+    
+    content = content.replace(
+        "from .celery import app as celery_app\n\n__all__ = ('celery_app',)",
+        ""
+    )
+    
+    if not content.strip():
+        content = "# This file is intentionally left blank.\n"
+    
+    init_path.write_text(content, encoding="utf-8")
+    print(f"[green]✔ Removed Celery app from {name}/__init__.py[/green]")
+    return True
+
+
+def remove_celery_from_settings(name):
+    """Remove Celery settings from settings.py."""
+    settings_path = Path(f"{name}/settings.py")
+    if not settings_path.exists():
+        print(f"[red]Error: {name}/settings.py not found.[/red]")
+        return False
+    
+    content = settings_path.read_text(encoding="utf-8")
+    
+    if "CELERY_BROKER_URL" not in content:
+        print("[yellow]Warning: Celery not configured in settings.py. Skipping.[/yellow]")
+        return True
+    
+    celery_pattern = r"\n# ── Celery \(Background Tasks\) ─.*?(?=\n# ──|\Z)"
+    content = re.sub(celery_pattern, "", content, flags=re.DOTALL)
+    
+    beat_pattern = r"\nCELERY_BEAT_SCHEDULE\s*=\s*\{[^}]*\}"
+    content = re.sub(beat_pattern, "", content, flags=re.DOTALL)
+    
+    content = content.replace(
+        "\ntry:\n    from celery.schedules import crontab\nexcept ImportError:\n    pass",
+        ""
+    )
+    
+    settings_path.write_text(content, encoding="utf-8")
+    print(f"[green]✔ Removed Celery settings from {name}/settings.py[/green]")
+    return True
+
+
+def remove_celery_from_requirements():
+    """Remove Celery and Redis from requirements.txt."""
+    requirements_path = Path("requirements.txt")
+    if not requirements_path.exists():
+        print("[yellow]Warning: requirements.txt not found. Skipping.[/yellow]")
+        return False
+    
+    content = requirements_path.read_text(encoding="utf-8")
+    lines = content.splitlines()
+    
+    packages_to_remove = ["celery", "redis"]
+    removed_packages = []
+    new_lines = []
+    
+    for line in lines:
+        line_stripped = line.strip()
+        should_remove = False
+        
+        for package in packages_to_remove:
+            if line_stripped.lower().startswith(package + ">=") or line_stripped.lower() == package:
+                should_remove = True
+                removed_packages.append(line_stripped)
+                break
+        
+        if not should_remove:
+            new_lines.append(line)
+    
+    if removed_packages:
+        requirements_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        print(f"[green]✔ Removed {len(removed_packages)} package(s) from requirements.txt[/green]")
+        for pkg in removed_packages:
+            print(f"  [dim]  - {pkg}[/dim]")
+    else:
+        print("[yellow]Warning: Celery packages not found in requirements.txt. Skipping.[/yellow]")
+    
+    return True

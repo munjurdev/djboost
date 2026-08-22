@@ -6,43 +6,36 @@
 
 **A CLI-based Django project generator for quickly scaffolding production-oriented backend projects.**
 
-`djboost` helps developers quickly scaffold production-oriented backend projects with APIs, authentication, background tasks, documentation, Docker, testing, security defaults, and CI/CD. Instead of repeatedly configuring the same backend infrastructure from scratch, djboost provides a consistent foundation that developers can customize for their projects.
+djboost eliminates repetitive Django setup. Instead of manually installing packages, configuring settings, and writing boilerplate, one command gives you a complete project foundation — DRF, JWT, testing, code quality, security defaults, and more. Add Celery, Docker, API docs, or CI/CD anytime with modular `add`/`remove` commands.
 
 ```bash
 pip install djboost
 djboost create project myproject
 ```
 
-That's it. Your project is ready.
 
 ---
 
-## ✨ What you get
+## Table of Contents
 
-| Feature | Details |
-|---|---|
-| **REST API** | Django REST Framework + Simple JWT pre-configured |
-| **API Docs** | Swagger UI + ReDoc at `/api/schema/swagger-ui/` |
-| **Async Tasks** | Celery + Redis (add only when needed) |
-| **WebSockets** | Django Channels + Daphne ASGI server |
-| **Database** | PostgreSQL config ready (SQLite default for dev) |
-| **Environment** | `python-decouple` with fully pre-filled `.env` |
-| **Docker** | `Dockerfile` + `docker-compose.yml` with 6 services |
-| **Security** | CORS, CSRF, XSS headers, throttling all configured |
-| **Static Files** | Whitenoise for efficient static file serving |
-| **Code Quality** | `pre-commit` with `black`, `flake8`, `isort` |
-| **Testing** | `pytest` + `pytest-django` with coverage |
-| **CI/CD** | GitHub Actions and GitLab CI pipelines |
-| **Exception Handler** | Global DRF handler → `{"success": false, "message": "..."}` |
-| **Response Format** | Standard success/error/pagination format |
-| **Pagination** | Custom pagination with meta info |
-| **Modular CLI** | Add/remove features anytime with `djboost add` |
+- [Getting Started](#-getting-started)
+- [What You Get by Default](#-what-you-get-by-default)
+- [Project Structure](#-project-structure)
+- [Creating Apps](#-creating-apps)
+- [Creating Accounts App](#-creating-accounts-app)
+- [Features You Can Add](#-features-you-can-add)
+- [Features You Can Remove](#-features-you-can-remove)
+- [Project Management](#-project-management)
+- [Response Format](#-response-format)
+- [Running Your Project](#-running-your-project)
+- [Dependencies](#-dependencies)
+- [CLI Reference](#-cli-reference)
 
 ---
 
-## 🚀 Quick Start
+## 🏁 Getting Started
 
-### 1 — Create a virtual environment
+### Step 1 — Create a virtual environment
 
 ```bash
 python -m venv env
@@ -54,71 +47,390 @@ env\Scripts\activate
 source env/bin/activate
 ```
 
-### 2 — Install djboost
+### Step 2 — Install djboost
 
 ```bash
 pip install djboost
 ```
 
-### 3 — Create your project
-
-Navigate to an **empty folder** and run:
+### Step 3 — Create your project
 
 ```bash
-djboost create project myproject
+mkdir myproject && cd myproject
+djboost create project core
 ```
 
-This single command will:
-1. Install Django and scaffold the project
-2. Configure `settings.py` with production-ready settings
-3. Generate `.env` pre-filled with all required keys
-4. Set up `pytest.ini`, `.pre-commit-config.yaml`, `.gitignore`
-5. Install only 13 essential dependencies (add more later as needed)
-6. Create `common/` package with response helpers, pagination, and exception handler
-7. Freeze `requirements.txt`
+### Step 4 — Run it
+
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+
+Open `http://127.0.0.1:8000/` — you'll see:
+
+```json
+{"message": "API Server Running", "status": "ok"}
+```
+
+---
+
+## 📦 What You Get by Default
+
+When you run `djboost create project core`, you get a complete foundation **without installing any optional packages**.
+
+### Core Features (Always Included)
+
+| Feature | What You Get | Why |
+|---------|-------------|-----|
+| **Django REST Framework** | Full API framework | Build REST APIs instantly |
+| **Simple JWT** | Access + refresh tokens, rotation, blacklist | Secure authentication out of the box |
+| **CORS Headers** | Cross-origin request handling | Frontend can call your API |
+| **Environment Variables** | `.env` file with all required keys | Secrets stay out of source code |
+| **Security Headers** | XSS filter, content-type nosniff, X-Frame-Options | Basic security baseline |
+| **Throttling** | 100/day anonymous, 1000/day authenticated | Prevent abuse |
+| **Static Files** | WhiteNoise for efficient serving | No extra server needed |
+| **Testing** | pytest + pytest-django + coverage | Testing ready from day one |
+| **Code Quality** | Black, Flake8, isort, pre-commit hooks | Consistent code style automatically |
+| **API Docs Ready** | drf-spectacular installed | Add Swagger/ReDoc anytime |
+| **Standard Responses** | `{success, message, data}` format | Consistent API contract |
+| **Pagination** | Custom pagination with meta info | List endpoints paginated |
+| **Exception Handler** | Global DRF error handler | Clean, predictable errors |
+| **Email Config** | SMTP settings in `.env` | Ready for transactional emails |
+| **Logging** | Console logging configured | Debug in development |
+
+### What `create project` Generates
+
+```
+myproject/
+├── apps/                        ← Your Django apps go here
+│   └── __init__.py
+├── common/                      ← Shared utilities
+│   ├── __init__.py
+│   ├── responses.py             ← success_response(), error_response()
+│   ├── pagination.py            ← CustomPagination
+│   └── exceptions.py            ← custom_exception_handler
+├── core/                        ← Project configuration
+│   ├── __init__.py
+│   ├── settings.py              ← Production-oriented settings
+│   ├── urls.py                  ← Root URL configuration
+│   ├── utils.py                 ← Exception handler
+│   ├── wsgi.py
+│   └── asgi.py
+├── static/                      ← Static files
+├── media/                       ← Uploaded files
+├── .env                         ← Environment variables (auto-generated)
+├── .gitignore                   ← Git ignore rules
+├── .pre-commit-config.yaml      ← Code quality hooks
+├── manage.py                    ← Django management
+├── pytest.ini                   ← Test configuration
+└── requirements.txt             ← Frozen dependencies (13 packages)
+```
+
+### Installed Packages (13 Essential)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Django | >=4.2,<5 | Web framework |
+| djangorestframework | >=3.14,<4 | REST API |
+| djangorestframework-simplejwt | >=5.3,<6 | JWT authentication |
+| django-cors-headers | >=4.3,<5 | CORS configuration |
+| python-decouple | >=3.8,<4 | Environment variables |
+| Pillow | >=10.0,<12 | Image handling |
+| drf-spectacular | >=0.27,<1 | OpenAPI/Swagger support |
+| whitenoise | >=6.6,<7 | Static file serving |
+| pytest | >=7.4,<9 | Testing framework |
+| pytest-django | >=4.7,<5 | Django test integration |
+| pytest-cov | >=4.1,<6 | Test coverage |
+| black | >=23.0,<25 | Code formatting |
+| flake8 | >=6.0,<8 | Linting |
+| isort | >=5.12,<6 | Import sorting |
+
+### Settings Configuration
+
+Your `settings.py` is pre-configured with:
+
+```python
+# Authentication
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'EXCEPTION_HANDLER': 'core.utils.custom_exception_handler',
+    'DEFAULT_PAGINATION_CLASS': 'common.pagination.CustomPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {'anon': '100/day', 'user': '1000/day'},
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# JWT
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+# Security
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+```
+
+### Environment Variables (.env)
+
+```env
+# Django
+DEBUG=True
+SECRET_KEY=your-generated-secret-key
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# CORS & CSRF
+CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:8000
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:8000
+
+# Database (commented — uncomment for PostgreSQL)
+# DB_ENGINE=django.db.backends.postgresql
+# DB_NAME=core_db
+# DB_USER=core_user
+# DB_PASSWORD=your-db-password
+
+# Email
+EMAIL_USE_SSL=True
+EMAIL_HOST=smtp.gmail.com
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+EMAIL_PORT=465
+```
+
+---
+
+## 📁 Project Structure
+
+After `djboost create project core`:
+
+```
+myproject/
+├── apps/                        ← Your Django apps
+│   └── __init__.py
+│
+├── common/                      ← Shared utilities (NOT an app)
+│   ├── __init__.py
+│   ├── responses.py             ← success_response(), error_response()
+│   ├── pagination.py            ← CustomPagination
+│   └── exceptions.py            ← custom_exception_handler
+│
+├── core/                        ← Project config
+│   ├── __init__.py
+│   ├── settings.py              ← Django settings
+│   ├── urls.py                  ← Root URLs
+│   ├── utils.py                 ← Exception handler
+│   ├── wsgi.py
+│   └── asgi.py
+│
+├── static/                      ← Static files (CSS, JS, images)
+├── media/                       ← User uploads
+│
+├── .env                         ← Environment variables
+├── .gitignore                   ← Git ignore rules
+├── .pre-commit-config.yaml      ← Code quality hooks
+├── manage.py                    ← Django management command
+├── pytest.ini                   ← Test configuration
+└── requirements.txt             ← Dependencies
+```
+
+### Directory Purpose
+
+| Directory | Purpose | When to Use |
+|-----------|---------|-------------|
+| `apps/` | All your Django apps | Always — create apps here |
+| `common/` | Response helpers, pagination, exceptions | Import in views |
+| `core/` | Settings, URLs, WSGI/ASGI | Project configuration |
+| `static/` | CSS, JavaScript, images | Static assets |
+| `media/` | User-uploaded files | File uploads |
 
 ---
 
 ## 📱 Creating Apps
 
+### What
+
+Use `djboost create app` to scaffold a new Django app with a professional structure.
+
+### Why
+
+Django's built-in `startapp` gives you a flat, minimal structure. djboost creates an API-oriented layout that separates concerns and scales with your project.
+
+### How
+
 ```bash
 cd myproject
-djboost create app users
+djboost create app products
 ```
 
-This creates a **standard app structure**:
+### Generated Structure
 
 ```
-apps/users/
-├── views/           ← Multiple view files (not single file)
+apps/products/
+├── views/              ← View files (one per resource)
 │   ├── __init__.py
-│   └── users.py     ← List + Detail views
-├── serializers/     ← Multiple serializer files
+│   └── products.py     ← List + Detail views
+├── serializers/        ← Serializer files (one per resource)
 │   ├── __init__.py
-│   └── users.py     ← Detail + List serializers
-├── service/         ← Business logic layer
+│   └── products.py     ← Detail + List serializers
+├── service/            ← Business logic layer
 │   ├── __init__.py
-│   └── helpers.py   ← Helper functions
-├── permissions.py   ← Custom permissions (IsOwner, IsAdminOrReadOnly)
-├── tasks.py         ← Celery tasks template
-├── models.py        ← Standard model with UUID, user, timestamps
-├── admin.py         ← Admin config with list_display, filters
-├── urls.py          ← Standard URL patterns
-├── apps.py          ← App config (name = 'apps.users')
-└── tests.py         ← Fresh default Django test file
+│   └── helpers.py      ← Helper functions
+├── permissions.py      ← Custom permissions
+├── tasks.py            ← Celery tasks (auto-detects if installed)
+├── models.py           ← Model with UUID, user FK, timestamps
+├── admin.py            ← Admin with list_display, filters
+├── urls.py             ← URL patterns (list + detail)
+├── apps.py             ← App config
+└── tests.py            ← Smoke tests (model, URL, API)
+```
+
+### Generated Code Examples
+
+**Model** (`models.py`):
+```python
+import uuid
+from django.db import models
+from django.conf import settings
+
+class Product(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='products')
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'products'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+```
+
+**Serializer** (`serializers/products.py`):
+```python
+from rest_framework import serializers
+from apps.products.models import Product
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+class ProductListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'is_active', 'created_at']
+```
+
+**Views** (`views/products.py`):
+```python
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class ProductListView(APIView):
+    """List all products."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # TODO: Implement list logic
+        return Response({"success": True, "message": "List products"})
+
+class ProductDetailView(APIView):
+    """Get, update, or delete a product."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        return Response({"success": True, "message": f"Detail product {pk}"})
+```
+
+**URLs** (`urls.py`):
+```python
+from django.urls import path
+from apps.products.views import products
+
+app_name = 'products'
+
+urlpatterns = [
+    path('', products.ProductListView.as_view(), name='list'),
+    path('<uuid:pk>/', products.ProductDetailView.as_view(), name='detail'),
+]
+```
+
+**Tests** (`tests.py`):
+```python
+from django.test import TestCase
+from django.urls import reverse, resolve
+from rest_framework.test import APITestCase
+from rest_framework import status
+from apps.products.models import Product
+from apps.products.views.products import ProductListView, ProductDetailView
+
+class ProductModelTest(TestCase):
+    def test_create_product(self):
+        obj = Product.objects.create(name='Test Product')
+        self.assertEqual(str(obj), 'Test Product')
+        self.assertTrue(obj.is_active)
+
+class ProductURLTest(TestCase):
+    def test_list_url_resolves(self):
+        url = reverse('apps.products:list')
+        resolver = resolve(url)
+        self.assertEqual(resolver.func.cls, ProductListView)
+
+class ProductAPITest(APITestCase):
+    def test_list_unauthenticated(self):
+        url = reverse('apps.products:list')
+        response = self.client.get(url)
+        self.assertIn(response.status_code, [401, 403])
+```
+
+### After Creating App
+
+```bash
+# 1. Create migrations
+python manage.py makemigrations products
+
+# 2. Apply migrations
+python manage.py migrate
+
+# 3. Run server
+python manage.py runserver
 ```
 
 ---
 
-## 🔐 Creating Accounts App (Full Auth System)
+## 🔐 Creating Accounts App
 
-Create a complete accounts app with all auth APIs ready:
+### What
+
+`djboost create accounts` generates a complete authentication system with email-based login, OTP verification, password reset, and profile management.
+
+### Why
+
+Every project needs auth. Instead of building it from scratch each time, djboost gives you a working auth system that you can customize.
+
+### How
 
 ```bash
 djboost create accounts
 ```
 
-This creates a production-ready accounts module:
+### Generated Structure
 
 ```
 apps/accounts/
@@ -140,111 +452,381 @@ apps/accounts/
 └── migrations/
 ```
 
-**API Endpoints:**
+### API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/sign-up` | Register new user |
-| POST | `/api/auth/verify-email` | Verify email with OTP |
-| POST | `/api/auth/resend-code` | Resend verification code |
-| POST | `/api/auth/sign-in` | Login with email/password |
-| POST | `/api/auth/forgot-password` | Request password reset |
-| POST | `/api/auth/verify-reset-code` | Verify reset code |
-| POST | `/api/auth/reset-password` | Reset password |
-| POST | `/api/auth/refresh-token` | Refresh JWT token |
-| POST | `/api/auth/social-login` | Social login (Google/Facebook/Apple) |
-| POST | `/api/auth/change-password` | Change password (authenticated) |
-| GET | `/api/auth/my-account` | Get profile (authenticated) |
-| PUT | `/api/auth/my-account` | Update profile (authenticated) |
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/auth/sign-up` | Register new user | No |
+| POST | `/api/auth/verify-email` | Verify email with OTP | No |
+| POST | `/api/auth/resend-code` | Resend verification code | No |
+| POST | `/api/auth/sign-in` | Login with email/password | No |
+| POST | `/api/auth/forgot-password` | Request password reset | No |
+| POST | `/api/auth/verify-reset-code` | Verify reset code | No |
+| POST | `/api/auth/reset-password` | Reset password | No |
+| POST | `/api/auth/refresh-token` | Refresh JWT token | No |
+| POST | `/api/auth/social-login` | Social login (Google/Facebook/Apple) | No |
+| POST | `/api/auth/change-password` | Change password | Yes |
+| GET | `/api/auth/my-account` | Get profile | Yes |
+| PUT | `/api/auth/my-account` | Update profile | Yes |
 
 ---
 
-## 📋 CI/CD Pipelines
+## ➕ Features You Can Add
 
-Add or remove CI/CD any time — it's modular.
+These features are **optional** — add them only when you need them.
+
+---
+
+### Add Celery (Background Tasks)
+
+#### What
+
+Celery handles background tasks — sending emails, processing data, generating reports — without blocking your API.
+
+#### Why
+
+Long-running tasks (email, PDF generation, data processing) slow down your API. Celery runs them in the background.
+
+#### How
 
 ```bash
-djboost add cicd github    # GitHub Actions
-djboost add cicd gitlab    # GitLab CI
+# Add Celery worker
+djboost add celery
 
-djboost remove cicd github
-djboost remove cicd gitlab
+# Add Celery Beat scheduler (for periodic tasks)
+djboost add celery-beat
+```
+
+#### What `add celery` Does
+
+1. Installs `celery` + `redis` packages
+2. Creates `core/celery.py` — Celery app configuration
+3. Creates `core/tasks.py` — sample tasks
+4. Updates `core/__init__.py` — registers Celery app
+5. Updates `settings.py` — adds `CELERY_BROKER_URL`
+
+#### What `add celery-beat` Does
+
+1. Adds `crontab` import to `settings.py`
+2. Adds `CELERY_BEAT_SCHEDULE` configuration
+
+#### After Adding
+
+```bash
+# Run Celery worker
+celery -A core worker -l info
+
+# Run Celery Beat (for periodic tasks)
+celery -A core beat -l info
 ```
 
 ---
 
-## ⚡ Adding Celery
+### Add Docker
 
-Add Celery to your existing Django project:
+#### What
 
-```bash
-djboost add celery          # Add Celery worker
-djboost add celery-beat     # Add Celery Beat scheduler
-```
+Docker packages your app and all its services (database, cache, workers) into containers that run anywhere.
 
-This will:
-1. Install `celery` + `redis` packages
-2. Generate `celery.py` and `tasks.py` in your project
-3. Update `settings.py` with Celery configuration
-4. Update `requirements.txt`
+#### Why
 
-### Removing Celery
+"Works on my machine" problem disappears. Docker ensures your app runs the same in development, staging, and production.
 
-```bash
-djboost remove celery
-```
-
-This will:
-1. **Uninstall** `celery` + `redis` packages
-2. Remove `celery.py` and `tasks.py` files
-3. Remove Celery configuration from `settings.py`
-4. Remove Celery from `requirements.txt`
-
----
-
-## 🐳 Adding Docker
-
-Add Docker configuration to your existing Django project:
+#### How
 
 ```bash
 djboost add docker
 ```
 
-This will:
-1. Generate `Dockerfile`
-2. Generate `docker-compose.yml` with 6 services:
-   - `web` - Django application
-   - `db` - PostgreSQL database
-   - `redis` - Redis cache/broker
-   - `celery` - Celery worker
-   - `celery-beat` - Celery Beat scheduler
-   - `flower` - Celery monitoring dashboard
-3. Generate `.dockerignore`
-4. Install `flower` package
+#### What `add docker` Does
+
+1. Generates `Dockerfile`
+2. Generates `docker-compose.yml` with **feature-aware** services
+3. Generates `.dockerignore`
+4. Installs additional packages if needed (flower, gunicorn)
+
+#### Feature-Aware Services
+
+Docker only includes services for packages you have installed:
+
+| Your Setup | Docker Services |
+|-----------|----------------|
+| Base project only | web, db, redis |
+| + Celery | web, db, redis, celery, celery-beat, flower |
+| + Channels | web (daphne), db, redis |
+| + Celery + Channels | web (daphne), db, redis, celery, celery-beat, flower |
+
+#### Running with Docker
+
+```bash
+docker-compose up --build
+```
 
 ---
 
-## 📚 Adding API Documentation
+### Add API Documentation
 
-Add Swagger/ReDoc API documentation:
+#### What
+
+Swagger UI and ReDoc provide interactive API documentation where developers can explore and test your endpoints.
+
+#### Why
+
+Self-documenting APIs reduce communication overhead. Frontend developers can see all endpoints without asking.
+
+#### How
 
 ```bash
-djboost add api-docs swagger    # Add Swagger UI
-djboost add api-docs redoc      # Add ReDoc
-djboost add api-docs both       # Add both
+# Add Swagger UI only
+djboost add api-docs swagger
+
+# Add ReDoc only
+djboost add api-docs redoc
+
+# Add both
+djboost add api-docs both
 ```
 
-After adding, access your API docs at:
-- Swagger UI: `http://localhost:8000/api/schema/swagger-ui/`
-- ReDoc: `http://localhost:8000/api/schema/redoc/`
+#### What `add api-docs` Does
+
+1. Adds imports to `urls.py`
+2. Adds URL patterns:
+   - `/api/schema/` — OpenAPI schema
+   - `/api/schema/swagger-ui/` — Swagger UI
+   - `/api/schema/redoc/` — ReDoc
+
+#### After Adding
+
+| URL | Description |
+|-----|-------------|
+| `http://localhost:8000/api/schema/swagger-ui/` | Interactive Swagger UI |
+| `http://localhost:8000/api/schema/redoc/` | Clean ReDoc documentation |
+
+---
+
+### Add CI/CD
+
+#### What
+
+CI/CD pipelines automatically run tests and checks every time you push code.
+
+#### Why
+
+Catches bugs before they reach production. No more "it works on my computer" — CI verifies every push.
+
+#### How
+
+```bash
+# GitHub Actions
+djboost add cicd github
+
+# GitLab CI
+djboost add cicd gitlab
+```
+
+#### What `add cicd github` Does
+
+1. Creates `.github/workflows/main.yml`
+2. Runs on push/PR to `main` branch
+3. Tests on Python 3.10, 3.11, 3.12
+4. Installs dependencies, runs flake8 lint, runs pytest
+
+#### What `add cicd gitlab` Does
+
+1. Creates `.gitlab-ci.yml`
+2. Runs on `main` branch and merge requests
+3. Uses Python 3.11 image
+4. Installs dependencies, runs flake8 lint, runs pytest
+
+---
+
+## 🔧 Project Management
+
+### What
+
+`doctor`, `validate`, and `info` commands help you check and understand your project.
+
+### Why
+
+Keep your project healthy and catch issues early.
+
+### How
+
+```bash
+# Check project health
+djboost doctor
+
+# Validate project structure
+djboost validate
+
+# Show project info
+djboost info
+```
+
+#### `djboost doctor`
+
+Checks your project health:
+- ✅ Django configuration
+- ✅ Database configuration
+- ✅ Environment variables
+- ✅ Required packages
+- ✅ Common package
+- ✅ Apps directory
+- ⚠️ DEBUG mode
+- ⚠️ SECRET_KEY security
+
+#### `djboost validate`
+
+Validates project structure integrity:
+- ✅ INSTALLED_APPS configuration
+- ✅ REST_FRAMEWORK settings
+- ✅ Security headers
+- ✅ CORS configuration
+- ✅ JWT configuration
+- ✅ Common package files
+- ✅ URL patterns (no leading slash bug)
+- ❌ Missing files
+- ❌ Broken configuration
+
+#### `djboost info`
+
+Shows project information:
+- 📋 Project name and Python version
+- 📦 Installed package versions
+- 🧩 Detected modules (Celery, Docker, CI/CD, etc.)
+
+---
+
+## ➖ Features You Can Remove
+
+Remove features you no longer need — djboost cleans up everything.
+
+---
+
+### Remove Celery
+
+#### What
+
+Completely removes Celery from your project — packages, files, and configuration.
+
+#### Why
+
+If you switch to a different task queue or don't need background tasks anymore.
+
+#### How
+
+```bash
+djboost remove celery
+```
+
+#### What `remove celery` Does
+
+1. **Uninstalls** `celery` + `redis` packages
+2. Removes `core/celery.py` and `core/tasks.py`
+3. Removes Celery configuration from `settings.py`
+4. Removes Celery from `requirements.txt`
+
+---
+
+### Remove Celery Beat
+
+#### What
+
+Removes Celery Beat scheduler configuration.
+
+#### How
+
+```bash
+djboost remove celery-beat
+```
+
+#### What `remove celery-beat` Does
+
+1. Removes `crontab` import from `settings.py`
+2. Removes `CELERY_BEAT_SCHEDULE` from `settings.py`
+
+---
+
+### Remove Docker
+
+#### What
+
+Removes all Docker configuration files.
+
+#### How
+
+```bash
+djboost remove docker
+```
+
+#### What `remove docker` Does
+
+1. Removes `Dockerfile`
+2. Removes `docker-compose.yml`
+3. Removes `.dockerignore`
+4. Removes flower/gunicorn from `requirements.txt`
+
+---
+
+### Remove API Docs
+
+#### What
+
+Removes Swagger/ReDoc documentation from your project.
+
+#### How
+
+```bash
+djboost remove api-docs
+```
+
+#### What `remove api-docs` Does
+
+1. Removes Swagger/ReDoc imports from `urls.py`
+2. Removes `/api/schema/`, `/api/schema/swagger-ui/`, `/api/schema/redoc/` URLs
+3. Removes `drf-spectacular` from `requirements.txt`
+
+---
+
+### Remove CI/CD
+
+#### What
+
+Removes CI/CD pipeline configuration files.
+
+#### Why
+
+If you switch to a different CI/CD platform or don't need automated testing.
+
+#### How
+
+```bash
+# Remove GitHub Actions
+djboost remove cicd github
+
+# Remove GitLab CI
+djboost remove cicd gitlab
+```
+
+#### What `remove cicd` Does
+
+- `djboost remove cicd github` — removes `.github/` directory
+- `djboost remove cicd gitlab` — removes `.gitlab-ci.yml`
 
 ---
 
 ## 📊 Response Format
 
-All responses follow a consistent format:
+### What
 
-**Success Response:**
+All API responses follow a consistent JSON format.
+
+### Why
+
+Frontend developers know exactly what to expect. No guessing whether `data` is an object, array, or nested.
+
+### Success Response
+
 ```json
 {
     "success": true,
@@ -253,7 +835,8 @@ All responses follow a consistent format:
 }
 ```
 
-**Paginated Response:**
+### Paginated Response
+
 ```json
 {
     "success": true,
@@ -268,7 +851,8 @@ All responses follow a consistent format:
 }
 ```
 
-**Error Response:**
+### Error Response
+
 ```json
 {
     "success": false,
@@ -285,25 +869,38 @@ All responses follow a consistent format:
 ```python
 from common.responses import success_response, error_response
 from common.pagination import CustomPagination
+from apps.products.serializers import ProductSerializer
 
 # Success response
-return success_response(message="User created", data=user_data)
+def list_products(request):
+    products = Product.objects.all()
+    return success_response(
+        message="Products retrieved",
+        data=ProductSerializer(products, many=True).data
+    )
 
 # Error response
-return error_response(message="Invalid credentials", status_code=401)
+def create_product(request):
+    serializer = ProductSerializer(data=request.data)
+    if not serializer.is_valid():
+        return error_response(message="Validation failed", errors=serializer.errors)
+    # ... create product
 
-# Pagination
-paginator = CustomPagination()
-return paginator.paginate_data(
-    queryset=users,
-    request=request,
-    serializer_class=UserSerializer,
-)
+# Paginated response
+def list_products(request):
+    paginator = CustomPagination()
+    return paginator.paginate_data(
+        queryset=Product.objects.all(),
+        request=request,
+        serializer_class=ProductSerializer,
+    )
 ```
 
 ---
 
 ## 🏃 Running Your Project
+
+### Without Docker
 
 ```bash
 python manage.py migrate
@@ -311,11 +908,11 @@ python manage.py runserver
 ```
 
 | URL | Description |
-|---|---|
+|-----|-------------|
 | `http://127.0.0.1:8000/` | Health check |
 | `http://127.0.0.1:8000/admin/` | Django Admin |
-| `http://127.0.0.1:8000/api/schema/swagger-ui/` | Swagger UI |
-| `http://127.0.0.1:8000/api/schema/redoc/` | ReDoc |
+| `http://127.0.0.1:8000/api/schema/swagger-ui/` | Swagger UI (if added) |
+| `http://127.0.0.1:8000/api/schema/redoc/` | ReDoc (if added) |
 
 ### With Docker
 
@@ -323,44 +920,81 @@ python manage.py runserver
 docker-compose up --build
 ```
 
+### With Celery
+
+```bash
+# Terminal 1 — Django
+python manage.py runserver
+
+# Terminal 2 — Celery Worker
+celery -A core worker -l info
+
+# Terminal 3 — Celery Beat (optional)
+celery -A core beat -l info
+```
+
+---
+
+## 📋 Dependencies
+
+### Essential (installed with `create project`)
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Django | >=4.2,<5 | Web framework |
+| djangorestframework | >=3.14,<4 | REST API |
+| djangorestframework-simplejwt | >=5.3,<6 | JWT authentication |
+| django-cors-headers | >=4.3,<5 | CORS configuration |
+| python-decouple | >=3.8,<4 | Environment variables |
+| Pillow | >=10.0,<12 | Image handling |
+| drf-spectacular | >=0.27,<1 | OpenAPI/Swagger support |
+| whitenoise | >=6.6,<7 | Static file serving |
+| pytest | >=7.4,<9 | Testing framework |
+| pytest-django | >=4.7,<5 | Django test integration |
+| pytest-cov | >=4.1,<6 | Test coverage |
+| black | >=23.0,<25 | Code formatting |
+| flake8 | >=6.0,<8 | Linting |
+| isort | >=5.12,<6 | Import sorting |
+
+### Optional (add only when needed)
+
+| Command | Packages Installed |
+|---------|--------------------|
+| `djboost add celery` | celery>=5.3,<6, redis>=5.0,<6 |
+| `djboost add docker` | flower>=2.0,<3 (if Celery installed), gunicorn>=21.2,<23 (if no Daphne) |
+
 ---
 
 ## 📖 CLI Reference
 
 ```
-djboost --version                  # Show version
-djboost --help                     # Show help
+djboost --version                  Show version
+djboost --help                     Show help
 
-# Create commands
-djboost create project [NAME]      # Create new Django project (default: core)
-djboost create app NAME            # Create standard app with directory structure
-djboost create accounts            # Create full accounts app with auth APIs
+# Create
+djboost create project [NAME]      Create new project (default: core)
+djboost create app NAME            Create standard app
+djboost create accounts            Create full auth system
 
-# Add commands
-djboost add cicd github|gitlab     # Add CI/CD pipeline
-djboost add celery                 # Add Celery worker + packages
-djboost add celery-beat            # Add Celery Beat scheduler
-djboost add docker                 # Add Docker configuration
-djboost add api-docs swagger|redoc|both  # Add API documentation
+# Add
+djboost add cicd github|gitlab     Add CI/CD pipeline
+djboost add celery                 Add Celery worker
+djboost add celery-beat            Add Celery Beat scheduler
+djboost add docker                 Add Docker configuration
+djboost add api-docs swagger|redoc|both  Add API documentation
 
-# Remove commands
-djboost remove cicd github|gitlab  # Remove CI/CD pipeline
-djboost remove celery              # Remove Celery + uninstall packages
+# Remove
+djboost remove cicd github|gitlab  Remove CI/CD pipeline
+djboost remove celery              Remove Celery + uninstall packages
+djboost remove celery-beat         Remove Celery Beat scheduler
+djboost remove docker              Remove Docker configuration
+djboost remove api-docs            Remove Swagger/ReDoc documentation
+
+# Project Management
+djboost doctor                     Check project health
+djboost validate                   Validate project structure
+djboost info                       Show project info and modules
 ```
-
----
-
-## 📦 Dependencies
-
-**Essential (installed with create project):**
-- Django REST Framework + Simple JWT
-- django-cors-headers, python-decouple, Pillow
-- drf-spectacular, whitenoise
-- pytest, black, flake8, isort
-
-**Optional (add only when needed):**
-- `djboost add celery` → celery, redis
-- `djboost add docker` → flower
 
 ---
 

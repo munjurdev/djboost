@@ -1,11 +1,11 @@
 import typer
 from rich import print
 from djboost.generator import check_virtual_environment
-from djboost.generators.docker_add import (
+from djboost.generators.docker import (
     get_project_name,
     generate_dockerfile,
-    generate_docker_compose,
-    generate_dockerignore,
+    generate_docker_compose_add,
+    generate_dockerignore_add,
     add_docker_to_requirements,
 )
 
@@ -26,11 +26,11 @@ def add_docker_command():
     
     # Step 2: Generate docker-compose.yml
     print("[cyan]📝 Generating docker-compose.yml...[/cyan]")
-    generate_docker_compose(name)
+    generate_docker_compose_add(name)
     
     # Step 3: Generate .dockerignore
     print("[cyan]📝 Generating .dockerignore...[/cyan]")
-    generate_dockerignore()
+    generate_dockerignore_add()
     
     # Step 4: Add flower to requirements
     print("[cyan]📦 Adding flower to requirements...[/cyan]")
@@ -39,16 +39,10 @@ def add_docker_command():
     print()
     print("[bold green]✅ Docker added successfully![/bold green]")
     print()
-    print("[cyan]Services included:[/cyan]")
-    print("  • [bold]web[/bold] - Django application")
-    print("  • [bold]db[/bold] - PostgreSQL database")
-    print("  • [bold]redis[/bold] - Redis cache/broker")
-    print("  • [bold]celery[/bold] - Celery worker")
-    print("  • [bold]celery-beat[/bold] - Celery Beat scheduler")
-    print("  • [bold]flower[/bold] - Celery monitoring dashboard")
-    print()
     print("[cyan]Next steps:[/cyan]")
     print("  1. Update [bold].env[/bold] with your database credentials")
     print("  2. Run [bold]docker-compose up --build[/bold]")
     print("  3. Access Django at [bold]http://localhost:8000[/bold]")
-    print("  4. Access Flower at [bold]http://localhost:5555[/bold]")
+    print()
+    print("[cyan]Note:[/cyan] Services depend on which features you have installed.")
+    print("  Run [bold]djboost add celery[/bold] before Docker to include Celery services.")

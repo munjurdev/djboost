@@ -68,3 +68,9 @@ secrets.json
 # Dev notes (local only)
 # ===========================
 dev-note.md
+
+# ===========================
+# Generated project folders (not for djboost package)
+# ===========================
+media/
+static/

@@ -15,13 +15,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
@@ -60,6 +64,9 @@ test:
   script:
     - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
     - pytest
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_MERGE_REQUEST_ID
 """
     with open(".gitlab-ci.yml", "w", encoding="utf-8") as f:
         f.write(content)

@@ -1,7 +1,7 @@
 import typer
 from rich import print
 from djboost.generator import check_virtual_environment
-from djboost.generators.celery_remove import (
+from djboost.generators.celery import (
     get_project_name,
     remove_celery_files,
     remove_celery_from_init,

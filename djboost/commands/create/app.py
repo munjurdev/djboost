@@ -86,6 +86,13 @@ def create_app_command(name: str = typer.Argument(..., help="The name of the Dja
         print("[red]Error: manage.py not found. Run this command from your Django project root.[/red]")
         raise typer.Exit(1)
 
+    # Check if project was created by djboost
+    if not Path("apps").exists() or not Path("common").exists():
+        print("[yellow]Warning: This project was not created by djboost.[/yellow]")
+        print("[yellow]Some features may not work correctly.[/yellow]")
+        print("[cyan]Recommended: Run 'djboost create project' first for best results.[/cyan]")
+        print()
+
     app_path = Path("apps") / name
     if app_path.exists():
         print(f"[red]Error: App '{name}' already exists at apps/{name}.[/red]")
