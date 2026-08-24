@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,8 +36,12 @@ jobs:
       - name: Lint (Flake8)
         run: flake8 djboost/ --max-line-length=120 --ignore=E501,W503
 
+      - name: Run tests
+        run: pytest tests/ -v
+
       - name: Verify all files compile
-        run: python -c "
+        run: |
+          python -c "
           import py_compile
           import glob
           errors = []
@@ -48,7 +51,8 @@ jobs:
               except py_compile.PyCompileError as e:
                   errors.append(str(e))
           if errors:
-              for e in errors: print(e)
+              for e in errors:
+                  print(e)
               exit(1)
           print('All files compile successfully!')
           "
