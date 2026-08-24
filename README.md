@@ -4,9 +4,9 @@
 [![Python](https://img.shields.io/pypi/pyversions/djboost)](https://pypi.org/project/djboost/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**The modern lifecycle CLI for Django projects.**
+**The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features.**
 
-djboost eliminates repetitive Django setup. Instead of manually installing packages, configuring settings, and writing boilerplate, one command gives you a complete project foundation — DRF, JWT, testing, code quality, security defaults, and more. Add or remove features anytime with safe, dependency-aware `add`/`remove` commands.
+djboost gives you a production-ready Django foundation in seconds — DRF, JWT, testing, and more. Build incrementally, ship confidently.
 
 ```bash
 pip install djboost

@@ -1,7 +1,7 @@
 [project]
 name = "djboost"
-version = "0.6.1"
-description = "A CLI-based Django project generator that helps developers quickly scaffold production-oriented backend projects with APIs, authentication, background tasks, documentation, Docker, testing, security defaults, and CI/CD."
+version = "0.6.2"
+description = "The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features. djboost gives you a production-ready Django foundation in seconds — DRF, JWT, testing, and more. Build incrementally, ship confidently."
 readme = "README.md"
 requires-python = ">=3.10,<4"
 license = { text = "MIT" }
