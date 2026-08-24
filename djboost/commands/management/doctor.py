@@ -163,10 +163,10 @@ def doctor_command():
         checks.append(("⚠️", ".gitignore", "Not found"))
 
     # Print results
-    table = Table(title="Project Health Report")
-    table.add_column("Status", justify="center", style="bold")
-    table.add_column("Check", style="cyan")
-    table.add_column("Result")
+    table = Table(title="Project Health Report", expand=False, padding=(0, 1))
+    table.add_column("Status", justify="center", style="bold", width=8, no_wrap=True)
+    table.add_column("Check", style="cyan", no_wrap=True)
+    table.add_column("Result", no_wrap=True)
 
     for status, check, result in checks:
         table.add_row(status, check, result)
