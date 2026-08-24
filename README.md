@@ -1,7 +1,7 @@
 # djboost 🚀
 
-[![PyPI version](https://badge.fury.io/py/djboost.svg)](https://pypi.org/project/djboost/)
-[![Python](https://img.shields.io/pypi/pyversions/djboost)](https://pypi.org/project/djboost/)
+[![PyPI version](https://img.shields.io/pypi/v/djboost.svg)](https://pypi.org/project/djboost/)
+[![Python](https://img.shields.io/pypi/pyversions/djboost.svg)](https://pypi.org/project/djboost/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features.**
