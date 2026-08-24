@@ -105,7 +105,7 @@ app.command("features")(features_command)
 
 def version_callback(value: bool):
     if value:
-        typer.echo("djboost version 0.6.2")
+        typer.echo("djboost version 0.6.3")
         raise typer.Exit()
 
 
