@@ -52,16 +52,16 @@ def doctor_command():
         req_content = Path("requirements.txt").read_text(encoding="utf-8").lower()
 
         # Core packages
-        for pkg in [
-            "djangorestframework",
-            "simplejwt",
-            "corsheaders",
-            "drf-spectacular",
+        for pkg, display in [
+            ("djangorestframework", "djangorestframework"),
+            ("simplejwt", "simplejwt"),
+            ("django-cors-headers", "cors-headers"),
+            ("drf-spectacular", "drf-spectacular"),
         ]:
             if pkg in req_content:
-                checks.append(("✅", f"Package: {pkg}", "Installed"))
+                checks.append(("✅", f"Package: {display}", "Installed"))
             else:
-                checks.append(("⚠️", f"Package: {pkg}", "Not found"))
+                checks.append(("⚠️", f"Package: {display}", "Not found"))
 
         # Optional packages
         if "celery" in req_content:
