@@ -1,6 +1,6 @@
 [project]
 name = "djboost"
-version = "0.6.4"
+version = "0.6.5"
 description = "The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features. djboost gives you a production-ready Django foundation in seconds — DRF, JWT, testing, and more. Build incrementally, ship confidently."
 readme = "README.md"
 requires-python = ">=3.10,<4"
