@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.12", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
 
 def generate_gitlab_ci():
     """Generate GitLab CI pipeline."""
-    content = """image: python:3.11-slim
+    content = """image: python:3.12-slim
 
 stages:
   - test

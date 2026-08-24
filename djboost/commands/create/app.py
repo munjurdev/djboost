@@ -90,7 +90,7 @@ def create_app_command(name: str = typer.Argument(..., help="The name of the Dja
     if not Path("apps").exists() or not Path("common").exists():
         print("[yellow]Warning: This project was not created by djboost.[/yellow]")
         print("[yellow]Some features may not work correctly.[/yellow]")
-        print("[cyan]Recommended: Run 'djboost create project' first for best results.[/cyan]")
+        print("[cyan]Recommended: Run 'djboost startproject' first for best results.[/cyan]")
         print()
 
     app_path = Path("apps") / name

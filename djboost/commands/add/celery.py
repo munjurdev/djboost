@@ -6,37 +6,62 @@ from djboost.generators.celery import (
     generate_celery_files,
     update_settings_celery,
 )
-from djboost.generators.dependencies import install_optional_packages, freeze_requirements
+from djboost.generators.dependencies import freeze_requirements
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_add_plan,
+    scan_enabled_features,
+)
 
 
-def add_celery_command():
+def add_celery_command(
+    dry_run: bool = typer.Option(
+        False, "--dry-run", "-n",
+        help="Preview changes without applying them."
+    ),
+    force: bool = typer.Option(
+        False, "--force", "-f",
+        help="Skip conflict checks."
+    ),
+):
     """Add Celery configuration to an existing Django project."""
     check_virtual_environment()
-    
+
     name = get_project_name()
     if not name:
         raise typer.Exit(1)
-    
+
     print(f"\n[bold green]🚀 Adding Celery to project: {name}[/bold green]\n")
-    
-    # Step 1: Install Celery packages
-    install_optional_packages("celery")
-    
-    # Step 2: Generate Celery files
-    print("[cyan]📝 Generating Celery files...[/cyan]")
+
+    # Generate plan through safe engine
+    plan = generate_add_plan("celery", dry_run=dry_run, project_name=name, force=force)
+
+    if plan.errors and not dry_run:
+        for err in plan.errors:
+            print(f"[red]✘ {err}[/red]")
+        raise typer.Exit(1)
+
+    if plan.idempotent:
+        print("[yellow]⚠ Celery is already configured.[/yellow]")
+        raise typer.Exit(0)
+
+    # Execute plan (dry-run or real)
+    record = execute_plan(plan, project_name=name)
+
+    if dry_run:
+        raise typer.Exit(0)
+
+    # Apply the actual file changes (the safe engine handled packages + validation)
+    print("\n[cyan]━━━ Applying Celery configuration ━━━[/cyan]")
+
     generate_celery_files(name)
-    
-    # Step 3: Update settings.py
-    print("[cyan]⚙️  Updating settings.py...[/cyan]")
     update_settings_celery(name)
-    
-    # Step 4: Freeze requirements
     freeze_requirements()
-    
+
     print()
     print("[bold green]✅ Celery added successfully![/bold green]")
     print()
     print("[cyan]Next steps:[/cyan]")
     print("  1. Update [bold].env[/bold] with your Redis credentials")
-    print("  2. Start Celery worker: [bold]celery -A {} worker -l info[/bold]".format(name))
-    print("  3. Start Celery Beat: [bold]celery -A {} beat -l info[/bold]".format(name))
+    print(f"  2. Start Celery worker: [bold]celery -A {name} worker -l info[/bold]")
+    print(f"  3. Start Celery Beat: [bold]celery -A {name} beat -l info[/bold]")

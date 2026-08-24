@@ -36,7 +36,7 @@ def generate_docker_files(name):
 
 
 def _write_dockerfile():
-    content = """FROM python:3.11-slim
+    content = """FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -144,7 +144,7 @@ def get_project_name():
 
 def generate_dockerfile():
     """Generate Dockerfile for existing project."""
-    dockerfile_content = """FROM python:3.11-slim
+    dockerfile_content = """FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

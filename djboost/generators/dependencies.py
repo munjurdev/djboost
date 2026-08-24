@@ -5,31 +5,31 @@ from rich import print
 
 # ── Essential packages (always installed with create project) ────────────────
 ESSENTIAL_PACKAGES = [
-    "djangorestframework>=3.14,<4",
+    "djangorestframework>=3.15,<4",
     "djangorestframework-simplejwt>=5.3,<6",
-    "django-cors-headers>=4.3,<5",
+    "django-cors-headers>=4.3,<6",
     "python-decouple>=3.8,<4",
-    "Pillow>=10.0,<12",
+    "Pillow>=10.0,<13",
     "drf-spectacular>=0.27,<1",
-    "whitenoise>=6.6,<7",
+    "whitenoise>=6.6,<8",
     "pytest>=7.4,<9",
-    "pytest-django>=4.7,<5",
-    "pytest-cov>=4.1,<6",
-    "black>=23.0,<25",
-    "flake8>=6.0,<8",
-    "isort>=5.12,<6",
+    "pytest-django>=4.7,<6",
+    "pytest-cov>=4.1,<7",
+    "black>=23.0,<26",
+    "flake8>=6.0,<9",
+    "isort>=5.12,<7",
 ]
 
 # ── Optional packages (only installed when needed) ───────────────────────────
 OPTIONAL_PACKAGES = {
     "celery": [
-        "celery>=5.3,<6",
+        "celery>=5.4,<6",
         "redis>=5.0,<6",
     ],
     "channels": [
-        "daphne>=4.0,<5",
-        "channels>=4.0,<5",
-        "channels-redis>=4.1,<5",
+        "daphne>=4.1,<5",
+        "channels>=4.1,<5",
+        "channels-redis>=4.2,<5",
     ],
     "postgresql": [
         "psycopg2-binary>=2.9,<3",

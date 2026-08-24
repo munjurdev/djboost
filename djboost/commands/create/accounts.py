@@ -13,7 +13,7 @@ def create_accounts_command():
     if not Path("apps").exists() or not Path("common").exists():
         print("[yellow]Warning: This project was not created by djboost.[/yellow]")
         print("[yellow]Some features may not work correctly.[/yellow]")
-        print("[cyan]Recommended: Run 'djboost create project' first for best results.[/cyan]")
+        print("[cyan]Recommended: Run 'djboost startproject' first for best results.[/cyan]")
         print()
     
     name = get_project_name()

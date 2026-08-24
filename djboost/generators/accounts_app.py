@@ -1444,7 +1444,7 @@ def create_accounts_app(name: str):
     accounts_path = Path("apps") / "accounts"
     if accounts_path.exists():
         print("[red]Error: App 'accounts' already exists at apps/accounts.[/red]")
-        print("[yellow]Use 'djboost create app <name>' for other app names.[/yellow]")
+        print("[yellow]Use 'djboost startapp <name>' for other app names.[/yellow]")
         import typer
         raise typer.Exit(1)
     

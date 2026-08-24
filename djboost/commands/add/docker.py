@@ -8,34 +8,58 @@ from djboost.generators.docker import (
     generate_dockerignore_add,
     add_docker_to_requirements,
 )
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_add_plan,
+    scan_enabled_features,
+)
 
 
-def add_docker_command():
+def add_docker_command(
+    dry_run: bool = typer.Option(
+        False, "--dry-run", "-n",
+        help="Preview changes without applying them."
+    ),
+    force: bool = typer.Option(
+        False, "--force", "-f",
+        help="Skip conflict checks."
+    ),
+):
     """Add Docker configuration to an existing Django project."""
     check_virtual_environment()
-    
+
     name = get_project_name()
     if not name:
         raise typer.Exit(1)
-    
+
     print(f"\n[bold green]🐳 Adding Docker to project: {name}[/bold green]\n")
-    
-    # Step 1: Generate Dockerfile
-    print("[cyan]📝 Generating Dockerfile...[/cyan]")
+
+    # Generate plan through safe engine
+    plan = generate_add_plan("docker", dry_run=dry_run, project_name=name, force=force)
+
+    if plan.errors and not dry_run:
+        for err in plan.errors:
+            print(f"[red]✘ {err}[/red]")
+        raise typer.Exit(1)
+
+    if plan.idempotent:
+        print("[yellow]⚠ Docker is already configured.[/yellow]")
+        raise typer.Exit(0)
+
+    # Execute plan (dry-run or real)
+    record = execute_plan(plan, project_name=name)
+
+    if dry_run:
+        raise typer.Exit(0)
+
+    # Apply the actual file changes
+    print("\n[cyan]━━━ Applying Docker configuration ━━━[/cyan]")
+
     generate_dockerfile()
-    
-    # Step 2: Generate docker-compose.yml
-    print("[cyan]📝 Generating docker-compose.yml...[/cyan]")
     generate_docker_compose_add(name)
-    
-    # Step 3: Generate .dockerignore
-    print("[cyan]📝 Generating .dockerignore...[/cyan]")
     generate_dockerignore_add()
-    
-    # Step 4: Add flower to requirements
-    print("[cyan]📦 Adding flower to requirements...[/cyan]")
     add_docker_to_requirements()
-    
+
     print()
     print("[bold green]✅ Docker added successfully![/bold green]")
     print()

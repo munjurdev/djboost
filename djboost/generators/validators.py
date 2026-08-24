@@ -63,19 +63,19 @@ def check_virtual_environment():
     print("[cyan]Installing packages in virtual environment...[/cyan]")
     
     essential_packages = [
-        "djangorestframework>=3.14,<4",
+        "djangorestframework>=3.15,<4",
         "djangorestframework-simplejwt>=5.3,<6",
-        "django-cors-headers>=4.3,<5",
+        "django-cors-headers>=4.3,<6",
         "python-decouple>=3.8,<4",
-        "Pillow>=10.0,<12",
+        "Pillow>=10.0,<13",
         "drf-spectacular>=0.27,<1",
-        "whitenoise>=6.6,<7",
+        "whitenoise>=6.6,<8",
         "pytest>=7.4,<9",
-        "pytest-django>=4.7,<5",
-        "pytest-cov>=4.1,<6",
-        "black>=23.0,<25",
-        "flake8>=6.0,<8",
-        "isort>=5.12,<6",
+        "pytest-django>=4.7,<6",
+        "pytest-cov>=4.1,<7",
+        "black>=23.0,<26",
+        "flake8>=6.0,<9",
+        "isort>=5.12,<7",
     ]
     
     total = len(essential_packages)
