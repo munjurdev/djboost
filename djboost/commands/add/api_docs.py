@@ -1,12 +1,13 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.api_docs import (
-    get_project_name,
-    add_spectacular_to_installed_apps,
     add_spectacular_settings,
-    generate_api_docs_urls,
+    add_spectacular_to_installed_apps,
     add_spectacular_to_requirements,
+    generate_api_docs_urls,
+    get_project_name,
 )
 from djboost.generators.safe_engine import (
     execute_plan,
@@ -16,18 +17,9 @@ from djboost.generators.safe_engine import (
 
 
 def add_api_docs_command(
-    provider: str = typer.Argument(
-        "swagger",
-        help="API documentation provider (swagger, redoc, or both)"
-    ),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", "-n",
-        help="Preview changes without applying them."
-    ),
-    force: bool = typer.Option(
-        False, "--force", "-f",
-        help="Skip conflict checks."
-    ),
+    provider: str = typer.Argument("swagger", help="API documentation provider (swagger, redoc, or both)"),
+    dry_run: bool = typer.Option(False, "--dry-run", "-n", help="Preview changes without applying them."),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip conflict checks."),
 ):
     """Add API documentation (Swagger/ReDoc) to an existing Django project."""
     check_virtual_environment()

@@ -1,6 +1,8 @@
 """APScheduler generator — lightweight in-process job scheduler."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

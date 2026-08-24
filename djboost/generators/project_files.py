@@ -90,7 +90,7 @@ def custom_exception_handler(exc, context):
 
 def create_common_files():
     """Create common/ package with responses.py, pagination.py, exceptions.py."""
-    
+
     # common/responses.py
     responses_content = '''from rest_framework.response import Response
 from rest_framework import status
@@ -335,5 +335,3 @@ urlpatterns = [
 """
     with open(f"{name}/urls.py", "w", encoding="utf-8") as f:
         f.write(content)
-
-

@@ -1,10 +1,8 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
-from djboost.generators.kubernetes import (
-    get_project_name,
-    generate_k8s_manifests,
-)
+from djboost.generators.kubernetes import generate_k8s_manifests, get_project_name
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 

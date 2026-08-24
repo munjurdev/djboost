@@ -10,6 +10,7 @@ Flow for every add/remove:
   6. Record reversible change set
   7. Auto-rollback on validation failure
 """
+
 from __future__ import annotations
 
 import json
@@ -28,8 +29,8 @@ from rich.console import Console
 from rich.table import Table
 
 from djboost.generators.features import (
-    Feature,
     FEATURES,
+    Feature,
     detect_conflicts,
     detect_reverse_dependencies,
     get_feature,
@@ -37,12 +38,13 @@ from djboost.generators.features import (
     scan_enabled_features,
 )
 
-
 # ── Change tracking ───────────────────────────────────────────────────────────
+
 
 @dataclass
 class FileChange:
     """A single file change to be applied."""
+
     path: str
     action: str  # "create", "modify", "delete", "backup"
     content: Optional[str] = None  # New content (for create/modify)
@@ -52,6 +54,7 @@ class FileChange:
 @dataclass
 class ChangePlan:
     """A complete plan for an add or remove operation."""
+
     feature_name: str
     operation: str  # "add" or "remove"
     dry_run: bool
@@ -71,6 +74,7 @@ class ChangePlan:
 @dataclass
 class ChangeRecord:
     """A recorded change set for rollback."""
+
     feature_name: str
     operation: str
     timestamp: str
@@ -83,6 +87,7 @@ class ChangeRecord:
 
 
 # ── Plan generation ───────────────────────────────────────────────────────────
+
 
 def generate_add_plan(
     feature_name: str,
@@ -126,10 +131,7 @@ def generate_add_plan(
     # 4. Conflict detection
     plan.conflicts = detect_conflicts(feature_name, enabled)
     if plan.conflicts and not force:
-        plan.errors.append(
-            f"Conflicts detected: {', '.join(plan.conflicts)}. "
-            "Use --force to override."
-        )
+        plan.errors.append(f"Conflicts detected: {', '.join(plan.conflicts)}. " "Use --force to override.")
         return plan
 
     # 5. Check dependencies are satisfied
@@ -139,9 +141,7 @@ def generate_add_plan(
             dep_feat = get_feature(dep)
             if dep_feat:
                 plan.packages_to_install.extend(dep_feat.required_packages)
-                plan.files_to_change.extend(
-                    _plan_feature_files(dep_feat, project_name, "add")
-                )
+                plan.files_to_change.extend(_plan_feature_files(dep_feat, project_name, "add"))
 
     # 6. Plan the feature itself
     plan.packages_to_install.extend(feat.required_packages)
@@ -200,6 +200,7 @@ def generate_remove_plan(
 
 # ── File planning ─────────────────────────────────────────────────────────────
 
+
 def _plan_feature_files(
     feat: Feature,
     project_name: Optional[str],
@@ -212,39 +213,47 @@ def _plan_feature_files(
         for file_pattern in feat.files_created:
             path = _resolve_pattern(file_pattern, project_name)
             if not path.exists():
-                changes.append(FileChange(
-                    path=str(path),
-                    action="create",
-                ))
+                changes.append(
+                    FileChange(
+                        path=str(path),
+                        action="create",
+                    )
+                )
             # If exists, it's idempotent — no change needed
 
         for file_pattern in feat.files_modified:
             path = _resolve_pattern(file_pattern, project_name)
             if path.exists():
-                changes.append(FileChange(
-                    path=str(path),
-                    action="modify",
-                    backup_path=f".djboost_backup/{path}.bak",
-                ))
+                changes.append(
+                    FileChange(
+                        path=str(path),
+                        action="modify",
+                        backup_path=f".djboost_backup/{path}.bak",
+                    )
+                )
 
     elif operation == "remove":
         for file_pattern in feat.files_created:
             path = _resolve_pattern(file_pattern, project_name)
             if path.exists():
-                changes.append(FileChange(
-                    path=str(path),
-                    action="delete",
-                    backup_path=f".djboost_backup/{path}.bak",
-                ))
+                changes.append(
+                    FileChange(
+                        path=str(path),
+                        action="delete",
+                        backup_path=f".djboost_backup/{path}.bak",
+                    )
+                )
 
         for file_pattern in feat.files_modified:
             path = _resolve_pattern(file_pattern, project_name)
             if path.exists():
-                changes.append(FileChange(
-                    path=str(path),
-                    action="modify",
-                    backup_path=f".djboost_backup/{path}.bak",
-                ))
+                changes.append(
+                    FileChange(
+                        path=str(path),
+                        action="modify",
+                        backup_path=f".djboost_backup/{path}.bak",
+                    )
+                )
 
     return changes
 
@@ -257,6 +266,7 @@ def _resolve_pattern(pattern: str, project_name: Optional[str] = None) -> Path:
 
 
 # ── Plan execution ────────────────────────────────────────────────────────────
+
 
 def execute_plan(
     plan: ChangePlan,
@@ -360,6 +370,7 @@ def execute_plan(
 
 # ── Apply helpers ─────────────────────────────────────────────────────────────
 
+
 def _apply_create(change: FileChange, project_name: Optional[str] = None):
     """Create a new file."""
     path = Path(change.path)
@@ -398,12 +409,14 @@ def _apply_modify(
 
 # ── Package management ────────────────────────────────────────────────────────
 
+
 def _install_packages(packages: List[str]):
     """Install pip packages."""
     for pkg in packages:
         result = subprocess.run(
             [sys.executable, "-m", "pip", "install", pkg, "-q"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         if result.returncode == 0:
             print(f"  [green]✔ Installed {pkg}[/green]")
@@ -417,7 +430,8 @@ def _uninstall_packages(packages: List[str]):
         pkg_name = pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
         result = subprocess.run(
             [sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         if result.returncode == 0:
             print(f"  [green]✔ Uninstalled {pkg_name}[/green]")
@@ -427,6 +441,7 @@ def _uninstall_packages(packages: List[str]):
 
 # ── Validation ────────────────────────────────────────────────────────────────
 
+
 def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[str]]:
     """Run Django system checks to validate the project."""
     errors = []
@@ -434,21 +449,32 @@ def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[st
     # Try running Django check
     result = subprocess.run(
         [sys.executable, "manage.py", "check", "--deploy", "--fail-level", "WARNING"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         # --deploy might fail for dev config, try without it
         result2 = subprocess.run(
             [sys.executable, "manage.py", "check"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
         if result2.returncode != 0:
             errors.append(result2.stderr)
 
     # Try importing the project
     result3 = subprocess.run(
-        [sys.executable, "-c", f"import django; django.setup(); import {project_name}.settings" if project_name else "import django; django.setup()"],
-        capture_output=True, text=True,
+        [
+            sys.executable,
+            "-c",
+            (
+                f"import django; django.setup(); import {project_name}.settings"
+                if project_name
+                else "import django; django.setup()"
+            ),
+        ],
+        capture_output=True,
+        text=True,
     )
     if result3.returncode != 0:
         errors.append(f"Import check failed: {result3.stderr}")
@@ -457,6 +483,7 @@ def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[st
 
 
 # ── Rollback ──────────────────────────────────────────────────────────────────
+
 
 def _rollback(record: ChangeRecord):
     """Rollback a completed change using the change record."""
@@ -483,7 +510,8 @@ def _rollback(record: ChangeRecord):
     for pkg in record.packages_uninstalled:
         subprocess.run(
             [sys.executable, "-m", "pip", "install", pkg, "-q"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
 
     # Uninstall installed packages
@@ -491,7 +519,8 @@ def _rollback(record: ChangeRecord):
         pkg_name = pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
         subprocess.run(
             [sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
 
     # Clean up backup directory if empty
@@ -501,6 +530,7 @@ def _rollback(record: ChangeRecord):
 
 
 # ── Change record persistence ─────────────────────────────────────────────────
+
 
 def _save_change_record(record: ChangeRecord):
     """Save a change record to .djboost_backup/changes.json."""
@@ -541,6 +571,7 @@ def load_change_history() -> List[dict]:
 
 
 # ── Plan display ──────────────────────────────────────────────────────────────
+
 
 def _print_plan(plan: ChangePlan):
     """Pretty-print the change plan."""

@@ -1,6 +1,8 @@
 """Security Headers generator — add CSP, HSTS, and security middleware."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

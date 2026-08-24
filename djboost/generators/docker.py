@@ -1,5 +1,7 @@
 """Docker generators — create project docker + add docker — all in one file."""
+
 from pathlib import Path
+
 from rich import print
 
 
@@ -25,9 +27,10 @@ def _check_installed_features():
 
 # ── CREATE PROJECT DOCKER ─────────────────────────────────────────────────────
 
+
 def generate_docker_files(name):
     """Generate Dockerfile, docker-compose.yml, and .dockerignore.
-    
+
     Only generates services that match the project's installed features.
     """
     _write_dockerfile()
@@ -126,18 +129,20 @@ htmlcov/
 
 # ── ADD DOCKER ────────────────────────────────────────────────────────────────
 
+
 def get_project_name():
     """Extract project name from manage.py."""
     import re
+
     if not Path("manage.py").exists():
         print("[red]Error: manage.py not found. Are you in the project root?[/red]")
         return None
-    
+
     content = Path("manage.py").read_text(encoding="utf-8")
     match = re.search(r"['\"]DJANGO_SETTINGS_MODULE['\"],\s*['\"]([^.]+)\.settings['\"]", content)
     if match:
         return match.group(1)
-    
+
     print("[red]Error: Could not determine project name from manage.py[/red]")
     return None
 
@@ -165,7 +170,7 @@ COPY . /app/
     if dockerfile_path.exists():
         print("[yellow]Warning: Dockerfile already exists. Skipping.[/yellow]")
         return False
-    
+
     dockerfile_path.write_text(dockerfile_content, encoding="utf-8")
     print("[green]✔ Created Dockerfile[/green]")
     return True
@@ -174,13 +179,13 @@ COPY . /app/
 def generate_docker_compose_add(name):
     """Generate docker-compose.yml — only includes services for installed features."""
     features = _check_installed_features()
-    
+
     lines = []
     lines.append("version: '3.8'")
     lines.append("")
     lines.append("services:")
     lines.append("")
-    
+
     # --- db (always) ---
     lines.append("  db:")
     lines.append("    image: postgres:15-alpine")
@@ -194,7 +199,7 @@ def generate_docker_compose_add(name):
     lines.append("    ports:")
     lines.append('      - "5432:5432"')
     lines.append("")
-    
+
     # --- redis (always) ---
     lines.append("  redis:")
     lines.append("    image: redis:7-alpine")
@@ -202,13 +207,13 @@ def generate_docker_compose_add(name):
     lines.append("    ports:")
     lines.append('      - "6379:6379"')
     lines.append("")
-    
+
     # --- web (always) ---
     if features["daphne"]:
         web_command = "daphne -b 0.0.0.0 -p 8000 " + name + ".asgi:application"
     else:
         web_command = "gunicorn " + name + ".wsgi:application --bind 0.0.0.0:8000 --workers 3"
-    
+
     lines.append("  web:")
     lines.append("    build: .")
     lines.append("    restart: unless-stopped")
@@ -229,7 +234,7 @@ def generate_docker_compose_add(name):
     lines.append("      - db")
     lines.append("      - redis")
     lines.append("")
-    
+
     # --- celery (only if installed) ---
     if features["celery"]:
         lines.append("  celery:")
@@ -249,7 +254,7 @@ def generate_docker_compose_add(name):
         lines.append("      - db")
         lines.append("      - redis")
         lines.append("")
-        
+
         lines.append("  celery-beat:")
         lines.append("    build: .")
         lines.append("    restart: unless-stopped")
@@ -267,7 +272,7 @@ def generate_docker_compose_add(name):
         lines.append("      - db")
         lines.append("      - redis")
         lines.append("")
-        
+
         lines.append("  flower:")
         lines.append("    build: .")
         lines.append("    restart: unless-stopped")
@@ -287,27 +292,27 @@ def generate_docker_compose_add(name):
         lines.append("      - db")
         lines.append("      - redis")
         lines.append("")
-    
+
     lines.append("volumes:")
     lines.append("  postgres_data:")
     lines.append("")
-    
+
     compose_content = "\n".join(lines)
-    
+
     compose_path = Path("docker-compose.yml")
     if compose_path.exists():
         print("[yellow]Warning: docker-compose.yml already exists. Skipping.[/yellow]")
         return False
-    
+
     compose_path.write_text(compose_content, encoding="utf-8")
     print("[green]✔ Created docker-compose.yml[/green]")
-    
+
     # Show what services were included
     included = ["web", "db", "redis"]
     if features["celery"]:
         included.extend(["celery", "celery-beat", "flower"])
     print("[cyan]   Services: " + ", ".join(included) + "[/cyan]")
-    
+
     return True
 
 
@@ -331,7 +336,7 @@ htmlcov/
     if dockerignore_path.exists():
         print("[yellow]Warning: .dockerignore already exists. Skipping.[/yellow]")
         return False
-    
+
     dockerignore_path.write_text(dockerignore_content, encoding="utf-8")
     print("[green]✔ Created .dockerignore[/green]")
     return True
@@ -341,19 +346,19 @@ def add_docker_to_requirements():
     """Add flower to requirements.txt if Celery is installed."""
     features = _check_installed_features()
     requirements_path = Path("requirements.txt")
-    
+
     existing_packages = ""
     if requirements_path.exists():
         existing_packages = requirements_path.read_text(encoding="utf-8").lower()
-    
+
     packages_to_add = []
-    
+
     if features["celery"] and "flower" not in existing_packages:
         packages_to_add.append("flower>=2.0,<3")
-    
+
     if not features["daphne"] and "gunicorn" not in existing_packages:
         packages_to_add.append("gunicorn>=21.2,<23")
-    
+
     if packages_to_add:
         with open(requirements_path, "a", encoding="utf-8") as f:
             for package in packages_to_add:

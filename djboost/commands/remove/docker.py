@@ -1,12 +1,12 @@
 """djboost remove docker — remove Docker configuration."""
-import typer
+
 from pathlib import Path
+
+import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_remove_plan,
-)
+from djboost.generators.safe_engine import execute_plan, generate_remove_plan
 
 
 def remove_docker_command(

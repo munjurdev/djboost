@@ -1,6 +1,8 @@
 """Sentry generator — add Sentry error tracking to a Django project."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

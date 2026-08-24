@@ -1,6 +1,8 @@
 """Structured Logging generator — add structlog with JSON output."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

@@ -1,4 +1,5 @@
 import typer
+
 from djboost.generator import create_project
 
 

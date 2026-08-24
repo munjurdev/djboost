@@ -2,9 +2,11 @@
 Complete accounts app generator — creates a production-ready accounts module
 with Custom User, OTP auth, social login, admin roles, and profile management.
 """
+
 import os
 import re
 from pathlib import Path
+
 from rich import print
 
 
@@ -13,12 +15,12 @@ def get_project_name():
     if not Path("manage.py").exists():
         print("[red]Error: manage.py not found. Are you in the project root?[/red]")
         return None
-    
+
     content = Path("manage.py").read_text(encoding="utf-8")
     match = re.search(r"['\"]DJANGO_SETTINGS_MODULE['\"],\s*['\"]([^.]+)\.settings['\"]", content)
     if match:
         return match.group(1)
-    
+
     print("[red]Error: Could not determine project name from manage.py[/red]")
     return None
 
@@ -557,9 +559,9 @@ def send_admin_restored_email_task(user_id):
 
 def create_accounts_views():
     """Create accounts/views/ directory with auth, password, profile views."""
-    
+
     # views/__init__.py
-    init_content = '''from apps.accounts.views.auth import (
+    init_content = """from apps.accounts.views.auth import (
     SignUpView,
     SignInView,
     VerifyEmailView,
@@ -574,7 +576,7 @@ from apps.accounts.views.password import (
     ChangePasswordView,
 )
 from apps.accounts.views.profile import MyAccountView
-'''
+"""
     Path("apps/accounts/views/__init__.py").write_text(init_content, encoding="utf-8")
 
     # views/auth.py
@@ -1089,9 +1091,9 @@ class MyAccountView(APIView):
 
 def create_accounts_serializers():
     """Create accounts/serializers/ directory with auth, password, profile serializers."""
-    
+
     # serializers/__init__.py
-    init_content = '''from apps.accounts.serializers.auth import (
+    init_content = """from apps.accounts.serializers.auth import (
     SignUpSerializer,
     SignInSerializer,
     VerifyEmailSerializer,
@@ -1105,11 +1107,11 @@ from apps.accounts.serializers.password import (
     ChangePasswordSerializer,
 )
 from apps.accounts.serializers.profile import UserProfileSerializer
-'''
+"""
     Path("apps/accounts/serializers/__init__.py").write_text(init_content, encoding="utf-8")
 
     # serializers/auth.py
-    auth_content = '''from rest_framework import serializers
+    auth_content = """from rest_framework import serializers
 
 from apps.accounts.models import User
 
@@ -1175,11 +1177,11 @@ class SocialLoginSerializer(serializers.Serializer):
     
     provider = serializers.ChoiceField(choices=PROVIDER_CHOICES)
     access_token = serializers.CharField()
-'''
+"""
     Path("apps/accounts/serializers/auth.py").write_text(auth_content, encoding="utf-8")
 
     # serializers/password.py
-    password_content = '''from rest_framework import serializers
+    password_content = """from rest_framework import serializers
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
@@ -1199,11 +1201,11 @@ class ResetPasswordSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField(min_length=8)
-'''
+"""
     Path("apps/accounts/serializers/password.py").write_text(password_content, encoding="utf-8")
 
     # serializers/profile.py
-    profile_content = '''from rest_framework import serializers
+    profile_content = """from rest_framework import serializers
 
 from apps.accounts.models import User
 
@@ -1237,7 +1239,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.avatar.url)
             return obj.avatar.url
         return None
-'''
+"""
     Path("apps/accounts/serializers/profile.py").write_text(profile_content, encoding="utf-8")
 
     print("[green]✔ Created apps/accounts/serializers/[/green]")
@@ -1245,7 +1247,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 def create_accounts_urls():
     """Create accounts/urls.py with all auth endpoints."""
-    content = '''from django.urls import path
+    content = """from django.urls import path
 
 from apps.accounts.views.auth import (
     SignUpView,
@@ -1278,7 +1280,7 @@ urlpatterns = [
     path("/change-password", ChangePasswordView.as_view(), name="auth-change-password"),
     path("/my-account", MyAccountView.as_view(), name="auth-my-account"),
 ]
-'''
+"""
     path = Path("apps/accounts/urls.py")
     path.write_text(content, encoding="utf-8")
     print("[green]✔ Created apps/accounts/urls.py[/green]")
@@ -1286,14 +1288,14 @@ urlpatterns = [
 
 def create_accounts_apps():
     """Create accounts/apps.py."""
-    content = '''from django.apps import AppConfig
+    content = """from django.apps import AppConfig
 
 
 class AccountsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.accounts"
     verbose_name = "Accounts"
-'''
+"""
     path = Path("apps/accounts/apps.py")
     path.write_text(content, encoding="utf-8")
     print("[green]✔ Created apps/accounts/apps.py[/green]")
@@ -1301,7 +1303,7 @@ class AccountsConfig(AppConfig):
 
 def create_accounts_admin():
     """Create accounts/admin.py."""
-    content = '''from django.contrib import admin
+    content = """from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from apps.accounts.models import AdminSectionPermission, EmailOTP, User
@@ -1342,7 +1344,7 @@ class EmailOTPAdmin(admin.ModelAdmin):
 class AdminSectionPermissionAdmin(admin.ModelAdmin):
     list_display = ["section", "access"]
     list_filter = ["section", "access"]
-'''
+"""
     path = Path("apps/accounts/admin.py")
     path.write_text(content, encoding="utf-8")
     print("[green]✔ Created apps/accounts/admin.py[/green]")
@@ -1350,10 +1352,10 @@ class AdminSectionPermissionAdmin(admin.ModelAdmin):
 
 def create_accounts_tests():
     """Create accounts/tests.py - fresh default Django test file."""
-    content = '''from django.test import TestCase
+    content = """from django.test import TestCase
 
 # Create your tests here.
-'''
+"""
     path = Path("apps/accounts/tests.py")
     path.write_text(content, encoding="utf-8")
     print("[green]✔ Created apps/accounts/tests.py[/green]")
@@ -1379,29 +1381,29 @@ def update_project_settings(name: str):
     if not settings_path.exists():
         print(f"[red]Error: {name}/settings.py not found.[/red]")
         return False
-    
+
     content = settings_path.read_text(encoding="utf-8")
-    
+
     # Check if already installed
     if "apps.accounts" in content:
         print("[yellow]Warning: apps.accounts already in INSTALLED_APPS. Skipping.[/yellow]")
         return True
-    
+
     # Add to INSTALLED_APPS
     content = content.replace(
         "'rest_framework_simplejwt',",
-        "'rest_framework_simplejwt',\n    'rest_framework_simplejwt.token_blacklist',"
+        "'rest_framework_simplejwt',\n    'rest_framework_simplejwt.token_blacklist',",
     )
-    
+
     content = content.replace(
         "'rest_framework_simplejwt.token_blacklist',",
-        "'rest_framework_simplejwt.token_blacklist',\n    'apps.accounts',"
+        "'rest_framework_simplejwt.token_blacklist',\n    'apps.accounts',",
     )
-    
+
     # Add AUTH_USER_MODEL if not present
     if "AUTH_USER_MODEL" not in content:
         content += "\n\n# Custom User Model\nAUTH_USER_MODEL = 'accounts.User'\n"
-    
+
     settings_path.write_text(content, encoding="utf-8")
     print(f"[green]✔ Added accounts app to {name}/settings.py[/green]")
     return True
@@ -1413,26 +1415,23 @@ def update_project_urls(name: str):
     if not urls_path.exists():
         print(f"[red]Error: {name}/urls.py not found.[/red]")
         return False
-    
+
     content = urls_path.read_text(encoding="utf-8")
-    
+
     # Check if already configured
     if "apps.accounts.urls" in content:
         print("[yellow]Warning: accounts URLs already configured. Skipping.[/yellow]")
         return True
-    
+
     # Add import
-    content = content.replace(
-        "from django.urls import path",
-        "from django.urls import path, include"
-    )
-    
+    content = content.replace("from django.urls import path", "from django.urls import path, include")
+
     # Add URL pattern
     content = content.replace(
         "urlpatterns = [",
-        'urlpatterns = [\n    path("api/auth", include("apps.accounts.urls")),'
+        'urlpatterns = [\n    path("api/auth", include("apps.accounts.urls")),',
     )
-    
+
     urls_path.write_text(content, encoding="utf-8")
     print(f"[green]✔ Added accounts URLs to {name}/urls.py[/green]")
     return True
@@ -1446,53 +1445,54 @@ def create_accounts_app(name: str):
         print("[red]Error: App 'accounts' already exists at apps/accounts.[/red]")
         print("[yellow]Use 'djboost startapp <name>' for other app names.[/yellow]")
         import typer
+
         raise typer.Exit(1)
-    
+
     print(f"\n[bold green]🚀 Creating accounts app for: {name}[/bold green]\n")
-    
+
     # Create directories
     print("[cyan]📁 Creating directory structure...[/cyan]")
     create_accounts_directories()
-    
+
     # Create files
     print("[cyan]📝 Creating models...[/cyan]")
     create_accounts_models()
-    
+
     print("[cyan]🔐 Creating permissions...[/cyan]")
     create_accounts_permissions()
-    
+
     print("[cyan]📋 Creating Celery tasks...[/cyan]")
     create_accounts_tasks()
-    
+
     print("[cyan]👁️  Creating views...[/cyan]")
     create_accounts_views()
-    
+
     print("[cyan]📦 Creating serializers...[/cyan]")
     create_accounts_serializers()
-    
+
     print("[cyan]🔗 Creating URLs...[/cyan]")
     create_accounts_urls()
-    
+
     print("[cyan]⚙️  Creating app config...[/cyan]")
     create_accounts_apps()
-    
+
     print("[cyan]🛡️  Creating admin...[/cyan]")
     create_accounts_admin()
-    
+
     print("[cyan]🧪 Creating tests...[/cyan]")
     create_accounts_tests()
-    
+
     print("[cyan]📄 Creating init files...[/cyan]")
     create_accounts_init()
     create_accounts_migrations_init()
-    
+
     # Update project files
     print("[cyan]⚙️  Updating project settings...[/cyan]")
     update_project_settings(name)
-    
+
     print("[cyan]🔗 Updating project URLs...[/cyan]")
     update_project_urls(name)
-    
+
     print()
     print("[bold green]✅ Accounts app created successfully![/bold green]")
     print()

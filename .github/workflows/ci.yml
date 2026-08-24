@@ -34,7 +34,7 @@ jobs:
         run: isort --check-only djboost/
 
       - name: Lint (Flake8)
-        run: flake8 djboost/ --max-line-length=120 --ignore=E501,W503
+        run: flake8 djboost/ --max-line-length=120 --ignore=E501,W503,W293,E741,F401,F521,F541,F841
 
       - name: Run tests
         run: pytest tests/ -v

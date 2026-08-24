@@ -1,12 +1,13 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.graphql import (
-    get_project_name,
-    generate_graphql_schema,
-    add_graphql_urls,
     add_graphql_settings,
     add_graphql_to_requirements,
+    add_graphql_urls,
+    generate_graphql_schema,
+    get_project_name,
 )
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 

@@ -1,24 +1,17 @@
 import os
 import shutil
+
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_remove_plan,
-)
+from djboost.generators.safe_engine import execute_plan, generate_remove_plan
 
 
 def remove_cicd_command(
     provider: str = typer.Argument(..., help="The CI/CD provider to remove (github or gitlab)"),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", "-n",
-        help="Preview changes without applying them."
-    ),
-    force: bool = typer.Option(
-        False, "--force", "-f",
-        help="Skip reverse dependency checks."
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", "-n", help="Preview changes without applying them."),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip reverse dependency checks."),
 ):
     """Remove CI/CD pipeline from the project."""
     check_virtual_environment()

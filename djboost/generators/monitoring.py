@@ -1,6 +1,8 @@
 """OpenTelemetry generator — add distributed tracing and metrics."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 
@@ -111,7 +113,9 @@ def add_monitoring_to_wsgi(name: str):
 
     content = content.replace(
         "os.environ.setdefault('DJANGO_SETTINGS_MODULE',",
-        "from {name}.telemetry import init_telemetry\ninit_telemetry()\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE',".format(name=name)
+        "from {name}.telemetry import init_telemetry\ninit_telemetry()\n\nos.environ.setdefault('DJANGO_SETTINGS_MODULE',".format(
+            name=name
+        ),
     )
 
     wsgi_path.write_text(content, encoding="utf-8")
@@ -134,7 +138,11 @@ def add_monitoring_to_requirements():
         "opentelemetry-instrumentation-requests>=0.46b0,<1",
     ]
 
-    to_add = [p for p in packages if p.split(">=")[0].split("<")[0].strip().lower().replace("-", "_") not in existing.replace("-", "_")]
+    to_add = [
+        p
+        for p in packages
+        if p.split(">=")[0].split("<")[0].strip().lower().replace("-", "_") not in existing.replace("-", "_")
+    ]
 
     if to_add:
         with open(requirements_path, "a", encoding="utf-8") as f:

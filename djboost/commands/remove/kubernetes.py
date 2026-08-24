@@ -1,7 +1,9 @@
-import typer
 import shutil
 from pathlib import Path
+
+import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_remove_plan
 

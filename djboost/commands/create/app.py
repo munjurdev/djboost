@@ -1,9 +1,11 @@
 import re
-import sys
 import subprocess
+import sys
 from pathlib import Path
+
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment, validate_name
 from djboost.generators.app_structure import generate_standard_app
 
@@ -40,7 +42,7 @@ def update_settings(project_name: str, app_name: str):
             r"(INSTALLED_APPS\s*=\s*\[.*?)(\n?\])",
             rf"\1\n    {app_string}\2",
             content,
-            flags=re.DOTALL
+            flags=re.DOTALL,
         )
         settings_path.write_text(content, encoding="utf-8")
         print(f"[green]✔ Added '{app_string}' to INSTALLED_APPS[/green]")
@@ -62,15 +64,12 @@ def update_urls(project_name: str, app_name: str):
 
     # Ensure 'include' is imported
     if "include" not in content:
-        content = content.replace(
-            "from django.urls import path",
-            "from django.urls import path, include"
-        )
+        content = content.replace("from django.urls import path", "from django.urls import path, include")
 
     if "urlpatterns = [" in content:
         content = content.replace(
             "urlpatterns = [",
-            f"urlpatterns = [\n    path('api/{app_name}/', include('apps.{app_name}.urls')),"
+            f"urlpatterns = [\n    path('api/{app_name}/', include('apps.{app_name}.urls')),",
         )
         urls_path.write_text(content, encoding="utf-8")
         print(f"[green]✔ Mapped /api/{app_name}/ in {project_name}/urls.py[/green]")
@@ -108,7 +107,7 @@ def create_app_command(name: str = typer.Argument(..., help="The name of the Dja
         project_name = get_project_name()
         update_settings(project_name, name)
         update_urls(project_name, name)
-        
+
         print()
         print("[bold green]✅ Standard app created successfully![/bold green]")
         print()

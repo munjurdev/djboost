@@ -1,7 +1,7 @@
-import sys
 import subprocess
-from rich import print
+import sys
 
+from rich import print
 
 # ── Essential packages (always installed with create project) ────────────────
 ESSENTIAL_PACKAGES = [
@@ -41,18 +41,20 @@ def install_dependencies(packages=None):
     """Install a list of packages. Defaults to ESSENTIAL_PACKAGES."""
     if packages is None:
         packages = ESSENTIAL_PACKAGES
-    
+
     total = len(packages)
     print("[cyan]📦 Installing dependencies...[/cyan]")
     for i, package in enumerate(packages, 1):
         print(f"[cyan]   [{i}/{total}] {package}[/cyan]")
         result = subprocess.run(
             [sys.executable, "-m", "pip", "install", package, "-q"],
-            capture_output=True, text=True
+            capture_output=True,
+            text=True,
         )
         if result.returncode != 0:
             print(f"[red]Error installing {package}:\n{result.stderr}[/red]")
             import typer
+
             raise typer.Exit(1)
     print("[green]✔ All dependencies installed.[/green]")
 
@@ -62,7 +64,7 @@ def install_optional_packages(category: str):
     if category not in OPTIONAL_PACKAGES:
         print(f"[red]Unknown category: {category}. Available: {list(OPTIONAL_PACKAGES.keys())}[/red]")
         return False
-    
+
     packages = OPTIONAL_PACKAGES[category]
     print(f"\n[cyan]📦 Installing {category} packages...[/cyan]")
     install_dependencies(packages)
@@ -73,7 +75,8 @@ def freeze_requirements():
     print("[cyan]📄 Freezing requirements...[/cyan]")
     result = subprocess.run(
         [sys.executable, "-m", "pip", "freeze", "--local"],
-        capture_output=True, text=True
+        capture_output=True,
+        text=True,
     )
     with open("requirements.txt", "w", encoding="utf-8") as f:
         f.write(result.stdout)
@@ -88,7 +91,8 @@ def uninstall_packages(packages):
         print(f"[cyan]   Uninstalling {pkg_name}...[/cyan]")
         result = subprocess.run(
             [sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"],
-            capture_output=True, text=True
+            capture_output=True,
+            text=True,
         )
         if result.returncode == 0:
             print(f"[green]   ✔ Uninstalled {pkg_name}[/green]")
@@ -101,7 +105,7 @@ def uninstall_optional_packages(category: str):
     if category not in OPTIONAL_PACKAGES:
         print(f"[red]Unknown category: {category}. Available: {list(OPTIONAL_PACKAGES.keys())}[/red]")
         return False
-    
+
     packages = OPTIONAL_PACKAGES[category]
     uninstall_packages(packages)
     return True

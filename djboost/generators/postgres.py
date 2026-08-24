@@ -1,6 +1,8 @@
 """PostgreSQL generator — add PostgreSQL database backend to a Django project."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

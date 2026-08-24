@@ -11,6 +11,7 @@ Each feature declares:
   - env_vars: environment variables this feature adds
   - settings_keys: settings.py keys this feature adds
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -51,11 +52,9 @@ class Feature:
 # ── Feature Registry ──────────────────────────────────────────────────────────
 
 FEATURES: Dict[str, Feature] = {
-
     # ══════════════════════════════════════════════════════════════════════════
     # CORE FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "celery": Feature(
         name="celery",
         display_name="Celery",
@@ -72,7 +71,11 @@ FEATURES: Dict[str, Feature] = {
             "{project}/settings.py",
             "requirements.txt",
         ],
-        settings_keys=["CELERY_BROKER_URL", "CELERY_RESULT_BACKEND", "CELERY_BEAT_SCHEDULE"],
+        settings_keys=[
+            "CELERY_BROKER_URL",
+            "CELERY_RESULT_BACKEND",
+            "CELERY_BEAT_SCHEDULE",
+        ],
         env_vars=["CELERY_BROKER_URL", "CELERY_RESULT_BACKEND"],
         detection_files=["{project}/celery.py"],
         detection_packages=["celery", "redis"],
@@ -111,11 +114,9 @@ FEATURES: Dict[str, Feature] = {
         detection_packages=["django-apscheduler"],
         detection_settings=["APSCHEDULER_DATETIME_FORMAT"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # INFRASTRUCTURE FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "docker": Feature(
         name="docker",
         display_name="Docker",
@@ -150,11 +151,9 @@ FEATURES: Dict[str, Feature] = {
         ],
         detection_files=["k8s/deployment.yaml"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # DATABASE & CACHING FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "postgres": Feature(
         name="postgres",
         display_name="PostgreSQL",
@@ -168,7 +167,14 @@ FEATURES: Dict[str, Feature] = {
             "requirements.txt",
         ],
         settings_keys=["DATABASES"],
-        env_vars=["DB_ENGINE", "DB_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT"],
+        env_vars=[
+            "DB_ENGINE",
+            "DB_NAME",
+            "DB_USER",
+            "DB_PASSWORD",
+            "DB_HOST",
+            "DB_PORT",
+        ],
         detection_packages=["psycopg2-binary"],
     ),
     "redis-cache": Feature(
@@ -187,11 +193,9 @@ FEATURES: Dict[str, Feature] = {
         detection_packages=["django-redis"],
         detection_settings=["CACHES"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # API FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "api-docs": Feature(
         name="api-docs",
         display_name="API Documentation",
@@ -229,11 +233,9 @@ FEATURES: Dict[str, Feature] = {
         detection_packages=["strawberry-graphql"],
         detection_settings=["STRAWBERRY"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # REALTIME FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "channels": Feature(
         name="channels",
         display_name="Django Channels",
@@ -256,11 +258,9 @@ FEATURES: Dict[str, Feature] = {
         detection_packages=["channels", "daphne"],
         detection_settings=["ASGI_APPLICATION"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # CI/CD FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "cicd-github": Feature(
         name="cicd-github",
         display_name="GitHub Actions",
@@ -285,11 +285,9 @@ FEATURES: Dict[str, Feature] = {
         ],
         detection_files=[".gitlab-ci.yml"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # STORAGE FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "storage": Feature(
         name="storage",
         display_name="Cloud Storage",
@@ -301,7 +299,12 @@ FEATURES: Dict[str, Feature] = {
             "{project}/settings.py",
             "requirements.txt",
         ],
-        settings_keys=["STORAGES", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_STORAGE_BUCKET_NAME"],
+        settings_keys=[
+            "STORAGES",
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "AWS_STORAGE_BUCKET_NAME",
+        ],
         env_vars=[
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY",
@@ -312,11 +315,9 @@ FEATURES: Dict[str, Feature] = {
         detection_packages=["django-storages", "boto3"],
         detection_settings=["AWS_STORAGE_BUCKET_NAME"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # SECURITY FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "security": Feature(
         name="security",
         display_name="Security Headers",
@@ -329,18 +330,19 @@ FEATURES: Dict[str, Feature] = {
             "requirements.txt",
         ],
         settings_keys=[
-            "CSP_DEFAULT_SRC", "CSP_SCRIPT_SRC", "CSP_STYLE_SRC",
-            "SECURE_HSTS_SECONDS", "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+            "CSP_DEFAULT_SRC",
+            "CSP_SCRIPT_SRC",
+            "CSP_STYLE_SRC",
+            "SECURE_HSTS_SECONDS",
+            "SECURE_HSTS_INCLUDE_SUBDOMAINS",
             "SECURE_HSTS_PRELOAD",
         ],
         detection_packages=["django-csp"],
         detection_settings=["CSP_DEFAULT_SRC"],
     ),
-
     # ══════════════════════════════════════════════════════════════════════════
     # OBSERVABILITY FEATURES
     # ══════════════════════════════════════════════════════════════════════════
-
     "sentry": Feature(
         name="sentry",
         display_name="Sentry",
@@ -414,6 +416,7 @@ FEATURES: Dict[str, Feature] = {
 
 # ── Registry helpers ──────────────────────────────────────────────────────────
 
+
 def get_feature(name: str) -> Optional[Feature]:
     """Get a feature by name."""
     return FEATURES.get(name)
@@ -430,6 +433,7 @@ def list_feature_names() -> List[str]:
 
 
 # ── Dependency resolution ─────────────────────────────────────────────────────
+
 
 def resolve_dependencies(feature_name: str) -> List[str]:
     """
@@ -495,6 +499,7 @@ def detect_reverse_dependencies(feature_name: str, enabled: Set[str]) -> List[st
 
 
 # ── State detection ───────────────────────────────────────────────────────────
+
 
 def scan_enabled_features(project_name: Optional[str] = None) -> Set[str]:
     """

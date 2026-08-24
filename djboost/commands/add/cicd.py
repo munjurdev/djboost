@@ -1,23 +1,15 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.cicd import generate_github_actions, generate_gitlab_ci
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_add_plan,
-)
+from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 
 def add_cicd_command(
     provider: str = typer.Argument(..., help="The CI/CD provider to add (github or gitlab)"),
-    dry_run: bool = typer.Option(
-        False, "--dry-run", "-n",
-        help="Preview changes without applying them."
-    ),
-    force: bool = typer.Option(
-        False, "--force", "-f",
-        help="Skip conflict checks."
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", "-n", help="Preview changes without applying them."),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip conflict checks."),
 ):
     """Add CI/CD pipeline to an existing Django project."""
     check_virtual_environment()

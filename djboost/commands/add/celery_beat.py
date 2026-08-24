@@ -1,10 +1,11 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.celery import (
-    get_project_name,
-    generate_celery_beat_config,
     add_crontab_import,
+    generate_celery_beat_config,
+    get_project_name,
 )
 from djboost.generators.safe_engine import (
     execute_plan,
@@ -14,14 +15,8 @@ from djboost.generators.safe_engine import (
 
 
 def add_celery_beat_command(
-    dry_run: bool = typer.Option(
-        False, "--dry-run", "-n",
-        help="Preview changes without applying them."
-    ),
-    force: bool = typer.Option(
-        False, "--force", "-f",
-        help="Skip conflict checks."
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", "-n", help="Preview changes without applying them."),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip conflict checks."),
 ):
     """Add Celery Beat configuration to an existing Django project."""
     check_virtual_environment()

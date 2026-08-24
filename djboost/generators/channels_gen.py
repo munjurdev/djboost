@@ -1,6 +1,8 @@
 """Django Channels generator — add WebSocket and async support."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

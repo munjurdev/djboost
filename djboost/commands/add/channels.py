@@ -1,11 +1,12 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.channels_gen import (
-    get_project_name,
-    generate_asgi_file,
-    update_settings_channels,
     add_channels_to_requirements,
+    generate_asgi_file,
+    get_project_name,
+    update_settings_channels,
 )
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 

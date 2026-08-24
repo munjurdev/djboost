@@ -1,8 +1,11 @@
 """djboost remove celery-beat — remove Celery Beat scheduler."""
-import typer
+
 import re
 from pathlib import Path
+
+import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import (
     execute_plan,
@@ -56,17 +59,12 @@ def remove_celery_beat_command(
 
     # 2. Remove CELERY_BEAT_SCHEDULE
     if "CELERY_BEAT_SCHEDULE" in settings_content:
-        settings_content = re.sub(
-            r"\n# ── Celery Beat.*?}\n",
-            "\n",
-            settings_content,
-            flags=re.DOTALL
-        )
+        settings_content = re.sub(r"\n# ── Celery Beat.*?}\n", "\n", settings_content, flags=re.DOTALL)
         settings_content = re.sub(
             r"CELERY_BEAT_SCHEDULE\s*=\s*\{.*?\}\s*\n",
             "",
             settings_content,
-            flags=re.DOTALL
+            flags=re.DOTALL,
         )
         print("[green]✔ Removed CELERY_BEAT_SCHEDULE from settings.py[/green]")
     else:

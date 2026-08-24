@@ -1,11 +1,12 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.logging_config import (
-    get_project_name,
-    generate_logging_config,
     add_logging_settings,
     add_logging_to_requirements,
+    generate_logging_config,
+    get_project_name,
 )
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
@@ -44,8 +45,8 @@ def add_logging_command(
     print("[bold green]✅ Structured Logging added successfully![/bold green]")
     print()
     print("[cyan]Usage:[/cyan]")
-    print('  import structlog')
-    print('  logger = structlog.get_logger()')
+    print("  import structlog")
+    print("  logger = structlog.get_logger()")
     print('  logger.info("user_logged_in", user_id=user.id)')
     print()
     print("[cyan]Config via .env:[/cyan]")

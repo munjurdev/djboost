@@ -1,12 +1,13 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.monitoring import (
-    get_project_name,
-    generate_telemetry,
     add_monitoring_settings,
-    add_monitoring_to_wsgi,
     add_monitoring_to_requirements,
+    add_monitoring_to_wsgi,
+    generate_telemetry,
+    get_project_name,
 )
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 

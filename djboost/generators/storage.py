@@ -1,6 +1,8 @@
 """Cloud Storage generator — add S3-compatible file storage with django-storages."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 

@@ -1,6 +1,8 @@
 """GraphQL generator — add Strawberry GraphQL API to a Django project."""
+
 import re
 from pathlib import Path
+
 from rich import print
 
 
@@ -76,13 +78,15 @@ def add_graphql_urls(name: str):
     # Add imports
     content = content.replace(
         "from django.urls import path",
-        "from django.urls import path\nfrom strawberry.django.views import GraphQLView"
+        "from django.urls import path\nfrom strawberry.django.views import GraphQLView",
     )
 
     # Add URL pattern
     content = content.replace(
         "urlpatterns = [",
-        'urlpatterns = [\n    path("graphql/", GraphQLView.as_view(schema="{name}.schema.schema"), name="graphql"),'.format(name=name)
+        'urlpatterns = [\n    path("graphql/", GraphQLView.as_view(schema="{name}.schema.schema"), name="graphql"),'.format(
+            name=name
+        ),
     )
 
     urls_path.write_text(content, encoding="utf-8")

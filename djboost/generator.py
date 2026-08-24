@@ -4,27 +4,30 @@ generator.py — main orchestrator for djboost.
 All logic is split into generators/ sub-modules.
 This file only imports and wires them together.
 """
-import sys
+
 import subprocess
+import sys
 from pathlib import Path
+
 from rich import print
 
-# ── Re-export for backward compatibility (commands import from here) ───────────
-from djboost.generators.validators import check_virtual_environment, validate_name
-from djboost.generators.settings import update_settings_file
-from djboost.generators.dependencies import install_dependencies, freeze_requirements
+from djboost.generators.dependencies import freeze_requirements, install_dependencies
 from djboost.generators.env import generate_env_file
 from djboost.generators.project_files import (
+    create_common_files,
     create_directories,
     create_utils_file,
-    create_common_files,
     update_urls_file,
 )
 from djboost.generators.quality import (
     generate_gitignore,
-    generate_pytest_ini,
     generate_pre_commit_config,
+    generate_pytest_ini,
 )
+from djboost.generators.settings import update_settings_file
+
+# ── Re-export for backward compatibility (commands import from here) ───────────
+from djboost.generators.validators import check_virtual_environment, validate_name
 
 
 def create_project(name: str):
@@ -35,11 +38,13 @@ def create_project(name: str):
     if Path(name).exists():
         print(f"[red]Error: Directory '{name}' already exists. Choose a different name.[/red]")
         import typer
+
         raise typer.Exit(1)
 
     if Path("manage.py").exists():
         print("[red]Error: manage.py already exists. Run this in an empty folder.[/red]")
         import typer
+
         raise typer.Exit(1)
 
     # Beautiful header
@@ -53,11 +58,13 @@ def create_project(name: str):
     print("[cyan]━━━ Step 1/6: Installing Django ━━━[/cyan]")
     result = subprocess.run(
         [sys.executable, "-m", "pip", "install", "Django", "-q"],
-        capture_output=True, text=True
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         print(f"[red]Failed to install Django:\n{result.stderr}[/red]")
         import typer
+
         raise typer.Exit(1)
     print("[green]   ✔ Django installed[/green]")
     print()
@@ -66,11 +73,13 @@ def create_project(name: str):
     print("[cyan]━━━ Step 2/6: Creating project structure ━━━[/cyan]")
     result = subprocess.run(
         [sys.executable, "-m", "django", "startproject", name, "."],
-        capture_output=True, text=True
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         print(f"[red]Failed to scaffold project:\n{result.stderr}[/red]")
         import typer
+
         raise typer.Exit(1)
     print(f"[green]   ✔ Created {name}/ directory[/green]")
     print("[green]   ✔ Created manage.py[/green]")

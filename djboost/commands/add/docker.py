@@ -1,12 +1,13 @@
 import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
 from djboost.generators.docker import (
-    get_project_name,
-    generate_dockerfile,
-    generate_docker_compose_add,
-    generate_dockerignore_add,
     add_docker_to_requirements,
+    generate_docker_compose_add,
+    generate_dockerfile,
+    generate_dockerignore_add,
+    get_project_name,
 )
 from djboost.generators.safe_engine import (
     execute_plan,
@@ -16,14 +17,8 @@ from djboost.generators.safe_engine import (
 
 
 def add_docker_command(
-    dry_run: bool = typer.Option(
-        False, "--dry-run", "-n",
-        help="Preview changes without applying them."
-    ),
-    force: bool = typer.Option(
-        False, "--force", "-f",
-        help="Skip conflict checks."
-    ),
+    dry_run: bool = typer.Option(False, "--dry-run", "-n", help="Preview changes without applying them."),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip conflict checks."),
 ):
     """Add Docker configuration to an existing Django project."""
     check_virtual_environment()

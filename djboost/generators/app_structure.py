@@ -1,12 +1,14 @@
 """Standard app structure generator — creates beautiful, production-ready app layout."""
+
 import os
 from pathlib import Path
+
 from rich import print
 
 
 def create_standard_app_structure(app_name: str):
     """Create standard app directory structure."""
-    
+
     # Create directories
     dirs = [
         f"apps/{app_name}",
@@ -15,19 +17,19 @@ def create_standard_app_structure(app_name: str):
         f"apps/{app_name}/service",
         f"apps/{app_name}/migrations",
     ]
-    
+
     for d in dirs:
         os.makedirs(d, exist_ok=True)
         init_path = Path(d) / "__init__.py"
         if not init_path.exists():
             init_path.touch()
-    
+
     print(f"[green]✔ Created directory structure for apps/{app_name}[/green]")
 
 
 def create_app_views(app_name: str):
     """Create views/ directory with __init__.py and example views."""
-    
+
     # views/__init__.py
     init_content = f"""from apps.{app_name}.views.{app_name} import (
     {app_name.capitalize()}ListView,
@@ -35,7 +37,7 @@ def create_app_views(app_name: str):
 )
 """
     Path(f"apps/{app_name}/views/__init__.py").write_text(init_content, encoding="utf-8")
-    
+
     # views/{app_name}.py
     view_content = f"""from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -68,13 +70,13 @@ class {app_name.capitalize()}DetailView(APIView):
         return Response({{"success": True, "message": f"Delete {app_name} {{pk}}"}})
 """
     Path(f"apps/{app_name}/views/{app_name}.py").write_text(view_content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/views/[/green]")
 
 
 def create_app_serializers(app_name: str):
     """Create serializers/ directory with __init__.py and example serializers."""
-    
+
     # serializers/__init__.py
     init_content = f"""from apps.{app_name}.serializers.{app_name} import (
     {app_name.capitalize()}Serializer,
@@ -82,7 +84,7 @@ def create_app_serializers(app_name: str):
 )
 """
     Path(f"apps/{app_name}/serializers/__init__.py").write_text(init_content, encoding="utf-8")
-    
+
     # serializers/{app_name}.py
     serializer_content = f"""from rest_framework import serializers
 from apps.{app_name}.models import {app_name.capitalize()}
@@ -105,13 +107,13 @@ class {app_name.capitalize()}ListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'is_active', 'created_at']
 """
     Path(f"apps/{app_name}/serializers/{app_name}.py").write_text(serializer_content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/serializers/[/green]")
 
 
 def create_app_permissions(app_name: str):
     """Create permissions.py with standard permission classes."""
-    
+
     content = f"""from rest_framework import permissions
 
 
@@ -139,19 +141,19 @@ class IsAdminOrReadOnly(permissions.BasePermission):
 """
     path = Path(f"apps/{app_name}/permissions.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/permissions.py[/green]")
 
 
 def create_app_tasks(app_name: str):
     """Create tasks.py — Celery tasks if Celery is installed, otherwise a placeholder."""
-    
+
     # Check if Celery is installed
     requirements_path = Path("requirements.txt")
     has_celery = False
     if requirements_path.exists():
         has_celery = "celery" in requirements_path.read_text(encoding="utf-8").lower()
-    
+
     if has_celery:
         content = f'''"""
 Celery background tasks for the {app_name} app.
@@ -193,22 +195,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 '''
-    
+
     path = Path(f"apps/{app_name}/tasks.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/tasks.py[/green]")
 
 
 def create_app_service(app_name: str):
     """Create service/ directory for business logic."""
-    
+
     # service/__init__.py
     init_content = f"""# Business logic for {app_name} app
 # Keep complex logic here, not in views.
 """
     Path(f"apps/{app_name}/service/__init__.py").write_text(init_content, encoding="utf-8")
-    
+
     # service/helpers.py
     helpers_content = f'''"""
 Helper functions for {app_name} app.
@@ -236,13 +238,13 @@ def process_{app_name}(item):
     pass
 '''
     Path(f"apps/{app_name}/service/helpers.py").write_text(helpers_content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/service/[/green]")
 
 
 def create_standard_urls(app_name: str):
     """Create urls.py with standard patterns."""
-    
+
     content = f"""from django.urls import path
 from apps.{app_name}.views import {app_name}
 
@@ -255,15 +257,15 @@ urlpatterns = [
 """
     path = Path(f"apps/{app_name}/urls.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/urls.py[/green]")
 
 
 def create_standard_models(app_name: str):
     """Create models.py with standard model template."""
-    
+
     import uuid
-    
+
     content = f"""import uuid
 
 from django.db import models
@@ -318,13 +320,13 @@ class {app_name.capitalize()}(models.Model):
 """
     path = Path(f"apps/{app_name}/models.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/models.py[/green]")
 
 
 def create_standard_admin(app_name: str):
     """Create admin.py with standard admin config."""
-    
+
     content = f"""from django.contrib import admin
 from apps.{app_name}.models import {app_name.capitalize()}
 
@@ -339,13 +341,13 @@ class {app_name.capitalize()}Admin(admin.ModelAdmin):
 """
     path = Path(f"apps/{app_name}/admin.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/admin.py[/green]")
 
 
 def create_standard_apps(app_name: str):
     """Create apps.py with proper config."""
-    
+
     content = f"""from django.apps import AppConfig
 
 
@@ -356,13 +358,13 @@ class {app_name.capitalize()}Config(AppConfig):
 """
     path = Path(f"apps/{app_name}/apps.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/apps.py[/green]")
 
 
 def create_standard_tests(app_name: str):
     """Create tests.py with meaningful smoke tests."""
-    
+
     content = f"""from django.test import TestCase
 from django.urls import reverse, resolve
 from rest_framework.test import APITestCase
@@ -418,50 +420,50 @@ class {app_name.capitalize()}APITest(APITestCase):
 """
     path = Path(f"apps/{app_name}/tests.py")
     path.write_text(content, encoding="utf-8")
-    
+
     print(f"[green]✔ Created apps/{app_name}/tests.py[/green]")
 
 
 def generate_standard_app(app_name: str):
     """Main function to generate standard app structure."""
-    
+
     print(f"\n[bold green]🚀 Creating standard app: {app_name}[/bold green]\n")
-    
+
     # Create directories
     print("[cyan]📁 Creating directory structure...[/cyan]")
     create_standard_app_structure(app_name)
-    
+
     # Create files
     print("[cyan]👁️  Creating views...[/cyan]")
     create_app_views(app_name)
-    
+
     print("[cyan]📦 Creating serializers...[/cyan]")
     create_app_serializers(app_name)
-    
+
     print("[cyan]🔐 Creating permissions...[/cyan]")
     create_app_permissions(app_name)
-    
+
     print("[cyan]📋 Creating tasks...[/cyan]")
     create_app_tasks(app_name)
-    
+
     print("[cyan]⚙️  Creating service layer...[/cyan]")
     create_app_service(app_name)
-    
+
     print("[cyan]🔗 Creating URLs...[/cyan]")
     create_standard_urls(app_name)
-    
+
     print("[cyan]📝 Creating models...[/cyan]")
     create_standard_models(app_name)
-    
+
     print("[cyan]🛡️  Creating admin...[/cyan]")
     create_standard_admin(app_name)
-    
+
     print("[cyan]⚙️  Creating app config...[/cyan]")
     create_standard_apps(app_name)
-    
+
     print("[cyan]🧪 Creating tests...[/cyan]")
     create_standard_tests(app_name)
-    
+
     print()
     print("[bold green]✅ Standard app created successfully![/bold green]")
     print()

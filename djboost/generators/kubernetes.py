@@ -1,12 +1,15 @@
 """Kubernetes generator — add deployment manifests for K8s."""
+
 import os
 from pathlib import Path
+
 from rich import print
 
 
 def get_project_name():
     """Extract project name from manage.py."""
     import re
+
     if not Path("manage.py").exists():
         print("[red]Error: manage.py not found. Are you in the project root?[/red]")
         return None

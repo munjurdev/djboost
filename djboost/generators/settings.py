@@ -13,11 +13,7 @@ def update_settings_file(settings_path: str, name: str) -> str:
     # ── Imports ───────────────────────────────────────────────────────────────
     content = content.replace(
         "from pathlib import Path",
-        (
-            "from pathlib import Path\n"
-            "from datetime import timedelta\n"
-            "from decouple import config"
-        )
+        ("from pathlib import Path\n" "from datetime import timedelta\n" "from decouple import config"),
     )
 
     # ── Core Settings ─────────────────────────────────────────────────────────
@@ -26,7 +22,7 @@ def update_settings_file(settings_path: str, name: str) -> str:
     content = re.sub(
         r"ALLOWED_HOSTS = .*",
         "ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=lambda v: [s.strip() for s in v.split(',')])",
-        content
+        content,
     )
 
     # ── INSTALLED_APPS ────────────────────────────────────────────────────────
@@ -40,13 +36,13 @@ def update_settings_file(settings_path: str, name: str) -> str:
     content = re.sub(
         r"['\"]django\.contrib\.staticfiles['\"],",
         f"'django.contrib.staticfiles',\n{apps_addition}",
-        content
+        content,
     )
 
     # ── MIDDLEWARE ────────────────────────────────────────────────────────────
     content = content.replace(
         "MIDDLEWARE = [",
-        "MIDDLEWARE = [\n    'corsheaders.middleware.CorsMiddleware',\n    'whitenoise.middleware.WhiteNoiseMiddleware',"
+        "MIDDLEWARE = [\n    'corsheaders.middleware.CorsMiddleware',\n    'whitenoise.middleware.WhiteNoiseMiddleware',",
     )
 
     # ── DATABASE ──────────────────────────────────────────────────────────────
@@ -67,7 +63,7 @@ def update_settings_file(settings_path: str, name: str) -> str:
     content = re.sub(
         r"WSGI_APPLICATION\s*=\s*['\"]" + re.escape(name) + r"\.wsgi\.application['\"]",
         f"WSGI_APPLICATION = '{name}.wsgi.application'\nASGI_APPLICATION = '{name}.asgi.application'",
-        content
+        content,
     )
 
     # ── Static / Media ────────────────────────────────────────────────────────

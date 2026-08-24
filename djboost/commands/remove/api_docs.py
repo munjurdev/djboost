@@ -1,13 +1,13 @@
 """djboost remove api-docs — remove Swagger/ReDoc from urls.py."""
-import typer
+
 import re
 from pathlib import Path
+
+import typer
 from rich import print
+
 from djboost.generator import check_virtual_environment
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_remove_plan,
-)
+from djboost.generators.safe_engine import execute_plan, generate_remove_plan
 
 
 def remove_api_docs_command(
@@ -53,7 +53,7 @@ def remove_api_docs_command(
         urls_content = re.sub(
             r"from drf_spectacular\.views import SpectacularAPIView.*?\n",
             "",
-            urls_content
+            urls_content,
         )
         removed.append("SpectacularAPIView import")
         print("[green]✔ Removed SpectacularAPIView import[/green]")
@@ -63,7 +63,7 @@ def remove_api_docs_command(
         urls_content = re.sub(
             r"\s*path\('api/schema/', SpectacularAPIView\.as_view\(url_name='schema'\), name='schema'\),?\n",
             "",
-            urls_content
+            urls_content,
         )
         removed.append("schema URL")
         print("[green]✔ Removed /api/schema/ URL[/green]")
@@ -73,7 +73,7 @@ def remove_api_docs_command(
         urls_content = re.sub(
             r"\s*path\('api/schema/swagger-ui/', SpectacularSwaggerView\.as_view\(url_name='schema'\), name='swagger-ui'\),?\n",
             "",
-            urls_content
+            urls_content,
         )
         removed.append("Swagger UI URL")
         print("[green]✔ Removed /api/schema/swagger-ui/ URL[/green]")
@@ -83,7 +83,7 @@ def remove_api_docs_command(
         urls_content = re.sub(
             r"\s*path\('api/schema/redoc/', SpectacularRedocView\.as_view\(url_name='schema'\), name='redoc'\),?\n",
             "",
-            urls_content
+            urls_content,
         )
         removed.append("ReDoc URL")
         print("[green]✔ Removed /api/schema/redoc/ URL[/green]")
