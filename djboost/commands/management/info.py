@@ -2,7 +2,6 @@
 
 import sys
 from pathlib import Path
-
 from rich import print
 from rich.console import Console
 from rich.table import Table

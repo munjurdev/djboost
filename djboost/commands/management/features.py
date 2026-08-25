@@ -1,11 +1,9 @@
 """djboost features — list available features and their status."""
 
 from pathlib import Path
-
 from rich import print
 from rich.console import Console
 from rich.table import Table
-
 from djboost.generators.features import list_features, scan_enabled_features
 
 
