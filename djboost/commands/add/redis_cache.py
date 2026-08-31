@@ -2,12 +2,7 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.redis_cache import (
-    add_redis_cache_to_requirements,
-    get_project_name,
-    update_env_redis_cache,
-    update_settings_redis_cache,
-)
+from djboost.generators.redis_cache import add_redis_cache_to_requirements, get_project_name, update_env_redis_cache, update_settings_redis_cache
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 
@@ -32,14 +27,15 @@ def add_redis_cache_command(
         print("[yellow]⚠ Redis Cache is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_redis_cache():
+        update_settings_redis_cache(name)
+        update_env_redis_cache(name)
+        add_redis_cache_to_requirements()
 
-    print("\n[cyan]━━━ Applying Redis Cache configuration ━━━[/cyan]")
-    update_settings_redis_cache(name)
-    update_env_redis_cache(name)
-    add_redis_cache_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_redis_cache)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Redis Cache added successfully![/bold green]")

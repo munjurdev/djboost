@@ -1,10 +1,8 @@
-"""
-Tests for the feature registry — dependency graph, conflict detection, state scanning.
-"""
+"""Tests for the feature registry — dependency graph, conflict detection, state scanning."""
 import os
-from pathlib import Path
 
 import pytest
+
 
 from djboost.generators.features import (
     FEATURES,

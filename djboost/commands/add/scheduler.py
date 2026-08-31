@@ -3,12 +3,7 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.scheduler import (
-    add_scheduler_settings,
-    add_scheduler_to_requirements,
-    generate_scheduler_config,
-    get_project_name,
-)
+from djboost.generators.scheduler import add_scheduler_settings, add_scheduler_to_requirements, generate_scheduler_config, get_project_name
 
 
 def add_scheduler_command(
@@ -32,28 +27,27 @@ def add_scheduler_command(
         print("[yellow]⚠ APScheduler is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    # Check for conflict with celery-beat
     from djboost.generators.features import scan_enabled_features
-
     enabled = scan_enabled_features(name)
     if "celery-beat" in enabled and not force:
         print("[red]Error: Celery Beat is already installed. APScheduler conflicts with it.[/red]")
         print("[cyan]Use --force to override, or remove celery-beat first.[/cyan]")
         raise typer.Exit(1)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_scheduler():
+        generate_scheduler_config(name)
+        add_scheduler_settings(name)
+        add_scheduler_to_requirements()
 
-    print("\n[cyan]━━━ Applying APScheduler ━━━[/cyan]")
-    generate_scheduler_config(name)
-    add_scheduler_settings(name)
-    add_scheduler_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_scheduler)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ APScheduler added successfully![/bold green]")
     print()
     print("[cyan]Usage:[/cyan]")
-    print("  1. Register jobs in {}/scheduler.py".format(name))
+    print(f"  1. Register jobs in {name}/scheduler.py")
     print("  2. Call start_scheduler() in your AppConfig.ready()")
     print("  3. Run [bold]python manage.py migrate[/bold] (for job store)")

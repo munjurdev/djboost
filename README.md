@@ -3,6 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/djboost.svg)](https://pypi.org/project/djboost/)
 [![Python](https://img.shields.io/pypi/pyversions/djboost.svg)](https://pypi.org/project/djboost/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/munjurdev/djboost/actions/workflows/ci.yml/badge.svg)](https://github.com/munjurdev/djboost/actions/workflows/ci.yml)
 
 **The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features.**
 
@@ -11,6 +12,9 @@ djboost gives you a production-ready Django foundation in seconds — DRF, JWT, 
 ```bash
 pip install djboost
 djboost startproject myproject
+
+# or
+python -m djboost startproject myproject
 ```
 
 ---
@@ -180,7 +184,7 @@ djboost features
 
 | Feature | Command | Description |
 |---------|---------|-------------|
-| API Documentation | `djboost add api-docs` | Swagger UI and ReDoc |
+| API Documentation | `djboost add api-docs swagger\|redoc\|both` | Swagger UI and/or ReDoc |
 | GraphQL | `djboost add graphql` | Strawberry GraphQL API (type-safe, async-ready) |
 
 ### Realtime
@@ -518,9 +522,9 @@ python manage.py runserver
 |-----|-------------|
 | `http://127.0.0.1:8000/` | Health check |
 | `http://127.0.0.1:8000/admin/` | Django Admin |
-| `http://127.0.0.1:8000/api/schema/swagger-ui/` | Swagger UI (if added) |
-| `http://127.0.0.1:8000/api/schema/redoc/` | ReDoc (if added) |
-| `http://127.0.0.1:8000/graphql/` | GraphQL (if added) |
+| `http://127.0.0.1:8000/api/schema/swagger-ui` | Swagger UI (if added) |
+| `http://127.0.0.1:8000/api/schema/redoc` | ReDoc (if added) |
+| `http://127.0.0.1:8000/graphql` | GraphQL (if added) |
 
 ### With Docker
 
@@ -644,6 +648,96 @@ djboost doctor                     Check project health
 djboost validate                   Validate project structure
 djboost info                       Show project info and modules
 ```
+
+---
+
+## 🐛 Troubleshooting
+
+### `UnicodeEncodeError` on Windows
+
+If you see emoji encoding errors on Windows, set UTF-8 mode:
+
+```bash
+set PYTHONIOENCODING=utf-8
+djboost features
+```
+
+Or add to your environment variables permanently.
+
+### `manage.py not found`
+
+Make sure you're in the **project root** directory (where `manage.py` lives):
+
+```bash
+ls manage.py    # must exist
+djboost doctor  # check project health
+```
+
+### `virtual environment not activated`
+
+djboost requires an active virtual environment:
+
+```bash
+# Windows
+env\Scripts\activate
+
+# Mac / Linux
+source env/bin/activate
+```
+
+### Feature already enabled
+
+```bash
+# Check what's enabled
+djboost features
+
+# Force re-apply if needed
+djboost add celery --force
+```
+
+### Undo changes
+
+The safe engine auto-backs up files. If something goes wrong:
+
+```bash
+# Remove the feature (restores backed-up files)
+djboost remove celery
+
+# Preview without removing
+djboost remove celery --dry-run
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Run tests: `python -m pytest tests/ -v`
+4. Commit your changes: `git commit -m "Add amazing feature"`
+5. Push to branch: `git push origin feature/amazing-feature`
+6. Open a Pull Request
+
+### Development Setup
+
+```bash
+git clone https://github.com/munjurdev/djboost.git
+cd djboost
+python -m venv env
+source env/bin/activate  # or env\Scripts\activate on Windows
+pip install -e ".[dev]"
+python -m pytest tests/ -v
+```
+
+### Adding a New Feature to djboost
+
+1. Register in `djboost/generators/features.py`
+2. Create generator in `djboost/generators/`
+3. Create add/remove commands in `djboost/commands/add/` and `djboost/commands/remove/`
+4. Add tests in `tests/`
+5. Update README.md
 
 ---
 

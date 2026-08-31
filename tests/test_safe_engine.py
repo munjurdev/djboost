@@ -1,10 +1,6 @@
-"""
-Tests for the safe operation engine — plan generation, dry-run, idempotency.
-"""
+"""Tests for the safe operation engine — plan generation, dry-run, idempotency."""
 import os
-from pathlib import Path
 
-import pytest
 
 from djboost.generators.safe_engine import (
     ChangePlan,

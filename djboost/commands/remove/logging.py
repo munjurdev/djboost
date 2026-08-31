@@ -32,14 +32,12 @@ def remove_logging_command(
     settings_files = list(Path(".").glob("*/settings.py"))
     project_name = settings_files[0].parent.name if settings_files else None
 
-    # Remove logging_config.py
     if project_name:
         config_path = Path(f"{project_name}/logging_config.py")
         if config_path.exists():
             config_path.unlink()
             print(f"[green]✔ Removed {project_name}/logging_config.py[/green]")
 
-    # Remove from settings.py
     if settings_files:
         settings_path = settings_files[0]
         content = settings_path.read_text(encoding="utf-8")

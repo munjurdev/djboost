@@ -84,7 +84,7 @@ def add_graphql_urls(name: str):
     # Add URL pattern
     content = content.replace(
         "urlpatterns = [",
-        'urlpatterns = [\n    path("graphql/", GraphQLView.as_view(schema="{name}.schema.schema"), name="graphql"),'.format(
+        'urlpatterns = [\n    path("/graphql", GraphQLView.as_view(schema="{name}.schema.schema"), name="graphql"),'.format(
             name=name
         ),
     )

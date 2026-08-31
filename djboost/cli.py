@@ -1,8 +1,7 @@
 import typer
 
+from djboost import __version__
 from djboost.commands.add.api_docs import add_api_docs_command
-
-# Add commands
 from djboost.commands.add.celery import add_celery_command
 from djboost.commands.add.celery_beat import add_celery_beat_command
 from djboost.commands.add.channels import add_channels_command
@@ -20,18 +19,12 @@ from djboost.commands.add.sentry import add_sentry_command
 from djboost.commands.add.storage import add_storage_command
 from djboost.commands.create.accounts import create_accounts_command
 from djboost.commands.create.app import create_app_command
-
-# Create commands
 from djboost.commands.create.project import create_project_command
-
-# Management commands
 from djboost.commands.management.doctor import doctor_command
 from djboost.commands.management.features import features_command
 from djboost.commands.management.info import info_command
 from djboost.commands.management.validate import validate_command
 from djboost.commands.remove.api_docs import remove_api_docs_command
-
-# Remove commands
 from djboost.commands.remove.celery import remove_celery_command
 from djboost.commands.remove.celery_beat import remove_celery_beat_command
 from djboost.commands.remove.channels import remove_channels_command
@@ -105,19 +98,10 @@ app.command("features")(features_command)
 
 def version_callback(value: bool):
     if value:
-        typer.echo("djboost version 0.6.4")
+        typer.echo(f"djboost version {__version__}")
         raise typer.Exit()
 
 
 @app.callback()
-def main(
-    version: bool = typer.Option(
-        None,
-        "--version",
-        "-v",
-        callback=version_callback,
-        is_eager=True,
-        help="Show the version and exit.",
-    )
-):
+def main(version: bool = typer.Option(None, "--version", "-v", callback=version_callback, is_eager=True, help="Show the version and exit.")):
     pass

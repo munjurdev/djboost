@@ -19,8 +19,6 @@ def info_command():
         return
 
     # 2. Find project name
-    import re
-
     settings_files = list(Path(".").glob("*/settings.py"))
     if not settings_files:
         print("[red]Error: settings.py not found.[/red]")

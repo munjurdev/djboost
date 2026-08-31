@@ -3,17 +3,10 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.docker import (
-    add_docker_to_requirements,
-    generate_docker_compose_add,
-    generate_dockerfile,
-    generate_dockerignore_add,
-    get_project_name,
+    add_docker_to_requirements, generate_docker_compose_add,
+    generate_dockerfile, generate_dockerignore_add, get_project_name,
 )
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_add_plan,
-    scan_enabled_features,
-)
+from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
 
 
 def add_docker_command(
@@ -29,7 +22,6 @@ def add_docker_command(
 
     print(f"\n[bold green]🐳 Adding Docker to project: {name}[/bold green]\n")
 
-    # Generate plan through safe engine
     plan = generate_add_plan("docker", dry_run=dry_run, project_name=name, force=force)
 
     if plan.errors and not dry_run:
@@ -41,19 +33,16 @@ def add_docker_command(
         print("[yellow]⚠ Docker is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    # Execute plan (dry-run or real)
-    record = execute_plan(plan, project_name=name)
+    def apply_docker():
+        generate_dockerfile()
+        generate_docker_compose_add(name)
+        generate_dockerignore_add()
+        add_docker_to_requirements()
 
-    if dry_run:
-        raise typer.Exit(0)
+    record = execute_plan(plan, project_name=name, apply_fn=apply_docker)
 
-    # Apply the actual file changes
-    print("\n[cyan]━━━ Applying Docker configuration ━━━[/cyan]")
-
-    generate_dockerfile()
-    generate_docker_compose_add(name)
-    generate_dockerignore_add()
-    add_docker_to_requirements()
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Docker added successfully![/bold green]")

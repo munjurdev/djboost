@@ -37,26 +37,20 @@ def add_cicd_command(
         print(f"[yellow]⚠ {name} is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    # Execute plan (dry-run or real)
-    record = execute_plan(plan)
+    # Define the actual file generation callback
+    def apply_cicd():
+        if provider == "github":
+            generate_github_actions()
+            print("[green]  ✔ .github/workflows/main.yml created[/green]")
+        else:
+            generate_gitlab_ci()
+            print("[green]  ✔ .gitlab-ci.yml created[/green]")
 
-    if dry_run:
-        raise typer.Exit(0)
+    # Execute plan with the apply callback (safe engine handles rollback)
+    record = execute_plan(plan, apply_fn=apply_cicd)
 
-    # Apply the actual file changes
-    print(f"\n[cyan]━━━ Applying {name} configuration ━━━[/cyan]")
-
-    print("[cyan]📝 Generating CI/CD pipeline...[/cyan]")
-    if provider == "github":
-        generate_github_actions()
-        print("[green]  ✔ .github/workflows/main.yml created[/green]")
-    else:
-        generate_gitlab_ci()
-        print("[green]  ✔ .gitlab-ci.yml created[/green]")
-
-    print("[cyan]⚙️  Configuring pipeline steps...[/cyan]")
-    print("[green]  ✔ Lint & test stage[/green]")
-    print("[green]  ✔ Build & deploy stage[/green]")
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print(f"[bold green]✅ {name} added successfully![/bold green]")

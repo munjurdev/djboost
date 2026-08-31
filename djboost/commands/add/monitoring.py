@@ -2,13 +2,7 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.monitoring import (
-    add_monitoring_settings,
-    add_monitoring_to_requirements,
-    add_monitoring_to_wsgi,
-    generate_telemetry,
-    get_project_name,
-)
+from djboost.generators.monitoring import add_monitoring_settings, add_monitoring_to_requirements, add_monitoring_to_wsgi, generate_telemetry, get_project_name
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 
@@ -33,15 +27,16 @@ def add_monitoring_command(
         print("[yellow]⚠ OpenTelemetry is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_monitoring():
+        generate_telemetry(name)
+        add_monitoring_settings(name)
+        add_monitoring_to_wsgi(name)
+        add_monitoring_to_requirements()
 
-    print("\n[cyan]━━━ Applying OpenTelemetry ━━━[/cyan]")
-    generate_telemetry(name)
-    add_monitoring_settings(name)
-    add_monitoring_to_wsgi(name)
-    add_monitoring_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_monitoring)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ OpenTelemetry added successfully![/bold green]")

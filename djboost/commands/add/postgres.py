@@ -2,12 +2,7 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.postgres import (
-    add_postgres_to_requirements,
-    get_project_name,
-    update_env_postgres,
-    update_settings_postgres,
-)
+from djboost.generators.postgres import add_postgres_to_requirements, get_project_name, update_env_postgres, update_settings_postgres
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 
@@ -32,14 +27,15 @@ def add_postgres_command(
         print("[yellow]⚠ PostgreSQL is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_postgres():
+        update_settings_postgres(name)
+        update_env_postgres(name)
+        add_postgres_to_requirements()
 
-    print("\n[cyan]━━━ Applying PostgreSQL configuration ━━━[/cyan]")
-    update_settings_postgres(name)
-    update_env_postgres(name)
-    add_postgres_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_postgres)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ PostgreSQL added successfully![/bold green]")

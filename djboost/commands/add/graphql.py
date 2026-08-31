@@ -3,11 +3,8 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.graphql import (
-    add_graphql_settings,
-    add_graphql_to_requirements,
-    add_graphql_urls,
-    generate_graphql_schema,
-    get_project_name,
+    add_graphql_settings, add_graphql_to_requirements,
+    add_graphql_urls, generate_graphql_schema, get_project_name,
 )
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
@@ -33,15 +30,16 @@ def add_graphql_command(
         print("[yellow]⚠ GraphQL is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_graphql():
+        generate_graphql_schema(name)
+        add_graphql_urls(name)
+        add_graphql_settings(name)
+        add_graphql_to_requirements()
 
-    print("\n[cyan]━━━ Applying GraphQL configuration ━━━[/cyan]")
-    generate_graphql_schema(name)
-    add_graphql_urls(name)
-    add_graphql_settings(name)
-    add_graphql_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_graphql)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ GraphQL added successfully![/bold green]")
@@ -49,4 +47,4 @@ def add_graphql_command(
     print("[cyan]Next steps:[/cyan]")
     print("  1. Run [bold]pip install -r requirements.txt[/bold]")
     print("  2. Access GraphiQL at [bold]http://localhost:8000/graphql/[/bold]")
-    print("  3. Define your types in [bold]{}/schema.py[/bold]".format(name))
+    print(f"  3. Define your types in [bold]{name}/schema.py[/bold]")

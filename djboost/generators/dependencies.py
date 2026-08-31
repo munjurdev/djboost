@@ -22,18 +22,9 @@ ESSENTIAL_PACKAGES = [
 
 # ── Optional packages (only installed when needed) ───────────────────────────
 OPTIONAL_PACKAGES = {
-    "celery": [
-        "celery>=5.4,<6",
-        "redis>=5.0,<6",
-    ],
-    "channels": [
-        "daphne>=4.1,<5",
-        "channels>=4.1,<5",
-        "channels-redis>=4.2,<5",
-    ],
-    "postgresql": [
-        "psycopg2-binary>=2.9,<3",
-    ],
+    "celery": ["celery>=5.4,<6", "redis>=5.0,<6"],
+    "channels": ["daphne>=4.1,<5", "channels>=4.1,<5", "channels-redis>=4.2,<5"],
+    "postgresql": ["psycopg2-binary>=2.9,<3"],
 }
 
 
@@ -46,15 +37,10 @@ def install_dependencies(packages=None):
     print("[cyan]📦 Installing dependencies...[/cyan]")
     for i, package in enumerate(packages, 1):
         print(f"[cyan]   [{i}/{total}] {package}[/cyan]")
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "install", package, "-q"],
-            capture_output=True,
-            text=True,
-        )
+        result = subprocess.run([sys.executable, "-m", "pip", "install", package, "-q"], capture_output=True, text=True)
         if result.returncode != 0:
             print(f"[red]Error installing {package}:\n{result.stderr}[/red]")
             import typer
-
             raise typer.Exit(1)
     print("[green]✔ All dependencies installed.[/green]")
 
@@ -71,29 +57,58 @@ def install_optional_packages(category: str):
     return True
 
 
-def freeze_requirements():
-    print("[cyan]📄 Freezing requirements...[/cyan]")
-    result = subprocess.run(
-        [sys.executable, "-m", "pip", "freeze", "--local"],
-        capture_output=True,
-        text=True,
-    )
-    with open("requirements.txt", "w", encoding="utf-8") as f:
-        f.write(result.stdout)
+def add_to_requirements(packages):
+    """Append specific packages to requirements.txt (no freeze)."""
+    from pathlib import Path
+    req_path = Path("requirements.txt")
+    existing = req_path.read_text(encoding="utf-8") if req_path.exists() else ""
+    added = []
+    for pkg in packages:
+        pkg_name = pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
+        if pkg_name.lower() not in existing.lower():
+            added.append(pkg)
+    if added:
+        with open(req_path, "a", encoding="utf-8") as f:
+            for pkg in added:
+                f.write(f"{pkg}\n")
+        print(f"[green]✔ Added {len(added)} package(s) to requirements.txt[/green]")
+    else:
+        print("[yellow]⚠ Packages already in requirements.txt[/yellow]")
+
+
+def remove_from_requirements(packages):
+    """Remove specific packages from requirements.txt."""
+    from pathlib import Path
+    req_path = Path("requirements.txt")
+    if not req_path.exists():
+        return
+    content = req_path.read_text(encoding="utf-8")
+    lines = content.splitlines()
+    new_lines = []
+    removed = []
+    for line in lines:
+        line_stripped = line.strip()
+        should_remove = False
+        for pkg in packages:
+            pkg_name = pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
+            if line_stripped.lower().startswith(pkg_name.lower()):
+                should_remove = True
+                removed.append(line_stripped)
+                break
+        if not should_remove:
+            new_lines.append(line)
+    if removed:
+        req_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+        print(f"[green]✔ Removed {len(removed)} package(s) from requirements.txt[/green]")
 
 
 def uninstall_packages(packages):
     """Uninstall a list of Python packages."""
     print("[cyan]📦 Uninstalling packages...[/cyan]")
     for package in packages:
-        # Get package name without version
         pkg_name = package.split(">=")[0].split("<")[0].split("==")[0].strip()
         print(f"[cyan]   Uninstalling {pkg_name}...[/cyan]")
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"],
-            capture_output=True,
-            text=True,
-        )
+        result = subprocess.run([sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"], capture_output=True, text=True)
         if result.returncode == 0:
             print(f"[green]   ✔ Uninstalled {pkg_name}[/green]")
         else:

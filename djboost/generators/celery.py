@@ -27,7 +27,6 @@ def get_project_name():
 def generate_celery_files(name):
     """Generate Celery app configuration and tasks file."""
 
-    # Create celery.py
     celery_content = f"""import os
 from celery import Celery
 
@@ -49,7 +48,6 @@ def debug_task(self):
         celery_path.write_text(celery_content, encoding="utf-8")
         print(f"[green]✔ Created {name}/celery.py[/green]")
 
-    # Create tasks.py
     tasks_content = f"""from celery import shared_task
 
 
@@ -76,7 +74,6 @@ def sample_task():
         tasks_path.write_text(tasks_content, encoding="utf-8")
         print(f"[green]✔ Created {name}/tasks.py[/green]")
 
-    # Update __init__.py
     init_path = Path(f"{name}/__init__.py")
     init_content = """from .celery import app as celery_app
 
@@ -108,10 +105,7 @@ def update_settings_celery(name):
         return True
 
     if "from celery.schedules import crontab" not in content:
-        content = content.replace(
-            "from decouple import config",
-            "from decouple import config\nfrom celery.schedules import crontab",
-        )
+        content = content.replace("from decouple import config", "from decouple import config\nfrom celery.schedules import crontab")
 
     celery_settings = """
 
@@ -203,7 +197,6 @@ try:
 except ImportError:
     pass
 """
-
     content = content.replace("from decouple import config", "from decouple import config\n" + try_import)
 
     settings_path.write_text(content, encoding="utf-8")
@@ -216,10 +209,7 @@ except ImportError:
 
 def remove_celery_files(name):
     """Remove Celery-related files from the project."""
-    files_to_remove = [
-        Path(f"{name}/celery.py"),
-        Path(f"{name}/tasks.py"),
-    ]
+    files_to_remove = [Path(f"{name}/celery.py"), Path(f"{name}/tasks.py")]
 
     removed_files = []
     for file_path in files_to_remove:
@@ -275,10 +265,7 @@ def remove_celery_from_settings(name):
     beat_pattern = r"\nCELERY_BEAT_SCHEDULE\s*=\s*\{[^}]*\}"
     content = re.sub(beat_pattern, "", content, flags=re.DOTALL)
 
-    content = content.replace(
-        "\ntry:\n    from celery.schedules import crontab\nexcept ImportError:\n    pass",
-        "",
-    )
+    content = content.replace("\ntry:\n    from celery.schedules import crontab\nexcept ImportError:\n    pass", "")
 
     settings_path.write_text(content, encoding="utf-8")
     print(f"[green]✔ Removed Celery settings from {name}/settings.py[/green]")

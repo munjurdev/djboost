@@ -3,12 +3,7 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.storage import (
-    add_storage_to_requirements,
-    get_project_name,
-    update_env_storage,
-    update_settings_storage,
-)
+from djboost.generators.storage import add_storage_to_requirements, get_project_name, update_env_storage, update_settings_storage
 
 
 def add_storage_command(
@@ -32,14 +27,15 @@ def add_storage_command(
         print("[yellow]⚠ Cloud Storage is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_storage():
+        update_settings_storage(name)
+        update_env_storage(name)
+        add_storage_to_requirements()
 
-    print("\n[cyan]━━━ Applying Cloud Storage configuration ━━━[/cyan]")
-    update_settings_storage(name)
-    update_env_storage(name)
-    add_storage_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_storage)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Cloud Storage added successfully![/bold green]")

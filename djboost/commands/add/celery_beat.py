@@ -2,16 +2,8 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.celery import (
-    add_crontab_import,
-    generate_celery_beat_config,
-    get_project_name,
-)
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_add_plan,
-    scan_enabled_features,
-)
+from djboost.generators.celery import add_crontab_import, generate_celery_beat_config, get_project_name
+from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
 
 
 def add_celery_beat_command(
@@ -27,13 +19,11 @@ def add_celery_beat_command(
 
     print(f"\n[bold green]🚀 Adding Celery Beat to project: {name}[/bold green]\n")
 
-    # Check that celery is installed first
     enabled = scan_enabled_features(name)
     if "celery" not in enabled:
         print("[red]Error: Celery is not installed. Run 'djboost add celery' first.[/red]")
         raise typer.Exit(1)
 
-    # Generate plan through safe engine
     plan = generate_add_plan("celery-beat", dry_run=dry_run, project_name=name, force=force)
 
     if plan.errors and not dry_run:
@@ -45,17 +35,14 @@ def add_celery_beat_command(
         print("[yellow]⚠ Celery Beat is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    # Execute plan (dry-run or real)
-    record = execute_plan(plan, project_name=name)
+    def apply_celery_beat():
+        add_crontab_import(name)
+        generate_celery_beat_config(name)
 
-    if dry_run:
-        raise typer.Exit(0)
+    record = execute_plan(plan, project_name=name, apply_fn=apply_celery_beat)
 
-    # Apply the actual file changes
-    print("\n[cyan]━━━ Applying Celery Beat configuration ━━━[/cyan]")
-
-    add_crontab_import(name)
-    generate_celery_beat_config(name)
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Celery Beat added successfully![/bold green]")

@@ -1,133 +1,212 @@
+"""
+API Documentation generator (Swagger / ReDoc).
+"""
 import re
 from pathlib import Path
 
 from rich import print
 
+from djboost.generators.safe_engine import FileChange
 
-def get_project_name():
+
+def get_project_name():  # type: ignore[no-untyped-def]
     """Extract project name from manage.py."""
     if not Path("manage.py").exists():
         print("[red]Error: manage.py not found. Are you in the project root?[/red]")
         return None
-
     content = Path("manage.py").read_text(encoding="utf-8")
     match = re.search(r"['\"]DJANGO_SETTINGS_MODULE['\"],\s*['\"]([^.]+)\.settings['\"]", content)
     if match:
         return match.group(1)
-
     print("[red]Error: Could not determine project name from manage.py[/red]")
     return None
 
 
-def add_spectacular_to_installed_apps(name: str):
-    """Add drf-spectacular to INSTALLED_APPS in settings.py."""
+def add_spectacular_to_installed_apps(name: str):  # type: ignore[no-untyped-def]
+    """Add rest_framework to INSTALLED_APPS if not present."""
     settings_path = Path(f"{name}/settings.py")
     if not settings_path.exists():
         print(f"[red]Error: {name}/settings.py not found.[/red]")
-        return False
-
+        return
     content = settings_path.read_text(encoding="utf-8")
+    if "rest_framework" not in content:
+        content = content.replace(
+            "INSTALLED_APPS = [",
+            'INSTALLED_APPS = [\n    "rest_framework",',
+        )
+        settings_path.write_text(content, encoding="utf-8")
+        print("[green]✔ Added rest_framework to INSTALLED_APPS[/green]")
+    if "drf_spectacular" not in content:
+        content = settings_path.read_text(encoding="utf-8")
+        content = content.replace(
+            "INSTALLED_APPS = [",
+            'INSTALLED_APPS = [\n    "drf_spectacular",',
+        )
+        settings_path.write_text(content, encoding="utf-8")
+        print("[green]✔ Added drf_spectacular to INSTALLED_APPS[/green]")
 
-    # Check if already installed
-    if "drf_spectacular" in content:
-        print("[yellow]Warning: drf-spectacular already in INSTALLED_APPS. Skipping.[/yellow]")
-        return True
 
-    # Add to INSTALLED_APPS
-    content = content.replace("'rest_framework',", "'rest_framework',\n    'drf_spectacular',")
-
-    settings_path.write_text(content, encoding="utf-8")
-    print(f"[green]✔ Added drf-spectacular to INSTALLED_APPS[/green]")
-    return True
-
-
-def add_spectacular_settings(name: str):
-    """Add Spectacular settings to settings.py."""
+def add_spectacular_settings(name: str):  # type: ignore[no-untyped-def]
+    """Add drf-spectacular settings to settings.py."""
     settings_path = Path(f"{name}/settings.py")
     if not settings_path.exists():
         print(f"[red]Error: {name}/settings.py not found.[/red]")
-        return False
-
+        return
     content = settings_path.read_text(encoding="utf-8")
-
-    # Check if already configured
     if "SPECTACULAR_SETTINGS" in content:
-        print("[yellow]Warning: SPECTACULAR_SETTINGS already in settings.py. Skipping.[/yellow]")
-        return True
-
-    # Add Spectacular settings
-    spectacular_settings = """
-
-# ── Swagger / ReDoc ───────────────────────────────────────────────────────────
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'API Documentation',
-    'DESCRIPTION': 'Project API Documentation',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-}
-
-# Update REST_FRAMEWORK to use Spectacular as schema class
-REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
-"""
-
+        print("[yellow]⚠ SPECTACULAR_SETTINGS already exists in settings.py[/yellow]")
+        return
+    spectacular_settings = (
+        "\n# ── API Documentation (drf-spectacular) ─────────────────────────────────\n"
+        "SPECTACULAR_SETTINGS = {\n"
+        f'    "TITLE": "{name.title()} API",\n'
+        '    "DESCRIPTION": "API documentation",\n'
+        '    "VERSION": "1.0.0",\n'
+        '    "SERVE_INCLUDE_SCHEMA": False,\n'
+        '    "SWAGGER_UI_SETTINGS": {\n'
+        '        "deepLinking": True,\n'
+        '        "filter": True,\n'
+        "    },\n"
+        '    "TAGS": [],\n'
+        "}\n"
+    )
     content += spectacular_settings
     settings_path.write_text(content, encoding="utf-8")
-    print(f"[green]✔ Added Spectacular settings to {name}/settings.py[/green]")
-    return True
+    print("[green]✔ Added SPECTACULAR_SETTINGS to settings.py[/green]")
 
 
-def generate_api_docs_urls(name: str):
-    """Generate API documentation URLs."""
+def generate_api_docs_urls(name: str):  # type: ignore[no-untyped-def]
+    """Add API documentation URL patterns to urls.py."""
     urls_path = Path(f"{name}/urls.py")
     if not urls_path.exists():
         print(f"[red]Error: {name}/urls.py not found.[/red]")
-        return False
-
+        return
     content = urls_path.read_text(encoding="utf-8")
-
-    # Check if already configured
-    if "SpectacularAPIView" in content:
-        print("[yellow]Warning: API docs URLs already configured. Skipping.[/yellow]")
-        return True
-
-    # Add imports
+    if "api/schema" in content:
+        print("[yellow]⚠ API docs URLs already exist in urls.py[/yellow]")
+        return
     content = content.replace(
         "from django.urls import path",
-        """from django.urls import path
-from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView""",
+        "from django.urls import path, include",
     )
-
-    # Add API docs URLs
-    api_docs_urls = """
-    # API Documentation
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),"""
-
-    content = content.replace("urlpatterns = [", f"urlpatterns = [{api_docs_urls}")
-
+    doc_url = (
+        '\n    path("/api/schema", SpectacularAPIView.as_view(), name="schema"),\n'
+        '    path("/api/schema/swagger-ui", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),\n'
+        '    path("/api/schema/redoc", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),\n'
+    )
+    content = content.replace(
+        "urlpatterns = [",
+        "from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView\n\nurlpatterns = [" + doc_url,
+    )
     urls_path.write_text(content, encoding="utf-8")
-    print(f"[green]✔ Added API docs URLs to {name}/urls.py[/green]")
-    return True
+    print("[green]✔ Added API documentation URLs to urls.py[/green]")
 
 
-def add_spectacular_to_requirements():
-    """Add drf-spectacular to requirements.txt if not present."""
-    requirements_path = Path("requirements.txt")
+def add_spectacular_to_requirements():  # type: ignore[no-untyped-def]
+    """Add drf-spectacular to requirements.txt."""
+    req_path = Path("requirements.txt")
+    packages = ["drf-spectacular>=0.27,<1", "uritemplate>=4.1,<5"]
+    existing = req_path.read_text(encoding="utf-8") if req_path.exists() else ""
+    added = []
+    for pkg in packages:
+        name = pkg.split(">=")[0].split("<")[0].split("==")[0]
+        if name not in existing:
+            with open("requirements.txt", "a", encoding="utf-8") as f:
+                f.write(f"{pkg}\n")
+            added.append(pkg)
+    if added:
+        print(f"[green]✔ Added to requirements.txt: {', '.join(added)}[/green]")
 
-    existing_packages = []
-    if requirements_path.exists():
-        existing_content = requirements_path.read_text(encoding="utf-8")
-        existing_packages = existing_content.lower()
 
-    packages_to_add = []
-    if "drf-spectacular" not in existing_packages:
-        packages_to_add.append("drf-spectacular>=0.27,<1")
+def generate_api_docs_files(name: str, doc_type: str = "both"):  # type: ignore[no-untyped-def]
+    """Generate API documentation files for the project."""
+    changes = []
+    if doc_type in ("swagger", "both"):
+        changes.extend(_generate_spectacular_files(name))
+    if doc_type in ("redoc", "both"):
+        changes.extend(_generate_redoc_files(name))
+    changes.extend(_update_url_patterns(name))
+    changes.extend(_update_settings(name, doc_type))
+    return changes
 
-    if packages_to_add:
-        with open(requirements_path, "a", encoding="utf-8") as f:
-            for package in packages_to_add:
-                f.write(f"{package}\n")
-        print(f"[green]✔ Added drf-spectacular to requirements.txt[/green]")
-    else:
-        print("[yellow]Warning: drf-spectacular already in requirements.txt. Skipping.[/yellow]")
+
+def _generate_spectacular_files(name: str):  # type: ignore[no-untyped-def]
+    """Generate drf-spectacular configuration."""
+    content = (
+        "# Auto-generated API schema configuration\n"
+        "from drf_spectacular.openapi import AutoSchema\n"
+        "\n"
+        "\n"
+        "class CustomAutoSchema(AutoSchema):\n"
+        '    """Custom schema class for drf-spectacular."""\n'
+        "\n"
+        "    def get_tags(self, path, method):  # type: ignore[no-untyped-def]\n"
+        '        """Return tags based on path prefix."""\n'
+        '        path_parts = path.strip("/").split("/")\n'
+        '        if len(path_parts) >= 2 and path_parts[0] == "api":\n'
+        "            return [path_parts[1].title()]\n"
+        '        return ["default"]\n'
+    )
+    return [FileChange(path=f"{name}/schemas.py", content=content, action="create")]
+
+
+def _generate_redoc_files(name: str):  # type: ignore[no-untyped-def]
+    """Generate ReDoc configuration."""
+    content = (
+        "# ReDoc configuration\n"
+        "REDOC_SETTINGS = {\n"
+        '    "SPEC_URL": ["/api/schema", "yaml"],\n'
+        '    "HIDE_HOSTNAME": True,\n'
+        '    "NATIVE_SCROLLBAR": True,\n'
+        '    "FOOTER": "",\n'
+        "}\n"
+    )
+    return [FileChange(path=f"{name}/redoc_config.py", content=content, action="create")]
+
+
+def _update_url_patterns(name: str):  # type: ignore[no-untyped-def]
+    """Add API documentation URL patterns."""
+    content = (
+        "# Auto-generated URL patterns for API documentation\n"
+        "from django.urls import path\n"
+        "from drf_spectacular.views import (\n"
+        "    SpectacularAPIView,\n"
+        "    SpectacularSwaggerView,\n"
+        "    SpectacularRedocView,\n"
+        ")\n"
+        "\n"
+        "urlpatterns = [\n"
+        '    path("/api/schema", SpectacularAPIView.as_view(), name="schema"),\n'
+        '    path("/api/schema/swagger-ui", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),\n'
+        '    path("/api/schema/redoc", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),\n'
+        "]\n"
+    )
+    return [FileChange(path=f"{name}/urls_docs.py", content=content, action="create")]
+
+
+def _update_settings(name: str, doc_type: str):  # type: ignore[no-untyped-def]
+    """Add API documentation settings."""
+    lines = [
+        "# ── API Documentation (drf-spectacular) ─────────────────────────────────",
+        "SPECTACULAR_SETTINGS = {",
+        f'    "TITLE": "{name.title()} API",',
+        '    "DESCRIPTION": "API documentation",',
+        '    "VERSION": "1.0.0",',
+        '    "SERVE_INCLUDE_SCHEMA": False,',
+        '    "SWAGGER_UI_SETTINGS": {',
+        '        "deepLinking": True,',
+        '        "filter": True,',
+        "    },",
+        '    "TAGS": [],',
+        "}",
+    ]
+    if doc_type in ("redoc", "both"):
+        lines.extend([
+            "",
+            "# ReDoc settings",
+            "REDOC_SETTINGS = {",
+            '    "HIDE_HOSTNAME": True,',
+            "}",
+        ])
+
+    return [FileChange(path=f"{name}/settings_docs.py", content="\n".join(lines), action="create")]

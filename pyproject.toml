@@ -1,6 +1,6 @@
 [project]
 name = "djboost"
-version = "0.6.5"
+version = "0.7.0"
 description = "The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features. djboost gives you a production-ready Django foundation in seconds — DRF, JWT, testing, and more. Build incrementally, ship confidently."
 readme = "README.md"
 requires-python = ">=3.10,<4"
@@ -38,6 +38,12 @@ classifiers = [
   "Topic :: Software Development :: Code Generators",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
 [project.urls]
 Homepage = "https://github.com/munjurdev/djboost"
 Repository = "https://github.com/munjurdev/djboost"
@@ -52,6 +58,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["djboost*"]
+
+[tool.setuptools.package-data]
+djboost = ["py.typed"]
 
 [tool.isort]
 profile = "black"

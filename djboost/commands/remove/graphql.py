@@ -29,7 +29,6 @@ def remove_graphql_command(
     if dry_run:
         return
 
-    # Remove schema.py
     settings_files = list(Path(".").glob("*/settings.py"))
     project_name = settings_files[0].parent.name if settings_files else None
     if project_name:
@@ -38,7 +37,6 @@ def remove_graphql_command(
             schema_path.unlink()
             print(f"[green]✔ Removed {project_name}/schema.py[/green]")
 
-    # Remove GraphQL URLs
     if settings_files:
         urls_path = Path(f"{project_name}/urls.py")
         if urls_path.exists():
@@ -48,7 +46,6 @@ def remove_graphql_command(
             urls_path.write_text(content, encoding="utf-8")
             print(f"[green]✔ Removed GraphQL URL from {project_name}/urls.py[/green]")
 
-    # Remove from requirements.txt
     req_path = Path("requirements.txt")
     if req_path.exists():
         content = req_path.read_text(encoding="utf-8")

@@ -3,11 +3,7 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.security import (
-    add_security_to_requirements,
-    get_project_name,
-    update_settings_security,
-)
+from djboost.generators.security import add_security_to_requirements, get_project_name, update_settings_security
 
 
 def add_security_command(
@@ -31,13 +27,14 @@ def add_security_command(
         print("[yellow]⚠ Security Headers are already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_security():
+        update_settings_security(name)
+        add_security_to_requirements()
 
-    print("\n[cyan]━━━ Applying Security Headers ━━━[/cyan]")
-    update_settings_security(name)
-    add_security_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_security)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Security Headers added successfully![/bold green]")

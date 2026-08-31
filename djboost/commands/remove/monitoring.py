@@ -32,14 +32,12 @@ def remove_monitoring_command(
     settings_files = list(Path(".").glob("*/settings.py"))
     project_name = settings_files[0].parent.name if settings_files else None
 
-    # Remove telemetry.py
     if project_name:
         telemetry_path = Path(f"{project_name}/telemetry.py")
         if telemetry_path.exists():
             telemetry_path.unlink()
             print(f"[green]✔ Removed {project_name}/telemetry.py[/green]")
 
-    # Remove from wsgi.py
     if project_name:
         wsgi_path = Path(f"{project_name}/wsgi.py")
         if wsgi_path.exists():
@@ -49,7 +47,6 @@ def remove_monitoring_command(
             wsgi_path.write_text(content, encoding="utf-8")
             print(f"[green]✔ Removed telemetry init from {project_name}/wsgi.py[/green]")
 
-    # Remove from settings.py
     if settings_files:
         settings_path = settings_files[0]
         content = settings_path.read_text(encoding="utf-8")

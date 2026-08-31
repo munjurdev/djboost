@@ -100,70 +100,32 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         ADMIN = "ADMIN", "Admin"
         USER = "USER", "User"
 
-    id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     full_name = models.CharField(max_length=255)
 
-    email = models.EmailField(
-        unique=True,
-    )
+    email = models.EmailField(unique=True)
 
-    role = models.CharField(
-        max_length=20,
-        choices=Role.choices,
-        default=Role.USER,
-        db_index=True,
-    )
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.USER, db_index=True)
 
     # Profile
-    avatar = models.ImageField(
-        upload_to="avatars/",
-        blank=True,
-        null=True,
-    )
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
 
-    bio = models.TextField(
-        blank=True,
-        null=True,
-    )
+    bio = models.TextField(blank=True, null=True)
 
-    website = models.URLField(
-        blank=True,
-        null=True,
-    )
+    website = models.URLField(blank=True, null=True)
 
     # User Settings
     push_notification = models.BooleanField(default=True)
 
     daily_reminder = models.BooleanField(default=False)
 
-    reminder_time = models.TimeField(
-        blank=True,
-        null=True,
-    )
+    reminder_time = models.TimeField(blank=True, null=True)
 
     # Social Login
-    google_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
+    social_id = models.CharField(max_length=255, blank=True, null=True)
 
-    facebook_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
-
-    apple_id = models.CharField(
-        max_length=255,
-        blank=True,
-        null=True,
-    )
+    social_provider = models.CharField(max_length=20, blank=True, null=True, choices=[("google", "Google"), ("facebook", "Facebook"), ("apple", "Apple")])
 
     # Account Status
     is_verified = models.BooleanField(default=False)
@@ -175,16 +137,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_staff = models.BooleanField(default=False)
 
     # Security
-    reset_secret_key = models.UUIDField(
-        default=uuid.uuid4,
-        editable=False,
-    )
+    reset_secret_key = models.UUIDField(default=uuid.uuid4, editable=False)
 
     # Admin invitation validity
-    invitation_expires_at = models.DateTimeField(
-        blank=True,
-        null=True,
-    )
+    invitation_expires_at = models.DateTimeField(blank=True, null=True)
 
     objects = UserManager()
 
@@ -196,41 +152,19 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         ordering = ["-created_at"]
 
         constraints = [
-            models.UniqueConstraint(
-                fields=["google_id"],
-                condition=models.Q(google_id__isnull=False),
-                name="unique_google_id",
-            ),
-            models.UniqueConstraint(
-                fields=["facebook_id"],
-                condition=models.Q(facebook_id__isnull=False),
-                name="unique_facebook_id",
-            ),
-            models.UniqueConstraint(
-                fields=["apple_id"],
-                condition=models.Q(apple_id__isnull=False),
-                name="unique_apple_id",
-            ),
+            models.UniqueConstraint(fields=["social_id", "social_provider"], condition=models.Q(social_id__isnull=False), name="unique_social_account"),
         ]
 
     def clean(self):
-        if (
-            self.role == self.Role.SUPER_ADMIN
-            and self.is_blocked
-        ):
-            raise ValidationError(
-                _("Super Admin cannot be blocked.")
-            )
+        if self.role == self.Role.SUPER_ADMIN and self.is_blocked:
+            raise ValidationError(_("Super Admin cannot be blocked."))
 
     def __str__(self):
         return self.full_name
 
     @property
     def is_admin(self):
-        return self.role in (
-            self.Role.SUPER_ADMIN,
-            self.Role.ADMIN,
-        )
+        return self.role in (self.Role.SUPER_ADMIN, self.Role.ADMIN)
 
     @property
     def is_super_admin(self):
@@ -258,19 +192,9 @@ class AdminSectionPermission(TimeStampedModel):
         EDIT = "EDIT", "Edit"
         DELETE = "DELETE", "Delete"
 
-    section = models.CharField(
-        max_length=50,
-        choices=Section.choices,
-        unique=True,
-        verbose_name="Section",
-    )
+    section = models.CharField(max_length=50, choices=Section.choices, unique=True, verbose_name="Section")
 
-    access = models.CharField(
-        max_length=10,
-        choices=Access.choices,
-        default=Access.NONE,
-        verbose_name="Access Level",
-    )
+    access = models.CharField(max_length=10, choices=Access.choices, default=Access.NONE, verbose_name="Access Level")
 
     class Meta:
         db_table = "admin_section_permissions"
@@ -286,28 +210,15 @@ class EmailOTP(TimeStampedModel):
         SIGNUP = "SIGNUP", "Signup"
         RESET_PASSWORD = "RESET_PASSWORD", "Reset Password"
 
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="email_otps",
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_otps")
 
-    code = models.CharField(
-        max_length=6,
-    )
+    code = models.CharField(max_length=6)
 
-    purpose = models.CharField(
-        max_length=30,
-        choices=Purpose.choices,
-    )
+    purpose = models.CharField(max_length=30, choices=Purpose.choices)
 
-    is_used = models.BooleanField(
-        default=False,
-    )
+    is_used = models.BooleanField(default=False)
 
-    attempt_count = models.PositiveSmallIntegerField(
-        default=0,
-    )
+    attempt_count = models.PositiveSmallIntegerField(default=0)
 
     expires_at = models.DateTimeField()
 
@@ -315,10 +226,7 @@ class EmailOTP(TimeStampedModel):
         db_table = "email_otps"
         ordering = ["-created_at"]
 
-        indexes = [
-            models.Index(fields=["user", "purpose"]),
-            models.Index(fields=["expires_at"]),
-        ]
+        indexes = [models.Index(fields=["user", "purpose"]), models.Index(fields=["expires_at"])]
 
     def __str__(self):
         return f"{self.user.email} - {self.purpose}"
@@ -472,11 +380,7 @@ from celery import shared_task
 logger = logging.getLogger(__name__)
 
 
-@shared_task(
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_kwargs={"max_retries": 3},
-)
+@shared_task(autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
 def send_otp_email_task(user_id, otp_code, purpose):
     """
     Send an OTP verification code via email in the background.
@@ -502,11 +406,7 @@ def send_otp_email_task(user_id, otp_code, purpose):
     logger.info(f"OTP email sent to {user.email}: {otp_code} ({purpose})")
 
 
-@shared_task(
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_kwargs={"max_retries": 3},
-)
+@shared_task(autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
 def send_admin_invitation_email_task(user_id, invitation_link):
     """
     Send an admin invitation email with a link to set password.
@@ -519,11 +419,7 @@ def send_admin_invitation_email_task(user_id, invitation_link):
     logger.info(f"Admin invitation sent to {user.email}: {invitation_link}")
 
 
-@shared_task(
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_kwargs={"max_retries": 3},
-)
+@shared_task(autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
 def send_admin_removed_email_task(user_id):
     """
     Notify a user that their admin access has been removed.
@@ -536,11 +432,7 @@ def send_admin_removed_email_task(user_id):
     logger.info(f"Admin removed notification sent to {user.email}")
 
 
-@shared_task(
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_kwargs={"max_retries": 3},
-)
+@shared_task(autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
 def send_admin_restored_email_task(user_id):
     """
     Notify a user that their admin access has been restored.
@@ -619,25 +511,13 @@ class SignUpView(APIView):
         
         # Generate OTP
         otp_code = EmailOTP.generate_code()
-        otp = EmailOTP.objects.create(
-            user=user,
-            code=otp_code,
-            purpose=EmailOTP.Purpose.SIGNUP,
-            expires_at=EmailOTP.default_expiry(minutes=5),
-        )
+        otp = EmailOTP.objects.create(user=user, code=otp_code, purpose=EmailOTP.Purpose.SIGNUP, expires_at=EmailOTP.default_expiry(minutes=5))
         
         # TODO: Send OTP email via Celery task
         # from apps.accounts.tasks import send_otp_email_task
         # send_otp_email_task.delay(str(user.id), otp_code, "SIGNUP")
         
-        return Response(
-            {
-                "success": True,
-                "message": "Verification code sent to your email.",
-                "data": {"email": user.email},
-            },
-            status=status.HTTP_201_CREATED,
-        )
+        return Response({"success": True, "message": "Verification code sent to your email.", "data": {"email": user.email}}, status=status.HTTP_201_CREATED)
 
 
 class VerifyEmailView(APIView):
@@ -662,19 +542,10 @@ class VerifyEmailView(APIView):
         user = User.objects.get(email=email)
         
         # Find valid OTP
-        otp = EmailOTP.objects.filter(
-            user=user,
-            code=code,
-            purpose=EmailOTP.Purpose.SIGNUP,
-            is_used=False,
-            expires_at__gt=timezone.now(),
-        ).first()
+        otp = EmailOTP.objects.filter(user=user, code=code, purpose=EmailOTP.Purpose.SIGNUP, is_used=False, expires_at__gt=timezone.now()).first()
         
         if not otp:
-            return Response(
-                {"success": False, "message": "Invalid or expired code."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"success": False, "message": "Invalid or expired code."}, status=status.HTTP_400_BAD_REQUEST)
         
         # Mark user as verified
         user.is_verified = True
@@ -683,10 +554,7 @@ class VerifyEmailView(APIView):
         # Mark OTP as used
         otp.mark_as_used()
         
-        return Response(
-            {"success": True, "message": "Email verified successfully."},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Email verified successfully."}, status=status.HTTP_200_OK)
 
 
 class ResendVerificationCodeView(APIView):
@@ -708,27 +576,15 @@ class ResendVerificationCodeView(APIView):
         user = User.objects.get(email=email)
         
         # Invalidate old OTPs
-        EmailOTP.objects.filter(
-            user=user,
-            purpose=EmailOTP.Purpose.SIGNUP,
-            is_used=False,
-        ).update(is_used=True)
+        EmailOTP.objects.filter(user=user, purpose=EmailOTP.Purpose.SIGNUP, is_used=False).update(is_used=True)
         
         # Generate new OTP
         otp_code = EmailOTP.generate_code()
-        otp = EmailOTP.objects.create(
-            user=user,
-            code=otp_code,
-            purpose=EmailOTP.Purpose.SIGNUP,
-            expires_at=EmailOTP.default_expiry(minutes=5),
-        )
+        otp = EmailOTP.objects.create(user=user, code=otp_code, purpose=EmailOTP.Purpose.SIGNUP, expires_at=EmailOTP.default_expiry(minutes=5))
         
         # TODO: Send OTP email via Celery task
         
-        return Response(
-            {"success": True, "message": "Verification code resent."},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Verification code resent."}, status=status.HTTP_200_OK)
 
 
 class SignInView(APIView):
@@ -753,24 +609,13 @@ class SignInView(APIView):
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
         
-        return Response(
-            {
-                "success": True,
-                "message": "Login successful.",
-                "data": {
-                    "access": str(refresh.access_token),
-                    "refresh": str(refresh),
-                    "user": {
-                        "id": str(user.id),
-                        "email": user.email,
-                        "full_name": user.full_name,
-                        "role": user.role,
-                        "avatar": user.avatar.url if user.avatar else None,
-                    },
-                },
+        return Response({
+            "success": True, "message": "Login successful.",
+            "data": {
+                "access": str(refresh.access_token), "refresh": str(refresh),
+                "user": {"id": str(user.id), "email": user.email, "full_name": user.full_name, "role": user.role, "avatar": user.avatar.url if user.avatar else None},
             },
-            status=status.HTTP_200_OK,
-        )
+        }, status=status.HTTP_200_OK)
 
 
 class RefreshAccessTokenView(APIView):
@@ -788,29 +633,14 @@ class RefreshAccessTokenView(APIView):
         refresh_token = request.data.get("refresh")
         
         if not refresh_token:
-            return Response(
-                {"success": False, "message": "Refresh token required."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"success": False, "message": "Refresh token required."}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             from rest_framework_simplejwt.tokens import RefreshToken
             refresh = RefreshToken(refresh_token)
-            return Response(
-                {
-                    "success": True,
-                    "data": {
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
-                    },
-                },
-                status=status.HTTP_200_OK,
-            )
+            return Response({"success": True, "data": {"access": str(refresh.access_token), "refresh": str(refresh)}}, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response(
-                {"success": False, "message": "Invalid refresh token."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            return Response({"success": False, "message": "Invalid refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SocialLoginView(APIView):
@@ -830,21 +660,14 @@ class SocialLoginView(APIView):
         serializer.is_valid(raise_exception=True)
         
         provider = serializer.validated_data["provider"]
-        access_token = serializer.validated_data["access_token"]
+        social_id = serializer.validated_data["social_id"]
         
         # TODO: Implement social login logic
         # 1. Verify token with provider
-        # 2. Get user info (email, name, provider_id)
-        # 3. Find or create user
-        # 4. Generate JWT tokens
+        # 2. Find or create user by social_id + provider
+        # 3. Generate JWT tokens
         
-        return Response(
-            {
-                "success": False,
-                "message": "Social login not implemented yet.",
-            },
-            status=status.HTTP_501_NOT_IMPLEMENTED,
-        )
+        return Response({"success": False, "message": "Social login not implemented yet."}, status=status.HTTP_501_NOT_IMPLEMENTED)
 '''
     Path("apps/accounts/views/auth.py").write_text(auth_content, encoding="utf-8")
 
@@ -883,19 +706,11 @@ class ForgotPasswordRequestView(APIView):
         
         # Generate OTP
         otp_code = EmailOTP.generate_code()
-        otp = EmailOTP.objects.create(
-            user=user,
-            code=otp_code,
-            purpose=EmailOTP.Purpose.RESET_PASSWORD,
-            expires_at=EmailOTP.default_expiry(minutes=5),
-        )
+        otp = EmailOTP.objects.create(user=user, code=otp_code, purpose=EmailOTP.Purpose.RESET_PASSWORD, expires_at=EmailOTP.default_expiry(minutes=5))
         
         # TODO: Send OTP email via Celery task
         
-        return Response(
-            {"success": True, "message": "Reset code sent to your email."},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Reset code sent to your email."}, status=status.HTTP_200_OK)
 
 
 class VerifyResetCodeView(APIView):
@@ -919,40 +734,20 @@ class VerifyResetCodeView(APIView):
         
         user = User.objects.get(email=email)
         
-        # Find valid OTP
-        otp = EmailOTP.objects.filter(
-            user=user,
-            code=code,
-            purpose=EmailOTP.Purpose.RESET_PASSWORD,
-            is_used=False,
-            expires_at__gt=timezone.now(),
-        ).first()
+        otp = EmailOTP.objects.filter(user=user, code=code, purpose=EmailOTP.Purpose.RESET_PASSWORD, is_used=False, expires_at__gt=timezone.now()).first()
         
         if not otp:
-            return Response(
-                {"success": False, "message": "Invalid or expired code."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"success": False, "message": "Invalid or expired code."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Generate reset token
         import uuid
         reset_token = str(uuid.uuid4())
         
-        # Store reset token in user model
         user.reset_secret_key = reset_token
         user.save(update_fields=["reset_secret_key"])
         
-        # Mark OTP as used
         otp.mark_as_used()
         
-        return Response(
-            {
-                "success": True,
-                "message": "Code verified. Use the reset token to change password.",
-                "data": {"reset_token": reset_token},
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Code verified. Use the reset token to change password.", "data": {"reset_token": reset_token}}, status=status.HTTP_200_OK)
 
 
 class ResetPasswordView(APIView):
@@ -978,19 +773,12 @@ class ResetPasswordView(APIView):
         user = User.objects.filter(reset_secret_key=reset_token).first()
         
         if not user:
-            return Response(
-                {"success": False, "message": "Invalid reset token."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"success": False, "message": "Invalid reset token."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Update password
         user.set_password(new_password)
         user.save(update_fields=["password"])
         
-        return Response(
-            {"success": True, "message": "Password reset successfully."},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Password reset successfully."}, status=status.HTTP_200_OK)
 
 
 class ChangePasswordView(APIView):
@@ -1014,21 +802,13 @@ class ChangePasswordView(APIView):
         
         user = request.user
         
-        # Check old password
         if not user.check_password(old_password):
-            return Response(
-                {"success": False, "message": "Old password is incorrect."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"success": False, "message": "Old password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Update password
         user.set_password(new_password)
         user.save(update_fields=["password"])
         
-        return Response(
-            {"success": True, "message": "Password changed successfully."},
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Password changed successfully."}, status=status.HTTP_200_OK)
 '''
     Path("apps/accounts/views/password.py").write_text(password_content, encoding="utf-8")
 
@@ -1066,23 +846,11 @@ class MyAccountView(APIView):
         )
 
     def put(self, request):
-        serializer = UserProfileSerializer(
-            request.user,
-            data=request.data,
-            partial=True,
-            context={"request": request},
-        )
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         
-        return Response(
-            {
-                "success": True,
-                "message": "Profile updated successfully.",
-                "data": serializer.data,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({"success": True, "message": "Profile updated successfully.", "data": serializer.data}, status=status.HTTP_200_OK)
 '''
     Path("apps/accounts/views/profile.py").write_text(profile_content, encoding="utf-8")
 
@@ -1176,7 +944,7 @@ class SocialLoginSerializer(serializers.Serializer):
     PROVIDER_CHOICES = [("google", "Google"), ("facebook", "Facebook"), ("apple", "Apple")]
     
     provider = serializers.ChoiceField(choices=PROVIDER_CHOICES)
-    access_token = serializers.CharField()
+    social_id = serializers.CharField()
 """
     Path("apps/accounts/serializers/auth.py").write_text(auth_content, encoding="utf-8")
 
@@ -1322,7 +1090,7 @@ class UserAdmin(BaseUserAdmin):
         ("Personal Info", {"fields": ("full_name", "avatar", "bio", "website")}),
         ("Roles & Status", {"fields": ("role", "is_verified", "is_blocked", "is_active", "is_staff")}),
         ("Settings", {"fields": ("push_notification", "daily_reminder", "reminder_time")}),
-        ("Social Login", {"fields": ("google_id", "facebook_id", "apple_id")}),
+        ("Social Login", {"fields": ("social_id", "social_provider")}),
     )
     
     add_fieldsets = (
@@ -1429,7 +1197,7 @@ def update_project_urls(name: str):
     # Add URL pattern
     content = content.replace(
         "urlpatterns = [",
-        'urlpatterns = [\n    path("api/auth", include("apps.accounts.urls")),',
+        'urlpatterns = [\n    path("/api/auth", include("apps.accounts.urls")),',
     )
 
     urls_path.write_text(content, encoding="utf-8")

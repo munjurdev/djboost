@@ -1,12 +1,9 @@
-"""
-Tests for Django/Python compatibility — verify dependency version ranges
+"""Tests for Django/Python compatibility — verify dependency version ranges
 support modern Django releases (5.x, 6.x) and Python 3.12-3.14.
 """
 import os
-import sys
 from pathlib import Path
 
-import pytest
 
 # Project root is one level up from tests/
 PROJECT_ROOT = Path(__file__).parent.parent

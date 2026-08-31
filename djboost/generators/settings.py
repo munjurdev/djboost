@@ -93,6 +93,7 @@ def _build_extra_config(name: str) -> str:
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+APPEND_SLASH = False
 STORAGES = {{
     "staticfiles": {{
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",

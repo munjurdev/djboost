@@ -3,11 +3,7 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.sentry import (
-    add_sentry_to_requirements,
-    add_sentry_to_settings,
-    get_project_name,
-)
+from djboost.generators.sentry import add_sentry_to_requirements, add_sentry_to_settings, get_project_name
 
 
 def add_sentry_command(
@@ -31,13 +27,14 @@ def add_sentry_command(
         print("[yellow]⚠ Sentry is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_sentry():
+        add_sentry_to_settings(name)
+        add_sentry_to_requirements()
 
-    print("\n[cyan]━━━ Applying Sentry configuration ━━━[/cyan]")
-    add_sentry_to_settings(name)
-    add_sentry_to_requirements()
+    record = execute_plan(plan, project_name=name, apply_fn=apply_sentry)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Sentry added successfully![/bold green]")

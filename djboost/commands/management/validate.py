@@ -1,8 +1,5 @@
 """djboost validate — validate project structure and configuration."""
 
-import os
-import re
-import sys
 from pathlib import Path
 
 from rich import print

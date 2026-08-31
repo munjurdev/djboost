@@ -2,17 +2,9 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.celery import (
-    generate_celery_files,
-    get_project_name,
-    update_settings_celery,
-)
-from djboost.generators.dependencies import freeze_requirements
-from djboost.generators.safe_engine import (
-    execute_plan,
-    generate_add_plan,
-    scan_enabled_features,
-)
+from djboost.generators.celery import generate_celery_files, get_project_name, update_settings_celery
+from djboost.generators.dependencies import add_to_requirements
+from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
 
 
 def add_celery_command(
@@ -28,7 +20,6 @@ def add_celery_command(
 
     print(f"\n[bold green]🚀 Adding Celery to project: {name}[/bold green]\n")
 
-    # Generate plan through safe engine
     plan = generate_add_plan("celery", dry_run=dry_run, project_name=name, force=force)
 
     if plan.errors and not dry_run:
@@ -40,18 +31,15 @@ def add_celery_command(
         print("[yellow]⚠ Celery is already configured.[/yellow]")
         raise typer.Exit(0)
 
-    # Execute plan (dry-run or real)
-    record = execute_plan(plan, project_name=name)
+    def apply_celery():
+        generate_celery_files(name)
+        update_settings_celery(name)
+        add_to_requirements(["celery>=5.4,<6", "redis>=5.0,<6"])
 
-    if dry_run:
-        raise typer.Exit(0)
+    record = execute_plan(plan, project_name=name, apply_fn=apply_celery)
 
-    # Apply the actual file changes (the safe engine handled packages + validation)
-    print("\n[cyan]━━━ Applying Celery configuration ━━━[/cyan]")
-
-    generate_celery_files(name)
-    update_settings_celery(name)
-    freeze_requirements()
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Celery added successfully![/bold green]")

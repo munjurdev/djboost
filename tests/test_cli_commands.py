@@ -52,7 +52,7 @@ class TestVersionCommand:
         """--version should show the version number."""
         result = runner.invoke(app, ["--version"])
         assert result.exit_code == 0
-        assert "0.6." in result.output
+        assert "0.7." in result.output
 
 
 class TestValidateCommand:

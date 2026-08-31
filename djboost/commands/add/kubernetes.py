@@ -27,12 +27,13 @@ def add_kubernetes_command(
         print("[yellow]⚠ Kubernetes manifests already exist.[/yellow]")
         raise typer.Exit(0)
 
-    record = execute_plan(plan, project_name=name)
-    if dry_run:
-        raise typer.Exit(0)
+    def apply_kubernetes():
+        generate_k8s_manifests(name)
 
-    print("\n[cyan]━━━ Applying Kubernetes manifests ━━━[/cyan]")
-    generate_k8s_manifests(name)
+    record = execute_plan(plan, project_name=name, apply_fn=apply_kubernetes)
+
+    if dry_run or record is None and plan.errors:
+        raise typer.Exit(1 if plan.errors else 0)
 
     print()
     print("[bold green]✅ Kubernetes manifests added successfully![/bold green]")

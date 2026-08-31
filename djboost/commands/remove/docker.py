@@ -18,7 +18,6 @@ def remove_docker_command(
 
     print("\n[bold green]🔄 Removing Docker...[/bold green]\n")
 
-    # Generate plan through safe engine
     plan = generate_remove_plan("docker", dry_run=dry_run, force=force)
 
     if plan.errors and not dry_run:
@@ -30,16 +29,13 @@ def remove_docker_command(
         print("[yellow]⚠ Docker is not currently configured.[/yellow]")
         return
 
-    # Execute plan (dry-run or real)
     record = execute_plan(plan)
 
     if dry_run:
         return
 
-    # Apply the actual file changes
     removed = []
 
-    # 1. Remove Dockerfile
     if Path("Dockerfile").exists():
         Path("Dockerfile").unlink()
         removed.append("Dockerfile")
@@ -47,7 +43,6 @@ def remove_docker_command(
     else:
         print("[yellow]⚠ Dockerfile not found, skipping[/yellow]")
 
-    # 2. Remove docker-compose.yml
     if Path("docker-compose.yml").exists():
         Path("docker-compose.yml").unlink()
         removed.append("docker-compose.yml")
@@ -55,7 +50,6 @@ def remove_docker_command(
     else:
         print("[yellow]⚠ docker-compose.yml not found, skipping[/yellow]")
 
-    # 3. Remove .dockerignore
     if Path(".dockerignore").exists():
         Path(".dockerignore").unlink()
         removed.append(".dockerignore")
@@ -63,7 +57,6 @@ def remove_docker_command(
     else:
         print("[yellow]⚠ .dockerignore not found, skipping[/yellow]")
 
-    # 4. Remove flower from requirements.txt
     requirements_path = Path("requirements.txt")
     if requirements_path.exists():
         content = requirements_path.read_text(encoding="utf-8")
@@ -75,7 +68,7 @@ def remove_docker_command(
 
     print()
     if removed:
-        print(f"[bold green]✅ Docker removed successfully![/bold green]")
+        print("[bold green]✅ Docker removed successfully![/bold green]")
         print(f"  Removed: {', '.join(removed)}")
     else:
         print("[yellow]⚠ No Docker files found to remove.[/yellow]")

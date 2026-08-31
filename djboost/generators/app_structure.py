@@ -251,8 +251,8 @@ from apps.{app_name}.views import {app_name}
 app_name = '{app_name}'
 
 urlpatterns = [
-    path('', {app_name}.{app_name.capitalize()}ListView.as_view(), name='list'),
-    path('<uuid:pk>/', {app_name}.{app_name.capitalize()}DetailView.as_view(), name='detail'),
+    path("", {app_name}.{app_name.capitalize()}ListView.as_view(), name="list"),
+    path("/<uuid:pk>", {app_name}.{app_name.capitalize()}DetailView.as_view(), name="detail"),
 ]
 """
     path = Path(f"apps/{app_name}/urls.py")
