@@ -13,6 +13,10 @@ from pathlib import Path
 
 import pytest
 
+# Capture the real Python executable at import time, before any test
+# can mutate sys.executable via check_virtual_environment().
+_REAL_PYTHON = sys.executable
+
 
 @pytest.fixture
 def temp_dir():
@@ -37,13 +41,13 @@ def djboost_project(temp_dir):
 
     # Install Django first
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "Django", "-q"],
+        [_REAL_PYTHON, "-m", "pip", "install", "Django", "-q"],
         capture_output=True, text=True,
     )
 
     # Create project structure
     subprocess.run(
-        [sys.executable, "-m", "django", "startproject", project_name, "."],
+        [_REAL_PYTHON, "-m", "django", "startproject", project_name, "."],
         capture_output=True, text=True,
     )
 

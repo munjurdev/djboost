@@ -8,6 +8,10 @@ from pathlib import Path
 
 import pytest
 
+# Capture the real Python executable at import time, before any test
+# can mutate sys.executable via check_virtual_environment().
+_REAL_PYTHON = sys.executable
+
 
 def _env():  # type: ignore[no-untyped-def]
     """Return env dict with UTF-8 IO encoding for subprocess."""
@@ -23,8 +27,8 @@ def live_project():
     tmp = Path(tempfile.mkdtemp(prefix="djboost_integ_"))
     os.chdir(tmp)
     project_name = "integtest"
-    subprocess.run([sys.executable, "-m", "pip", "install", "Django", "-q"], capture_output=True, env=_env())
-    subprocess.run([sys.executable, "-m", "django", "startproject", project_name, "."], capture_output=True, env=_env())
+    subprocess.run([_REAL_PYTHON, "-m", "pip", "install", "Django", "-q"], capture_output=True, env=_env())
+    subprocess.run([_REAL_PYTHON, "-m", "django", "startproject", project_name, "."], capture_output=True, env=_env())
     (tmp / "apps").mkdir(exist_ok=True)
     (tmp / "apps" / "__init__.py").touch()
     (tmp / "common").mkdir(exist_ok=True)
@@ -50,7 +54,7 @@ class TestVersionCommand:
     def test_version_returns_version(self):
         result = run_cli("--version")
         assert result.returncode == 0
-        assert "0.7.0" in (result.stdout or "")
+        assert "0.8.0" in (result.stdout or "")
 
 
 class TestFeaturesCommand:

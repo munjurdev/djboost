@@ -33,8 +33,8 @@ def update_settings_postgres(name: str):
         return True
 
     # Replace the DATABASES block
-    new_db = """DATABASES = {
-    'default': {
+    new_db = """DATABASES = {{
+    'default': {{
         'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
         'NAME': config('DB_NAME', default='{name}_db'),
         'USER': config('DB_USER', default='{name}_user'),
@@ -42,11 +42,11 @@ def update_settings_postgres(name: str):
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default=5432, cast=int),
         'CONN_MAX_AGE': config('CONN_MAX_AGE', default=600, cast=int),
-    }
-}""".format(name=name)
+    }}
+}}""".format(name=name)
 
     content = re.sub(
-        r"DATABASES\s*=\s*\{.*?\}\s*\}\s*}",
+        r"DATABASES\s*=\s*\{.*?\}\s*}",
         new_db,
         content,
         flags=re.DOTALL,

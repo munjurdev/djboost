@@ -41,42 +41,42 @@ def info_command():
         import django
 
         packages["Django"] = django.VERSION[:3]
-    except ImportError:
+    except (ImportError, AttributeError):
         packages["Django"] = "not installed"
 
     try:
         import rest_framework
 
         packages["DRF"] = rest_framework.VERSION
-    except ImportError:
+    except (ImportError, AttributeError):
         packages["DRF"] = "not installed"
 
     try:
         import rest_framework_simplejwt
 
         packages["SimpleJWT"] = rest_framework_simplejwt.VERSION
-    except ImportError:
+    except (ImportError, AttributeError):
         packages["SimpleJWT"] = "not installed"
 
     try:
         import celery
 
         packages["Celery"] = celery.__version__
-    except ImportError:
+    except (ImportError, AttributeError):
         packages["Celery"] = "not installed"
 
     try:
         import channels
 
         packages["Channels"] = channels.__version__
-    except ImportError:
+    except (ImportError, AttributeError):
         packages["Channels"] = "not installed"
 
     try:
         import drf_spectacular
 
-        packages["drf-spectacular"] = drf_spectacular.VERSION
-    except ImportError:
+        packages["drf-spectacular"] = getattr(drf_spectacular, "VERSION", getattr(drf_spectacular, "__version__", "unknown"))
+    except (ImportError, AttributeError):
         packages["drf-spectacular"] = "not installed"
 
     # 5. Print project info

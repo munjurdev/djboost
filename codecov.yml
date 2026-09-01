@@ -1,0 +1,62 @@
+# Codecov configuration — djboost
+# https://docs.codecov.io/docs/codecov-yaml
+
+codecov:
+  require_ci_to_pass: true
+  notify:
+    # Don't notify on every PR, just on main
+    after_n_builds: 1
+
+coverage:
+  # Overall project coverage targets
+  status:
+    project:
+      default:
+        target: 70%
+        threshold: 2%
+        if_ci_failed: error
+    # Patch coverage (new/changed lines)
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+  # Round to 1 decimal
+  round: down
+  range: "70...100"
+
+  # Format
+  format: csv
+
+# Ignore non-essential files
+ignore:
+  - "tests/**"
+  - "setup.py"
+  - "setup.cfg"
+  - "pyproject.toml"
+  - "requirements*.txt"
+  - "MANIFEST.in"
+  - ".github/**"
+  - "docs/**"
+  - "examples/**"
+  - "djboost.egg-info/**"
+  - "dist/**"
+  - "env/**"
+  - "__pycache__/**"
+  - "*.pyc"
+
+# Comment on PRs
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  hide_project_coverage: false
+
+# Flags for different test suites
+flags:
+  unittests:
+    paths:
+      - "djboost/"
+    carryforward: true

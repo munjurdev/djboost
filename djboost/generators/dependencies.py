@@ -3,6 +3,10 @@ import sys
 
 from rich import print
 
+# Capture the real Python executable at import time, before any code
+# can mutate sys.executable via check_virtual_environment().
+_REAL_PYTHON = sys.executable
+
 # ── Essential packages (always installed with create project) ────────────────
 ESSENTIAL_PACKAGES = [
     "djangorestframework>=3.15,<4",
@@ -29,19 +33,21 @@ OPTIONAL_PACKAGES = {
 
 
 def install_dependencies(packages=None):
-    """Install a list of packages. Defaults to ESSENTIAL_PACKAGES."""
+    """Install a list of packages in a single batch call. Defaults to ESSENTIAL_PACKAGES."""
     if packages is None:
         packages = ESSENTIAL_PACKAGES
 
-    total = len(packages)
     print("[cyan]📦 Installing dependencies...[/cyan]")
-    for i, package in enumerate(packages, 1):
-        print(f"[cyan]   [{i}/{total}] {package}[/cyan]")
-        result = subprocess.run([sys.executable, "-m", "pip", "install", package, "-q"], capture_output=True, text=True)
-        if result.returncode != 0:
-            print(f"[red]Error installing {package}:\n{result.stderr}[/red]")
-            import typer
-            raise typer.Exit(1)
+    for pkg in packages:
+        print(f"[cyan]   + {pkg}[/cyan]")
+    result = subprocess.run(
+        [_REAL_PYTHON, "-m", "pip", "install", "-q", *packages],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(f"[red]Error installing packages:\n{result.stderr}[/red]")
+        import typer
+        raise typer.Exit(1)
     print("[green]✔ All dependencies installed.[/green]")
 
 
@@ -103,16 +109,26 @@ def remove_from_requirements(packages):
 
 
 def uninstall_packages(packages):
-    """Uninstall a list of Python packages."""
+    """Uninstall a list of Python packages in a single batch call."""
+    if not packages:
+        return
     print("[cyan]📦 Uninstalling packages...[/cyan]")
-    for package in packages:
-        pkg_name = package.split(">=")[0].split("<")[0].split("==")[0].strip()
-        print(f"[cyan]   Uninstalling {pkg_name}...[/cyan]")
-        result = subprocess.run([sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"], capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"[green]   ✔ Uninstalled {pkg_name}[/green]")
-        else:
-            print(f"[yellow]   ⚠ {pkg_name} not installed, skipping[/yellow]")
+    pkg_names = [
+        package.split(">=")[0].split("<")[0].split("==")[0].strip()
+        for package in packages
+    ]
+    for name in pkg_names:
+        print(f"[cyan]   - {name}[/cyan]")
+    result = subprocess.run(
+        [_REAL_PYTHON, "-m", "pip", "uninstall", "-y", "-q", *pkg_names],
+        capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        for name in pkg_names:
+            print(f"[green]   ✔ Uninstalled {name}[/green]")
+    else:
+        for name in pkg_names:
+            print(f"[yellow]   ⚠ {name} not installed, skipping[/yellow]")
 
 
 def uninstall_optional_packages(category: str):

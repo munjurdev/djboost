@@ -35,16 +35,16 @@ def update_settings_redis_cache(name: str):
     cache_settings = """
 
 # ── Redis Cache ────────────────────────────────────────────────────────────────
-CACHES = {
-    'default': {
+CACHES = {{
+    'default': {{
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
-        'OPTIONS': {
+        'OPTIONS': {{
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
+        }},
         'KEY_PREFIX': '{name}',
-    }
-}
+    }}
+}}
 
 # Session backend (optional — uses Redis for sessions)
 # SESSION_ENGINE = 'django.contrib.sessions.backends.cache'

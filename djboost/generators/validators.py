@@ -2,8 +2,40 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 from rich import print
+
+# Capture the real Python executable at import time, before any code
+# can mutate sys.executable via check_virtual_environment().
+_REAL_PYTHON = sys.executable
+
+
+def get_venv_python_path(venv_path: Optional[Path] = None) -> Optional[Path]:
+    """Get the Python executable path inside a virtual environment.
+
+    Works on Windows, Mac, and Linux.
+    """
+    if venv_path is None:
+        venv_path = Path("env")
+
+    if sys.platform == "win32":
+        venv_python = venv_path / "Scripts" / "python.exe"
+    else:
+        venv_python = venv_path / "bin" / "python"
+
+    return venv_python if venv_python.exists() else None
+
+
+def get_activate_command(venv_path: Optional[Path] = None) -> str:
+    """Return the platform-specific activation command string."""
+    if venv_path is None:
+        venv_path = Path("env")
+
+    if sys.platform == "win32":
+        return str(venv_path / "Scripts" / "activate")
+    else:
+        return f"source {venv_path / 'bin' / 'activate'}"
 
 
 def check_virtual_environment():
@@ -30,7 +62,7 @@ def check_virtual_environment():
     else:
         # Create virtual environment
         try:
-            result = subprocess.run([sys.executable, "-m", "venv", "env"], capture_output=True, text=True)
+            result = subprocess.run([_REAL_PYTHON, "-m", "venv", "env"], capture_output=True, text=True)
             if result.returncode != 0:
                 print(f"[red]Error creating virtual environment: {result.stderr}[/red]")
                 print("[yellow]Please create manually: python -m venv env[/yellow]")
@@ -45,13 +77,9 @@ def check_virtual_environment():
             raise typer.Exit(1)
 
     # Get the venv Python path
-    if sys.platform == "win32":
-        venv_python = venv_path / "Scripts" / "python.exe"
-    else:
-        venv_python = venv_path / "bin" / "python"
-
-    if not venv_python.exists():
-        print(f"[red]Error: venv Python not found at {venv_python}[/red]")
+    venv_python = get_venv_python_path(venv_path)
+    if venv_python is None:
+        print(f"[red]Error: venv Python not found at {venv_path}[/red]")
         import typer
 
         raise typer.Exit(1)
@@ -75,26 +103,22 @@ def check_virtual_environment():
         "isort>=5.12,<7",
     ]
 
-    total = len(essential_packages)
-    for i, package in enumerate(essential_packages, 1):
-        print(f"[cyan]   [{i}/{total}] {package}[/cyan]")
-        result = subprocess.run(
-            [str(venv_python), "-m", "pip", "install", package, "-q"],
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode != 0:
-            print(f"[red]Error installing {package}: {result.stderr}[/red]")
+    for package in essential_packages:
+        print(f"[cyan]   + {package}[/cyan]")
+    result = subprocess.run(
+        [str(venv_python), "-m", "pip", "install", "-q", *essential_packages],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(f"[red]Error installing packages: {result.stderr}[/red]")
 
     print("[green]✔ All packages installed.[/green]")
     print()
     print("[bold green]✅ Virtual environment ready![/bold green]")
     print()
     print("[cyan]To activate it:[/cyan]")
-    if sys.platform == "win32":
-        print("  [bold]env\\Scripts\\activate[/bold]")
-    else:
-        print("  [bold]source env/bin/activate[/bold]")
+    print(f"  [bold]{get_activate_command(venv_path)}[/bold]")
     print()
 
     # IMPORTANT: Update sys.executable to use venv Python
@@ -110,11 +134,6 @@ def validate_name(name: str, label: str = "name"):
     """Validate that name is a valid Python identifier."""
     if not name.isidentifier():
         print(f"[red]Error: '{name}' is not a valid {label}. Use only letters, numbers, and underscores.[/red]")
-        import typer
-
-        raise typer.Exit(1)
-    if name[0].isdigit():
-        print(f"[red]Error: '{name}' must not start with a digit.[/red]")
         import typer
 
         raise typer.Exit(1)

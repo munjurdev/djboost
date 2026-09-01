@@ -1,6 +1,6 @@
 [project]
 name = "djboost"
-version = "0.7.0"
+version = "0.8.0"
 description = "The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features. djboost gives you a production-ready Django foundation in seconds — DRF, JWT, testing, and more. Build incrementally, ship confidently."
 readme = "README.md"
 requires-python = ">=3.10,<4"
@@ -72,3 +72,11 @@ line-length = 120
 [tool.flake8]
 max-line-length = 120
 ignore = ["E501", "W503"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]

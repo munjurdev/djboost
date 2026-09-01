@@ -129,7 +129,7 @@ myproject/
 └── requirements.txt             ← Frozen dependencies (13 packages)
 ```
 
-### Installed Packages (13 Essential)
+### Installed Packages (14 Total)
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -587,10 +587,10 @@ kubectl apply -f k8s/
 | `djboost add storage` | django-storages[boto3]>=1.14,<2, boto3>=1.28,<2 |
 | `djboost add graphql` | strawberry-graphql[django]>=0.22,<1 |
 | `djboost add channels` | daphne>=4.1,<5, channels>=4.1,<5, channels-redis>=4.2,<5 |
-| `djboost add security` | django-csp>=3.8,<4 |
+| `djboost add security` | django-csp>=3.8,<4, django-feature-policy>=3.1,<4 |
 | `djboost add sentry` | sentry-sdk[django]>=2.0,<3 |
 | `djboost add logging` | structlog>=24.0,<25, python-json-logger>=2.0,<3 |
-| `djboost add monitoring` | opentelemetry-api>=1.25,<2, opentelemetry-sdk>=1.25,<2 + exporters |
+| `djboost add monitoring` | opentelemetry-api>=1.25,<2, opentelemetry-sdk>=1.25,<2, opentelemetry-exporter-otlp>=1.25,<2, opentelemetry-instrumentation-django>=0.46b0,<1, opentelemetry-instrumentation-requests>=0.46b0,<1, opentelemetry-instrumentation-dbapi>=0.46b0,<1 |
 | `djboost add scheduler` | django-apscheduler>=0.7,<1 |
 
 ---

@@ -1,3 +1,17 @@
+import os
+import sys
+
+# ── Fix Windows encoding for emoji output ──────────────────────────────────────
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name)
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8")
+            except Exception:
+                pass
+
 import typer
 
 from djboost import __version__

@@ -25,6 +25,10 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from rich import print
 
+# Capture the real Python executable at import time, before any code
+# can mutate sys.executable via check_virtual_environment().
+_REAL_PYTHON = sys.executable
+
 from djboost.generators.features import (
     FEATURES, Feature, detect_conflicts, detect_reverse_dependencies,
     get_feature, resolve_dependencies, scan_enabled_features,
@@ -307,24 +311,38 @@ def _apply_modify(change: FileChange, plan: ChangePlan, project_name: Optional[s
 
 
 def _install_packages(packages: List[str]):
-    """Install pip packages."""
-    for pkg in packages:
-        result = subprocess.run([sys.executable, "-m", "pip", "install", pkg, "-q"], capture_output=True, text=True)
-        if result.returncode == 0:
+    """Install pip packages in a single batch call."""
+    if not packages:
+        return
+    result = subprocess.run(
+        [_REAL_PYTHON, "-m", "pip", "install", "-q", *packages],
+        capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        for pkg in packages:
             print(f"  [green]✔ Installed {pkg}[/green]")
-        else:
-            print(f"  [red]✘ Failed to install {pkg}: {result.stderr}[/red]")
+    else:
+        print(f"  [red]✘ Failed to install packages: {result.stderr}[/red]")
 
 
 def _uninstall_packages(packages: List[str]):
-    """Uninstall pip packages."""
-    for pkg in packages:
-        pkg_name = pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
-        result = subprocess.run([sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"], capture_output=True, text=True)
-        if result.returncode == 0:
-            print(f"  [green]✔ Uninstalled {pkg_name}[/green]")
-        else:
-            print(f"  [yellow]⚠ {pkg_name} not installed, skipping[/yellow]")
+    """Uninstall pip packages in a single batch call."""
+    if not packages:
+        return
+    pkg_names = [
+        pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
+        for pkg in packages
+    ]
+    result = subprocess.run(
+        [_REAL_PYTHON, "-m", "pip", "uninstall", "-y", "-q", *pkg_names],
+        capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        for name in pkg_names:
+            print(f"  [green]✔ Uninstalled {name}[/green]")
+    else:
+        for name in pkg_names:
+            print(f"  [yellow]⚠ {name} not installed, skipping[/yellow]")
 
 
 # ── Validation ────────────────────────────────────────────────────────────────
@@ -338,14 +356,14 @@ def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[st
     if project_name:
         env["DJANGO_SETTINGS_MODULE"] = f"{project_name}.settings"
 
-    result = subprocess.run([sys.executable, "manage.py", "check", "--deploy", "--fail-level", "WARNING"], capture_output=True, text=True, env=env)
+    result = subprocess.run([_REAL_PYTHON, "manage.py", "check", "--deploy", "--fail-level", "WARNING"], capture_output=True, text=True, env=env)
     if result.returncode != 0:
-        result2 = subprocess.run([sys.executable, "manage.py", "check"], capture_output=True, text=True, env=env)
+        result2 = subprocess.run([_REAL_PYTHON, "manage.py", "check"], capture_output=True, text=True, env=env)
         if result2.returncode != 0:
             errors.append(result2.stderr)
 
     import_code = f"import django; django.setup(); import {project_name}.settings" if project_name else "import django; django.setup()"
-    result3 = subprocess.run([sys.executable, "-c", import_code], capture_output=True, text=True, env=env)
+    result3 = subprocess.run([_REAL_PYTHON, "-c", import_code], capture_output=True, text=True, env=env)
     if result3.returncode != 0:
         errors.append(f"Import check failed: {result3.stderr}")
 
@@ -374,12 +392,21 @@ def _rollback(record: ChangeRecord):
                 path.unlink()
             print(f"  [green]✔ Removed created file {file_path}[/green]")
 
-    for pkg in record.packages_uninstalled:
-        subprocess.run([sys.executable, "-m", "pip", "install", pkg, "-q"], capture_output=True, text=True)
+    if record.packages_uninstalled:
+        subprocess.run(
+            [_REAL_PYTHON, "-m", "pip", "install", "-q", *record.packages_uninstalled],
+            capture_output=True, text=True,
+        )
 
-    for pkg in record.packages_installed:
-        pkg_name = pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
-        subprocess.run([sys.executable, "-m", "pip", "uninstall", pkg_name, "-y", "-q"], capture_output=True, text=True)
+    if record.packages_installed:
+        pkg_names = [
+            pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
+            for pkg in record.packages_installed
+        ]
+        subprocess.run(
+            [_REAL_PYTHON, "-m", "pip", "uninstall", "-y", "-q", *pkg_names],
+            capture_output=True, text=True,
+        )
 
     backup_dir = Path(".djboost_backup")
     if backup_dir.exists() and not any(backup_dir.iterdir()):

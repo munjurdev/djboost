@@ -7,6 +7,7 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
+from djboost.generators.celery import get_project_name
 from djboost.generators.safe_engine import (
     execute_plan,
     generate_remove_plan,
@@ -23,8 +24,10 @@ def remove_celery_beat_command(
 
     print("\n[bold green]🔄 Removing Celery Beat...[/bold green]\n")
 
+    name = get_project_name()
+
     # Generate plan through safe engine
-    plan = generate_remove_plan("celery-beat", dry_run=dry_run, force=force)
+    plan = generate_remove_plan("celery-beat", dry_run=dry_run, project_name=name, force=force)
 
     if plan.errors and not dry_run:
         for err in plan.errors:
