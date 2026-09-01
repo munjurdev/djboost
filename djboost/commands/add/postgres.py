@@ -2,7 +2,12 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.postgres import add_postgres_to_requirements, get_project_name, update_env_postgres, update_settings_postgres
+from djboost.generators.postgres import (
+    add_postgres_to_requirements,
+    get_project_name,
+    update_env_postgres,
+    update_settings_postgres,
+)
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 

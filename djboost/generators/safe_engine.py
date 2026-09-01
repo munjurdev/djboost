@@ -30,8 +30,13 @@ from rich import print
 _REAL_PYTHON = sys.executable
 
 from djboost.generators.features import (
-    FEATURES, Feature, detect_conflicts, detect_reverse_dependencies,
-    get_feature, resolve_dependencies, scan_enabled_features,
+    FEATURES,
+    Feature,
+    detect_conflicts,
+    detect_reverse_dependencies,
+    get_feature,
+    resolve_dependencies,
+    scan_enabled_features,
 )
 
 # ── Change tracking ───────────────────────────────────────────────────────────
@@ -40,6 +45,7 @@ from djboost.generators.features import (
 @dataclass
 class FileChange:
     """A single file change to be applied."""
+
     path: str
     action: str  # "create", "modify", "delete", "backup"
     content: Optional[str] = None
@@ -49,6 +55,7 @@ class FileChange:
 @dataclass
 class ChangePlan:
     """A complete plan for an add or remove operation."""
+
     feature_name: str
     operation: str
     dry_run: bool
@@ -68,6 +75,7 @@ class ChangePlan:
 @dataclass
 class ChangeRecord:
     """A recorded change set for rollback."""
+
     feature_name: str
     operation: str
     timestamp: str
@@ -82,7 +90,9 @@ class ChangeRecord:
 # ── Plan generation ───────────────────────────────────────────────────────────
 
 
-def generate_add_plan(feature_name: str, dry_run: bool = False, project_name: Optional[str] = None, force: bool = False) -> ChangePlan:
+def generate_add_plan(
+    feature_name: str, dry_run: bool = False, project_name: Optional[str] = None, force: bool = False
+) -> ChangePlan:
     """Generate a complete plan for adding a feature."""
     plan = ChangePlan(feature_name=feature_name, operation="add", dry_run=dry_run)
 
@@ -125,7 +135,9 @@ def generate_add_plan(feature_name: str, dry_run: bool = False, project_name: Op
     return plan
 
 
-def generate_remove_plan(feature_name: str, dry_run: bool = False, project_name: Optional[str] = None, force: bool = False) -> ChangePlan:
+def generate_remove_plan(
+    feature_name: str, dry_run: bool = False, project_name: Optional[str] = None, force: bool = False
+) -> ChangePlan:
     """Generate a complete plan for removing a feature."""
     plan = ChangePlan(feature_name=feature_name, operation="remove", dry_run=dry_run)
 
@@ -142,7 +154,9 @@ def generate_remove_plan(feature_name: str, dry_run: bool = False, project_name:
 
     plan.reverse_deps = detect_reverse_dependencies(feature_name, enabled)
     if plan.reverse_deps and not force:
-        plan.errors.append(f"These features depend on '{feature_name}': {', '.join(plan.reverse_deps)}. Remove them first, or use --force.")
+        plan.errors.append(
+            f"These features depend on '{feature_name}': {', '.join(plan.reverse_deps)}. Remove them first, or use --force."
+        )
         return plan
 
     plan.files_to_change.extend(_plan_feature_files(feat, project_name, "remove"))
@@ -193,7 +207,9 @@ def _resolve_pattern(pattern: str, project_name: Optional[str] = None) -> Path:
 # ── Plan execution ────────────────────────────────────────────────────────────
 
 
-def execute_plan(plan: ChangePlan, project_name: Optional[str] = None, apply_fn: Optional[Callable[[], None]] = None) -> Optional[ChangeRecord]:
+def execute_plan(
+    plan: ChangePlan, project_name: Optional[str] = None, apply_fn: Optional[Callable[[], None]] = None
+) -> Optional[ChangeRecord]:
     """Execute a change plan, or preview it if dry_run=True."""
     _print_plan(plan)
 
@@ -210,10 +226,14 @@ def execute_plan(plan: ChangePlan, project_name: Optional[str] = None, apply_fn:
         return None
 
     record = ChangeRecord(
-        feature_name=plan.feature_name, operation=plan.operation,
-        timestamp=datetime.now().isoformat(), files_backed_up={},
-        files_created=[], files_deleted=[],
-        packages_installed=[], packages_uninstalled=[],
+        feature_name=plan.feature_name,
+        operation=plan.operation,
+        timestamp=datetime.now().isoformat(),
+        files_backed_up={},
+        files_created=[],
+        files_deleted=[],
+        packages_installed=[],
+        packages_uninstalled=[],
     )
 
     backup_dir = Path(".djboost_backup")
@@ -316,7 +336,8 @@ def _install_packages(packages: List[str]):
         return
     result = subprocess.run(
         [_REAL_PYTHON, "-m", "pip", "install", "-q", *packages],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         for pkg in packages:
@@ -329,13 +350,11 @@ def _uninstall_packages(packages: List[str]):
     """Uninstall pip packages in a single batch call."""
     if not packages:
         return
-    pkg_names = [
-        pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
-        for pkg in packages
-    ]
+    pkg_names = [pkg.split(">=")[0].split("<")[0].split("==")[0].strip() for pkg in packages]
     result = subprocess.run(
         [_REAL_PYTHON, "-m", "pip", "uninstall", "-y", "-q", *pkg_names],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         for name in pkg_names:
@@ -356,13 +375,22 @@ def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[st
     if project_name:
         env["DJANGO_SETTINGS_MODULE"] = f"{project_name}.settings"
 
-    result = subprocess.run([_REAL_PYTHON, "manage.py", "check", "--deploy", "--fail-level", "WARNING"], capture_output=True, text=True, env=env)
+    result = subprocess.run(
+        [_REAL_PYTHON, "manage.py", "check", "--deploy", "--fail-level", "WARNING"],
+        capture_output=True,
+        text=True,
+        env=env,
+    )
     if result.returncode != 0:
         result2 = subprocess.run([_REAL_PYTHON, "manage.py", "check"], capture_output=True, text=True, env=env)
         if result2.returncode != 0:
             errors.append(result2.stderr)
 
-    import_code = f"import django; django.setup(); import {project_name}.settings" if project_name else "import django; django.setup()"
+    import_code = (
+        f"import django; django.setup(); import {project_name}.settings"
+        if project_name
+        else "import django; django.setup()"
+    )
     result3 = subprocess.run([_REAL_PYTHON, "-c", import_code], capture_output=True, text=True, env=env)
     if result3.returncode != 0:
         errors.append(f"Import check failed: {result3.stderr}")
@@ -395,17 +423,16 @@ def _rollback(record: ChangeRecord):
     if record.packages_uninstalled:
         subprocess.run(
             [_REAL_PYTHON, "-m", "pip", "install", "-q", *record.packages_uninstalled],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
 
     if record.packages_installed:
-        pkg_names = [
-            pkg.split(">=")[0].split("<")[0].split("==")[0].strip()
-            for pkg in record.packages_installed
-        ]
+        pkg_names = [pkg.split(">=")[0].split("<")[0].split("==")[0].strip() for pkg in record.packages_installed]
         subprocess.run(
             [_REAL_PYTHON, "-m", "pip", "uninstall", "-y", "-q", *pkg_names],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
         )
 
     backup_dir = Path(".djboost_backup")
@@ -428,10 +455,14 @@ def _save_change_record(record: ChangeRecord):
             existing = []
 
     entry = {
-        "feature_name": record.feature_name, "operation": record.operation,
-        "timestamp": record.timestamp, "files_backed_up": record.files_backed_up,
-        "files_created": record.files_created, "files_deleted": record.files_deleted,
-        "packages_installed": record.packages_installed, "packages_uninstalled": record.packages_uninstalled,
+        "feature_name": record.feature_name,
+        "operation": record.operation,
+        "timestamp": record.timestamp,
+        "files_backed_up": record.files_backed_up,
+        "files_created": record.files_created,
+        "files_deleted": record.files_deleted,
+        "packages_installed": record.packages_installed,
+        "packages_uninstalled": record.packages_uninstalled,
     }
     existing.append(entry)
 

@@ -21,7 +21,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 import typer
 
-
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 MANAGE_PY = textwrap.dedent("""\
@@ -105,7 +104,9 @@ def setup_project(tmp_path, name="proj"):
         encoding="utf-8",
     )
     (project_dir / "wsgi.py").write_text(
-        textwrap.dedent(f"import os\nfrom django.core.wsgi import get_wsgi_application\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', '{name}.settings')\napplication = get_wsgi_application()\n"),
+        textwrap.dedent(
+            f"import os\nfrom django.core.wsgi import get_wsgi_application\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', '{name}.settings')\napplication = get_wsgi_application()\n"
+        ),
         encoding="utf-8",
     )
     (project_dir / "__init__.py").write_text("", encoding="utf-8")
@@ -147,11 +148,10 @@ class TestRemoveCeleryBeat:
             + "\nfrom celery.schedules import crontab\nCELERY_BEAT_SCHEDULE = {\n    'task1': {\n        'task': 'proj.tasks.add',\n        'schedule': crontab(minute='*/5'),\n    },\n}\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ncelery-beat>=2.6\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ncelery-beat>=2.6\n", encoding="utf-8")
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
         content = settings.read_text(encoding="utf-8")
         assert "from celery.schedules import crontab" not in content
@@ -169,6 +169,7 @@ class TestRemoveCeleryBeat:
         )
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
     def test_remove_without_schedule(self, tmp_path, monkeypatch):
@@ -177,12 +178,12 @@ class TestRemoveCeleryBeat:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nfrom celery.schedules import crontab\n",
+            settings.read_text(encoding="utf-8") + "\nfrom celery.schedules import crontab\n",
             encoding="utf-8",
         )
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
     def test_remove_without_settings(self, tmp_path, monkeypatch):
@@ -192,6 +193,7 @@ class TestRemoveCeleryBeat:
         # Need a settings file for scan_enabled_features to detect celery-beat
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
     def test_remove_dry_run(self, tmp_path, monkeypatch):
@@ -206,6 +208,7 @@ class TestRemoveCeleryBeat:
         )
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=True, force=True)
 
     def test_remove_not_configured(self, tmp_path, monkeypatch):
@@ -214,6 +217,7 @@ class TestRemoveCeleryBeat:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
     def test_remove_without_requirements(self, tmp_path, monkeypatch):
@@ -229,6 +233,7 @@ class TestRemoveCeleryBeat:
         )
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
 
@@ -244,11 +249,10 @@ class TestAddCommandsIdempotent:
         """Celery already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ncelery>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ncelery>=5.4\nredis>=5.0\n", encoding="utf-8")
         with patch("djboost.commands.add.celery.check_virtual_environment"):
             from djboost.commands.add.celery import add_celery_command
+
             with pytest.raises(typer.Exit):
                 add_celery_command(dry_run=False, force=False)
 
@@ -259,6 +263,7 @@ class TestAddCommandsIdempotent:
         (tmp_path / "Dockerfile").write_text("FROM python:3.12", encoding="utf-8")
         with patch("djboost.commands.add.docker.check_virtual_environment"):
             from djboost.commands.add.docker import add_docker_command
+
             with pytest.raises(typer.Exit):
                 add_docker_command(dry_run=False, force=False)
 
@@ -272,6 +277,7 @@ class TestAddCommandsIdempotent:
         )
         with patch("djboost.commands.add.channels.check_virtual_environment"):
             from djboost.commands.add.channels import add_channels_command
+
             with pytest.raises(typer.Exit):
                 add_channels_command(dry_run=False, force=False)
 
@@ -279,11 +285,10 @@ class TestAddCommandsIdempotent:
         """GraphQL already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\nstrawberry-graphql>=0.22\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\nstrawberry-graphql>=0.22\n", encoding="utf-8")
         with patch("djboost.commands.add.graphql.check_virtual_environment"):
             from djboost.commands.add.graphql import add_graphql_command
+
             with pytest.raises(typer.Exit):
                 add_graphql_command(dry_run=False, force=False)
 
@@ -291,11 +296,10 @@ class TestAddCommandsIdempotent:
         """Monitoring already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\nopentelemetry-api>=1.25\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\nopentelemetry-api>=1.25\n", encoding="utf-8")
         with patch("djboost.commands.add.monitoring.check_virtual_environment"):
             from djboost.commands.add.monitoring import add_monitoring_command
+
             with pytest.raises(typer.Exit):
                 add_monitoring_command(dry_run=False, force=False)
 
@@ -303,11 +307,10 @@ class TestAddCommandsIdempotent:
         """Logging already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\nstructlog>=24.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\nstructlog>=24.0\n", encoding="utf-8")
         with patch("djboost.commands.add.logging.check_virtual_environment"):
             from djboost.commands.add.logging import add_logging_command
+
             with pytest.raises(typer.Exit):
                 add_logging_command(dry_run=False, force=False)
 
@@ -315,11 +318,10 @@ class TestAddCommandsIdempotent:
         """Sentry already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\nsentry-sdk>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\nsentry-sdk>=2.0\n", encoding="utf-8")
         with patch("djboost.commands.add.sentry.check_virtual_environment"):
             from djboost.commands.add.sentry import add_sentry_command
+
             with pytest.raises(typer.Exit):
                 add_sentry_command(dry_run=False, force=False)
 
@@ -327,11 +329,10 @@ class TestAddCommandsIdempotent:
         """Security already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ndjango-csp>=3.8\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ndjango-csp>=3.8\n", encoding="utf-8")
         with patch("djboost.commands.add.security.check_virtual_environment"):
             from djboost.commands.add.security import add_security_command
+
             with pytest.raises(typer.Exit):
                 add_security_command(dry_run=False, force=False)
 
@@ -339,11 +340,10 @@ class TestAddCommandsIdempotent:
         """Storage already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ndjango-storages>=1.14\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ndjango-storages>=1.14\n", encoding="utf-8")
         with patch("djboost.commands.add.storage.check_virtual_environment"):
             from djboost.commands.add.storage import add_storage_command
+
             with pytest.raises(typer.Exit):
                 add_storage_command(dry_run=False, force=False)
 
@@ -351,11 +351,10 @@ class TestAddCommandsIdempotent:
         """Scheduler already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ndjango-apscheduler>=0.7\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ndjango-apscheduler>=0.7\n", encoding="utf-8")
         with patch("djboost.commands.add.scheduler.check_virtual_environment"):
             from djboost.commands.add.scheduler import add_scheduler_command
+
             with pytest.raises(typer.Exit):
                 add_scheduler_command(dry_run=False, force=False)
 
@@ -367,6 +366,7 @@ class TestAddCommandsIdempotent:
         (tmp_path / "k8s" / "deployment.yaml").write_text("apiVersion: v1", encoding="utf-8")
         with patch("djboost.commands.add.kubernetes.check_virtual_environment"):
             from djboost.commands.add.kubernetes import add_kubernetes_command
+
             with pytest.raises(typer.Exit):
                 add_kubernetes_command(dry_run=False, force=False)
 
@@ -374,11 +374,10 @@ class TestAddCommandsIdempotent:
         """Redis cache already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ndjango-redis>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ndjango-redis>=5.4\nredis>=5.0\n", encoding="utf-8")
         with patch("djboost.commands.add.redis_cache.check_virtual_environment"):
             from djboost.commands.add.redis_cache import add_redis_cache_command
+
             with pytest.raises(typer.Exit):
                 add_redis_cache_command(dry_run=False, force=False)
 
@@ -386,11 +385,10 @@ class TestAddCommandsIdempotent:
         """Postgres already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\npsycopg2-binary>=2.9\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\npsycopg2-binary>=2.9\n", encoding="utf-8")
         with patch("djboost.commands.add.postgres.check_virtual_environment"):
             from djboost.commands.add.postgres import add_postgres_command
+
             with pytest.raises(typer.Exit):
                 add_postgres_command(dry_run=False, force=False)
 
@@ -402,6 +400,7 @@ class TestAddCommandsIdempotent:
         (tmp_path / ".github" / "workflows" / "main.yml").write_text("name: test", encoding="utf-8")
         with patch("djboost.commands.add.cicd.check_virtual_environment"):
             from djboost.commands.add.cicd import add_cicd_command
+
             with pytest.raises(typer.Exit):
                 add_cicd_command(provider="github", dry_run=False, force=False)
 
@@ -409,11 +408,10 @@ class TestAddCommandsIdempotent:
         """API docs already in requirements → idempotent."""
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ndrf-spectacular>=0.27\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ndrf-spectacular>=0.27\n", encoding="utf-8")
         with patch("djboost.commands.add.api_docs.check_virtual_environment"):
             from djboost.commands.add.api_docs import add_api_docs_command
+
             with pytest.raises(typer.Exit):
                 add_api_docs_command(provider="swagger", dry_run=False, force=False)
 
@@ -433,6 +431,7 @@ class TestAddSchedulerConflict:
         )
         with patch("djboost.commands.add.scheduler.check_virtual_environment"):
             from djboost.commands.add.scheduler import add_scheduler_command
+
             with pytest.raises(typer.Exit):
                 add_scheduler_command(dry_run=False, force=False)
 
@@ -445,9 +444,9 @@ class TestAddSchedulerConflict:
             settings.read_text(encoding="utf-8") + "\nCELERY_BEAT_SCHEDULE = {}\n",
             encoding="utf-8",
         )
-        with patch("djboost.commands.add.scheduler.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.scheduler.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.scheduler import add_scheduler_command
+
             add_scheduler_command(dry_run=False, force=True)
         content = settings.read_text(encoding="utf-8")
         assert "APSCHEDULER" in content
@@ -462,6 +461,7 @@ class TestAddCommandsWithErrors:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.celery_beat.check_virtual_environment"):
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=False, force=False)
 
@@ -479,6 +479,7 @@ class TestInfoPackageImports:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_celery_not_installed(self, tmp_path, monkeypatch):
@@ -488,6 +489,7 @@ class TestInfoPackageImports:
         # Mock celery import to fail
         with patch.dict(sys.modules, {"celery": None}):
             from djboost.commands.management.info import info_command
+
             info_command()
 
     def test_info_channels_not_installed(self, tmp_path, monkeypatch):
@@ -496,6 +498,7 @@ class TestInfoPackageImports:
         monkeypatch.chdir(tmp_path)
         with patch.dict(sys.modules, {"channels": None}):
             from djboost.commands.management.info import info_command
+
             info_command()
 
     def test_info_django_not_installed(self, tmp_path, monkeypatch):
@@ -504,6 +507,7 @@ class TestInfoPackageImports:
         monkeypatch.chdir(tmp_path)
         with patch.dict(sys.modules, {"django": None}):
             from djboost.commands.management.info import info_command
+
             info_command()
 
     def test_info_drf_not_installed(self, tmp_path, monkeypatch):
@@ -512,6 +516,7 @@ class TestInfoPackageImports:
         monkeypatch.chdir(tmp_path)
         with patch.dict(sys.modules, {"rest_framework": None}):
             from djboost.commands.management.info import info_command
+
             info_command()
 
     def test_info_simplejwt_not_installed(self, tmp_path, monkeypatch):
@@ -520,6 +525,7 @@ class TestInfoPackageImports:
         monkeypatch.chdir(tmp_path)
         with patch.dict(sys.modules, {"rest_framework_simplejwt": None}):
             from djboost.commands.management.info import info_command
+
             info_command()
 
     def test_info_spectacular_not_installed(self, tmp_path, monkeypatch):
@@ -528,6 +534,7 @@ class TestInfoPackageImports:
         monkeypatch.chdir(tmp_path)
         with patch.dict(sys.modules, {"drf_spectacular": None}):
             from djboost.commands.management.info import info_command
+
             info_command()
 
 
@@ -552,6 +559,7 @@ class TestAccountsAppTemplates:
     def test_create_accounts_directories(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import create_accounts_directories
+
         create_accounts_directories()
         assert (tmp_path / "apps" / "accounts").exists()
         assert (tmp_path / "apps" / "accounts" / "migrations").exists()
@@ -562,6 +570,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_models
+
         create_accounts_models()
         assert (tmp_path / "apps" / "accounts" / "models.py").exists()
 
@@ -569,6 +578,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_permissions
+
         create_accounts_permissions()
         assert (tmp_path / "apps" / "accounts" / "permissions.py").exists()
 
@@ -576,6 +586,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_tasks
+
         create_accounts_tasks()
         assert (tmp_path / "apps" / "accounts" / "tasks.py").exists()
 
@@ -583,6 +594,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_views
+
         create_accounts_views()
         assert (tmp_path / "apps" / "accounts" / "views" / "__init__.py").exists()
 
@@ -590,6 +602,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_serializers
+
         create_accounts_serializers()
         assert (tmp_path / "apps" / "accounts" / "serializers" / "__init__.py").exists()
 
@@ -597,6 +610,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_urls
+
         create_accounts_urls()
         assert (tmp_path / "apps" / "accounts" / "urls.py").exists()
 
@@ -604,6 +618,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_apps
+
         create_accounts_apps()
         assert (tmp_path / "apps" / "accounts" / "apps.py").exists()
 
@@ -611,6 +626,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_admin
+
         create_accounts_admin()
         assert (tmp_path / "apps" / "accounts" / "admin.py").exists()
 
@@ -618,6 +634,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_tests
+
         create_accounts_tests()
         assert (tmp_path / "apps" / "accounts" / "tests.py").exists()
 
@@ -625,6 +642,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_init
+
         create_accounts_init()
         assert (tmp_path / "apps" / "accounts" / "__init__.py").exists()
 
@@ -632,12 +650,14 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         self._ensure_dirs(tmp_path)
         from djboost.generators.accounts_app import create_accounts_migrations_init
+
         create_accounts_migrations_init()
         assert (tmp_path / "apps" / "accounts" / "migrations" / "__init__.py").exists()
 
     def test_update_project_settings_no_settings(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import update_project_settings
+
         result = update_project_settings("nonexistent")
         assert result is False
 
@@ -650,6 +670,7 @@ class TestAccountsAppTemplates:
             encoding="utf-8",
         )
         from djboost.generators.accounts_app import update_project_settings
+
         result = update_project_settings("proj")
         assert result is True
 
@@ -657,6 +678,7 @@ class TestAccountsAppTemplates:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import update_project_settings
+
         result = update_project_settings("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -665,6 +687,7 @@ class TestAccountsAppTemplates:
     def test_update_project_urls_no_urls(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import update_project_urls
+
         result = update_project_urls("nonexistent")
         assert result is False
 
@@ -677,6 +700,7 @@ class TestAccountsAppTemplates:
             encoding="utf-8",
         )
         from djboost.generators.accounts_app import update_project_urls
+
         result = update_project_urls("proj")
         assert result is True
 
@@ -686,6 +710,7 @@ class TestAccountsAppTemplates:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.create.accounts.check_virtual_environment"):
             from djboost.commands.create.accounts import create_accounts_command
+
             create_accounts_command()
         assert (tmp_path / "apps" / "accounts").exists()
         assert (tmp_path / "apps" / "accounts" / "models.py").exists()
@@ -698,6 +723,7 @@ class TestAccountsAppTemplates:
         (tmp_path / "apps" / "accounts").mkdir()
         with patch("djboost.commands.create.accounts.check_virtual_environment"):
             from djboost.commands.create.accounts import create_accounts_command
+
             with pytest.raises(typer.Exit):
                 create_accounts_command()
 
@@ -705,17 +731,20 @@ class TestAccountsAppTemplates:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import get_project_name
+
         assert get_project_name() == "proj"
 
     def test_get_project_name_accounts_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import get_project_name
+
         assert get_project_name() is None
 
     def test_get_project_name_accounts_bad_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("x = 1", encoding="utf-8")
         from djboost.generators.accounts_app import get_project_name
+
         assert get_project_name() is None
 
 
@@ -732,6 +761,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.celery.check_virtual_environment"):
             from djboost.commands.remove.celery import remove_celery_command
+
             with pytest.raises(typer.Exit):
                 remove_celery_command(dry_run=False, force=True)
 
@@ -740,6 +770,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.channels.check_virtual_environment"):
             from djboost.commands.remove.channels import remove_channels_command
+
             remove_channels_command(dry_run=False, force=True)
 
     def test_remove_graphql_not_enabled(self, tmp_path, monkeypatch):
@@ -747,6 +778,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.graphql.check_virtual_environment"):
             from djboost.commands.remove.graphql import remove_graphql_command
+
             remove_graphql_command(dry_run=False, force=True)
 
     def test_remove_monitoring_not_enabled(self, tmp_path, monkeypatch):
@@ -754,6 +786,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.monitoring.check_virtual_environment"):
             from djboost.commands.remove.monitoring import remove_monitoring_command
+
             remove_monitoring_command(dry_run=False, force=True)
 
     def test_remove_logging_not_enabled(self, tmp_path, monkeypatch):
@@ -761,6 +794,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.logging.check_virtual_environment"):
             from djboost.commands.remove.logging import remove_logging_command
+
             remove_logging_command(dry_run=False, force=True)
 
     def test_remove_sentry_not_enabled(self, tmp_path, monkeypatch):
@@ -768,6 +802,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.sentry.check_virtual_environment"):
             from djboost.commands.remove.sentry import remove_sentry_command
+
             remove_sentry_command(dry_run=False, force=True)
 
     def test_remove_security_not_enabled(self, tmp_path, monkeypatch):
@@ -775,6 +810,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.security.check_virtual_environment"):
             from djboost.commands.remove.security import remove_security_command
+
             remove_security_command(dry_run=False, force=True)
 
     def test_remove_storage_not_enabled(self, tmp_path, monkeypatch):
@@ -782,6 +818,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.storage.check_virtual_environment"):
             from djboost.commands.remove.storage import remove_storage_command
+
             remove_storage_command(dry_run=False, force=True)
 
     def test_remove_scheduler_not_enabled(self, tmp_path, monkeypatch):
@@ -789,6 +826,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.scheduler.check_virtual_environment"):
             from djboost.commands.remove.scheduler import remove_scheduler_command
+
             remove_scheduler_command(dry_run=False, force=True)
 
     def test_remove_postgres_not_enabled(self, tmp_path, monkeypatch):
@@ -796,6 +834,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.postgres.check_virtual_environment"):
             from djboost.commands.remove.postgres import remove_postgres_command
+
             remove_postgres_command(dry_run=False, force=True)
 
     def test_remove_redis_cache_not_enabled(self, tmp_path, monkeypatch):
@@ -803,6 +842,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.redis_cache.check_virtual_environment"):
             from djboost.commands.remove.redis_cache import remove_redis_cache_command
+
             remove_redis_cache_command(dry_run=False, force=True)
 
     def test_remove_api_docs_not_enabled(self, tmp_path, monkeypatch):
@@ -810,6 +850,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.api_docs.check_virtual_environment"):
             from djboost.commands.remove.api_docs import remove_api_docs_command
+
             remove_api_docs_command(dry_run=False, force=True)
 
     def test_remove_docker_not_enabled(self, tmp_path, monkeypatch):
@@ -817,6 +858,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.docker.check_virtual_environment"):
             from djboost.commands.remove.docker import remove_docker_command
+
             remove_docker_command(dry_run=False, force=True)
 
     def test_remove_kubernetes_not_enabled(self, tmp_path, monkeypatch):
@@ -824,6 +866,7 @@ class TestRemoveCommandsIdempotent:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.kubernetes.check_virtual_environment"):
             from djboost.commands.remove.kubernetes import remove_kubernetes_command
+
             remove_kubernetes_command(dry_run=False, force=True)
 
 
@@ -838,33 +881,41 @@ class TestCliEncoding:
     def test_cli_main_callback(self):
         """Test the main callback."""
         from djboost.cli import main
+
         assert callable(main)
 
     def test_cli_version_callback_true(self):
         """Test version callback with True."""
         from djboost.cli import version_callback
+
         with pytest.raises((SystemExit, typer.Exit)):
             version_callback(True)
 
     def test_cli_version_callback_false(self):
         """Test version callback with False (no-op)."""
         from djboost.cli import version_callback
+
         version_callback(False)
 
     def test_cli_app_exists(self):
         """Test app is a Typer instance."""
         from djboost.cli import app
+
         assert app is not None
 
     def test_cli_add_group(self):
         """Test add subcommand group exists."""
         from djboost.cli import add
+
         assert add is not None
 
     def test_cli_remove_group(self):
         """Test remove subcommand group exists."""
         from djboost.cli import remove
+
         assert remove is not None
+
+
 # ── Coverage gap tests — last 3% ──────────────────────────────────────────────
 
 import json
@@ -974,7 +1025,9 @@ class TestMainEntryPoint:
     def test_run_as_module(self):
         result = subprocess.run(
             [_REAL_PYTHON, "-m", "djboost", "--version"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "0.8" in result.stdout
@@ -1067,6 +1120,7 @@ class TestSafeEngineLastLines:
         """Cover line 320 — _install_packages success path."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import _install_packages
+
         with patch("djboost.generators.safe_engine.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             _install_packages(["fake-package>=1.0"])
@@ -1075,6 +1129,7 @@ class TestSafeEngineLastLines:
         """Cover line 320 — _install_packages failure path."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import _install_packages
+
         with patch("djboost.generators.safe_engine.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=1, stderr="install error")
             _install_packages(["bad-package>=1.0"])
@@ -1083,6 +1138,7 @@ class TestSafeEngineLastLines:
         """Cover line 331 — _uninstall_packages success path."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import _uninstall_packages
+
         with patch("djboost.generators.safe_engine.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             _uninstall_packages(["celery>=5.4"])
@@ -1091,6 +1147,7 @@ class TestSafeEngineLastLines:
         """Cover line 331 — _uninstall_packages not-installed path."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import _uninstall_packages
+
         with patch("djboost.generators.safe_engine.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=1)
             _uninstall_packages(["nonexistent>=1.0"])
@@ -1098,6 +1155,7 @@ class TestSafeEngineLastLines:
     def test_remove_plan_with_reverse_deps(self, tmp_path, monkeypatch):
         """Cover lines 145-146 — reverse_deps error in remove plan."""
         from djboost.generators.safe_engine import generate_remove_plan
+
         # celery-beat requires celery, so removing celery with celery-beat enabled
         # should show reverse deps
         with patch("djboost.generators.safe_engine.scan_enabled_features") as mock_scan:
@@ -1111,6 +1169,7 @@ class TestSafeEngineLastLines:
     def test_remove_plan_force_overrides_reverse_deps(self, tmp_path, monkeypatch):
         """Cover lines 145-146 — force=True bypasses reverse deps."""
         from djboost.generators.safe_engine import generate_remove_plan
+
         with patch("djboost.generators.safe_engine.scan_enabled_features") as mock_scan:
             mock_scan.return_value = {"celery", "celery-beat"}
             with patch("djboost.generators.safe_engine.detect_reverse_dependencies") as mock_rdeps:
@@ -1125,12 +1184,17 @@ class TestSafeEngineLastLines:
         (tmp_path / ".djboost_backup" / "changes.json").write_text(
             json.dumps([{"feature_name": "old"}]), encoding="utf-8"
         )
-        from djboost.generators.safe_engine import _save_change_record, ChangeRecord
+        from djboost.generators.safe_engine import ChangeRecord, _save_change_record
+
         record = ChangeRecord(
-            feature_name="test", operation="add",
-            timestamp="2024-01-01", files_backed_up={},
-            files_created=[], files_deleted=[],
-            packages_installed=[], packages_uninstalled=[],
+            feature_name="test",
+            operation="add",
+            timestamp="2024-01-01",
+            files_backed_up={},
+            files_created=[],
+            files_deleted=[],
+            packages_installed=[],
+            packages_uninstalled=[],
         )
         _save_change_record(record)
         data = json.loads((tmp_path / ".djboost_backup" / "changes.json").read_text(encoding="utf-8"))
@@ -1141,6 +1205,7 @@ class TestSafeEngineLastLines:
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
         from djboost.generators.safe_engine import _validate_project
+
         # Mock subprocess to make import check fail
         with patch("djboost.generators.safe_engine.subprocess.run") as mock_run:
             # First call: manage.py check --deploy fails
@@ -1159,6 +1224,7 @@ class TestSafeEngineLastLines:
         """Cover _validate_project with no project name."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import _validate_project
+
         with patch("djboost.generators.safe_engine.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             is_valid, errors = _validate_project(None)
@@ -1175,32 +1241,36 @@ class TestValidatorsLastLines:
         """Cover line 25 — get_venv_python_path returns None."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.validators import get_venv_python_path
+
         result = get_venv_python_path(tmp_path / "nonexistent")
         assert result is None
 
     def test_validate_name_empty(self):
         """Cover lines 142-145 — validate_name with empty string."""
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("")
 
     def test_validate_name_digit_start(self):
         """Cover lines 142-145 — validate_name starts with digit."""
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("1project")
 
     def test_validate_name_special_chars(self):
         """Cover lines 142-145 — validate_name with special chars."""
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("my-project")
 
     def test_check_venv_already_in_venv(self):
         """Cover the in_venv=True path (line 115 unreachable without mocking)."""
         from djboost.generators.validators import check_virtual_environment
-        with patch.object(sys, "base_prefix", "/usr"), \
-             patch.object(sys, "prefix", "/usr/env"):
+
+        with patch.object(sys, "base_prefix", "/usr"), patch.object(sys, "prefix", "/usr/env"):
             assert check_virtual_environment() is True
 
 
@@ -1215,14 +1285,18 @@ class TestRemoveCommandsErrorPaths:
     def _make_remove_error(self, feature, tmp_path, monkeypatch):
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch(f"djboost.commands.remove.{feature}.check_virtual_environment"), \
-             patch(f"djboost.commands.remove.{feature}.generate_remove_plan") as mock_plan:
+        with (
+            patch(f"djboost.commands.remove.{feature}.check_virtual_environment"),
+            patch(f"djboost.commands.remove.{feature}.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Simulated error"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
-            cmd_module = __import__(f"djboost.commands.remove.{feature}", fromlist=[f"remove_{feature.replace('-', '_')}_command"])
+            cmd_module = __import__(
+                f"djboost.commands.remove.{feature}", fromlist=[f"remove_{feature.replace('-', '_')}_command"]
+            )
             func = getattr(cmd_module, f"remove_{feature.replace('-', '_')}_command")
             try:
                 func(dry_run=False, force=True)
@@ -1277,14 +1351,17 @@ class TestRemoveCommandsErrorPaths:
     def test_cicd_error(self, tmp_path, monkeypatch):
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.cicd.check_virtual_environment"), \
-             patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.cicd.check_virtual_environment"),
+            patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Simulated error"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.cicd import remove_cicd_command
+
             try:
                 remove_cicd_command(provider="github", dry_run=False, force=True)
             except (typer.Exit, SystemExit):
@@ -1301,6 +1378,7 @@ class TestCeleryGeneratorLastLines:
         """Cover celery.py line 90-91 — settings.py not found."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import update_settings_celery
+
         result = update_settings_celery("nonexistent")
         assert result is False
 
@@ -1309,6 +1387,7 @@ class TestCeleryGeneratorLastLines:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import update_settings_celery
+
         result = update_settings_celery("proj")
         # Should work since our settings don't have CELERY_BROKER_URL
         assert result is True
@@ -1324,14 +1403,18 @@ class TestApiDocsGeneratorLastLines:
         """Cover api_docs.py lines 33-38 — settings.py not found."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import add_spectacular_settings
+
         add_spectacular_settings("nonexistent")  # Should print error and return
 
     def test_generate_api_docs_urls_no_settings(self, tmp_path, monkeypatch):
         """Cover api_docs.py lines 40-46 — settings.py not found."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_urls
+
         result = generate_api_docs_urls("nonexistent")
         # Function returns None (not False) when urls.py not found
+
+
 # ── Coverage gap tests — final push ────────────────────────────────────────────
 
 import json
@@ -1344,7 +1427,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import typer
-
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -1419,7 +1501,8 @@ def setup_project(tmp_path, name="proj"):
     (project_dir / "wsgi.py").write_text(
         f"import os\nfrom django.core.wsgi import get_wsgi_application\n"
         f"os.environ.setdefault('DJANGO_SETTINGS_MODULE', '{name}.settings')\n"
-        f"application = get_wsgi_application()\n", encoding="utf-8",
+        f"application = get_wsgi_application()\n",
+        encoding="utf-8",
     )
     (project_dir / "__init__.py").write_text("", encoding="utf-8")
     (tmp_path / ".env").write_text("SECRET_KEY=test\nDEBUG=True\n", encoding="utf-8")
@@ -1435,6 +1518,7 @@ def setup_project(tmp_path, name="proj"):
 # ═══════════════════════════════════════════════════════════════════════════════
 # generators/api_docs.py lines 33-38, 40-46 — add_spectacular_to_installed_apps
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestApiDocsAddToInstalledApps:
     """Cover the blocks that add rest_framework and drf_spectacular to INSTALLED_APPS."""
@@ -1453,6 +1537,7 @@ class TestApiDocsAddToInstalledApps:
         """)
         (project_dir / "settings.py").write_text(settings, encoding="utf-8")
         from djboost.generators.api_docs import add_spectacular_to_installed_apps
+
         add_spectacular_to_installed_apps(name)
         content = (project_dir / "settings.py").read_text(encoding="utf-8")
         assert "rest_framework" in content
@@ -1462,12 +1547,14 @@ class TestApiDocsAddToInstalledApps:
         """Cover add_spectacular_settings when settings.py doesn't exist."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import add_spectacular_settings
+
         add_spectacular_settings("nonexistent")
 
     def test_generate_api_docs_urls_no_file(self, tmp_path, monkeypatch):
         """Cover generate_api_docs_urls when urls.py doesn't exist."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_urls
+
         generate_api_docs_urls("nonexistent")
 
     def test_add_spectacular_settings_already_configured(self, tmp_path, monkeypatch):
@@ -1479,6 +1566,7 @@ class TestApiDocsAddToInstalledApps:
         content = "SPECTACULAR_SETTINGS = {}\n"
         (project_dir / "settings.py").write_text(content, encoding="utf-8")
         from djboost.generators.api_docs import add_spectacular_settings
+
         add_spectacular_settings(name)
 
     def test_generate_api_docs_urls_already_configured(self, tmp_path, monkeypatch):
@@ -1492,6 +1580,7 @@ class TestApiDocsAddToInstalledApps:
             encoding="utf-8",
         )
         from djboost.generators.api_docs import generate_api_docs_urls
+
         generate_api_docs_urls(name)
 
 
@@ -1499,10 +1588,12 @@ class TestApiDocsAddToInstalledApps:
 # generators/celery.py lines 90-91 — settings not found
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCelerySettingsNotFound:
     def test_update_settings_celery_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import update_settings_celery
+
         result = update_settings_celery("nonexistent")
         assert result is False
 
@@ -1510,16 +1601,19 @@ class TestCelerySettingsNotFound:
 class TestSafeEngineEmptyLists:
     def test_install_packages_empty(self):
         from djboost.generators.safe_engine import _install_packages
+
         _install_packages([])  # Should return early without subprocess call
 
     def test_uninstall_packages_empty(self):
         from djboost.generators.safe_engine import _uninstall_packages
+
         _uninstall_packages([])  # Should return early without subprocess call
 
 
 class TestDependenciesEmptyList:
     def test_uninstall_packages_empty(self):
         from djboost.generators.dependencies import uninstall_packages
+
         uninstall_packages([])  # Should return early without subprocess call
 
 
@@ -1527,14 +1621,14 @@ class TestDependenciesEmptyList:
 # generators/docker.py lines 146-147 — celery broker env vars
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDockerCeleryEnvVars:
     def test_docker_compose_with_celery(self, tmp_path, monkeypatch):
         """Lines 146-147: CELERY_BROKER_URL/RESULT_BACKEND env vars when celery installed."""
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nflower>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nflower>=2.0\n", encoding="utf-8")
         from djboost.generators.docker import generate_docker_compose_add
+
         generate_docker_compose_add("proj")
         content = (tmp_path / "docker-compose.yml").read_text(encoding="utf-8")
         assert "CELERY_BROKER_URL: redis://redis:6379/0" in content
@@ -1545,19 +1639,24 @@ class TestDockerCeleryEnvVars:
 # generators/features.py lines 184, 202 — circular dep + unknown conflict
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestFeaturesCircularDependency:
     def test_circular_dependency_detected(self):
         """Line 184: raise ValueError for circular dependency."""
         from djboost.generators.features import FEATURES, Feature
+
         # Temporarily create a circular dependency
         original = FEATURES.get("celery")
         feat = Feature(
-            name="celery", display_name="Celery", description="test",
+            name="celery",
+            display_name="Celery",
+            description="test",
             requires=["celery"],  # self-reference = circular
         )
         FEATURES["celery"] = feat
         try:
             from djboost.generators.features import resolve_dependencies
+
             with pytest.raises(ValueError, match="Circular dependency detected"):
                 resolve_dependencies("celery")
         finally:
@@ -1566,6 +1665,7 @@ class TestFeaturesCircularDependency:
     def test_detect_conflicts_unknown_feature(self):
         """Line 202: detect_conflicts returns [] for unknown feature."""
         from djboost.generators.features import detect_conflicts
+
         result = detect_conflicts("nonexistent_feature", {"celery"})
         assert result == []
 
@@ -1574,11 +1674,13 @@ class TestFeaturesCircularDependency:
 # generators/kubernetes.py lines 20-21 — bad manage.py
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestKubernetesBadManage:
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("x = 1\n", encoding="utf-8")
         from djboost.generators.kubernetes import get_project_name
+
         assert get_project_name() is None
 
 
@@ -1586,17 +1688,20 @@ class TestKubernetesBadManage:
 # generators/logging_config.py lines 18-19 — bad manage.py
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestLoggingConfigBadManage:
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("x = 1\n", encoding="utf-8")
         from djboost.generators.logging_config import get_project_name
+
         assert get_project_name() is None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # generators/safe_engine.py lines 404-405 — JSON decode error
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestSafeEngineJsonDecode:
     def test_save_change_record_corrupt_json(self, tmp_path, monkeypatch):
@@ -1605,12 +1710,17 @@ class TestSafeEngineJsonDecode:
         backup = tmp_path / ".djboost_backup"
         backup.mkdir()
         (backup / "changes.json").write_text("NOT VALID JSON{{{", encoding="utf-8")
-        from djboost.generators.safe_engine import _save_change_record, ChangeRecord
+        from djboost.generators.safe_engine import ChangeRecord, _save_change_record
+
         record = ChangeRecord(
-            feature_name="test", operation="add",
-            timestamp="2024-01-01", files_backed_up={},
-            files_created=[], files_deleted=[],
-            packages_installed=[], packages_uninstalled=[],
+            feature_name="test",
+            operation="add",
+            timestamp="2024-01-01",
+            files_backed_up={},
+            files_created=[],
+            files_deleted=[],
+            packages_installed=[],
+            packages_uninstalled=[],
         )
         _save_change_record(record)
         data = json.loads((backup / "changes.json").read_text(encoding="utf-8"))
@@ -1621,36 +1731,41 @@ class TestSafeEngineJsonDecode:
 # generators/validators.py lines 25, 115, 142-145
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestValidatorsEdgeCases:
     def test_validate_name_empty_string(self):
         """Lines 142-145: validate_name with empty string."""
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("")
 
     def test_validate_name_special_chars(self):
         """Lines 142-145: validate_name with hyphens."""
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("my-project")
 
     def test_validate_name_digit_start(self):
         """Lines 142-145: validate_name starts with digit."""
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("1bad")
 
     def test_check_virtual_env_already_in_venv(self):
         """Line 115: in_venv=True path."""
         from djboost.generators.validators import check_virtual_environment
-        with patch.object(sys, "base_prefix", "/usr"), \
-             patch.object(sys, "prefix", "/usr/env"):
+
+        with patch.object(sys, "base_prefix", "/usr"), patch.object(sys, "prefix", "/usr/env"):
             assert check_virtual_environment() is True
 
     def test_get_venv_python_path_nonexistent(self, tmp_path, monkeypatch):
         """Line 25: venv path doesn't exist."""
         monkeypatch.chdir(tmp_path)
         from djboost.generators.validators import get_venv_python_path
+
         result = get_venv_python_path(tmp_path / "nonexistent_venv")
         assert result is None
 
@@ -1658,6 +1773,7 @@ class TestValidatorsEdgeCases:
 # ═══════════════════════════════════════════════════════════════════════════════
 # commands/management/validate.py lines 43, 124, 155, 176
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestValidateCommandEdgeCases:
     def test_validate_missing_essential_packages(self, tmp_path, monkeypatch):
@@ -1667,9 +1783,7 @@ class TestValidateCommandEdgeCases:
         project_dir = tmp_path / "proj"
         project_dir.mkdir()
         (tmp_path / "manage.py").write_text(MANAGE_PY.format(name="proj"), encoding="utf-8")
-        (project_dir / "settings.py").write_text(
-            "INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8"
-        )
+        (project_dir / "settings.py").write_text("INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8")
         (tmp_path / ".env").write_text("SECRET_KEY=test\n", encoding="utf-8")
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         for d in ["common", "apps"]:
@@ -1678,6 +1792,7 @@ class TestValidateCommandEdgeCases:
         for f in ["responses.py", "pagination.py", "exceptions.py"]:
             (tmp_path / "common" / f).write_text(f"# {f}", encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_missing_apps_dir(self, tmp_path, monkeypatch):
@@ -1686,13 +1801,12 @@ class TestValidateCommandEdgeCases:
         project_dir = tmp_path / "proj"
         project_dir.mkdir()
         (tmp_path / "manage.py").write_text(MANAGE_PY.format(name="proj"), encoding="utf-8")
-        (project_dir / "settings.py").write_text(
-            "INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8"
-        )
+        (project_dir / "settings.py").write_text("INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8")
         (tmp_path / ".env").write_text("SECRET_KEY=test\n", encoding="utf-8")
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         # No common/ or apps/ directories
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_circular_import_common(self, tmp_path, monkeypatch):
@@ -1701,9 +1815,7 @@ class TestValidateCommandEdgeCases:
         project_dir = tmp_path / "proj"
         project_dir.mkdir()
         (tmp_path / "manage.py").write_text(MANAGE_PY.format(name="proj"), encoding="utf-8")
-        (project_dir / "settings.py").write_text(
-            "INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8"
-        )
+        (project_dir / "settings.py").write_text("INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8")
         (tmp_path / ".env").write_text("SECRET_KEY=test\n", encoding="utf-8")
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         for d in ["common", "apps"]:
@@ -1716,6 +1828,7 @@ class TestValidateCommandEdgeCases:
             "from common.responses import something\n# responses", encoding="utf-8"
         )
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_url_leading_slash(self, tmp_path, monkeypatch):
@@ -1724,9 +1837,7 @@ class TestValidateCommandEdgeCases:
         project_dir = tmp_path / "proj"
         project_dir.mkdir()
         (tmp_path / "manage.py").write_text(MANAGE_PY.format(name="proj"), encoding="utf-8")
-        (project_dir / "settings.py").write_text(
-            "INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8"
-        )
+        (project_dir / "settings.py").write_text("INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8")
         (tmp_path / ".env").write_text("SECRET_KEY=test\n", encoding="utf-8")
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         for d in ["common", "apps"]:
@@ -1740,6 +1851,7 @@ class TestValidateCommandEdgeCases:
             encoding="utf-8",
         )
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
 
@@ -1747,31 +1859,38 @@ class TestValidateCommandEdgeCases:
 # commands/remove/api_docs.py lines 43-44 — plan errors
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRemoveApiDocsEdges:
     def test_remove_api_docs_plan_errors(self, tmp_path, monkeypatch):
         """Lines 43-44: plan.errors path when not dry_run."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.remove.api_docs.check_virtual_environment"), \
-             patch("djboost.commands.remove.api_docs.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.api_docs.check_virtual_environment"),
+            patch("djboost.commands.remove.api_docs.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Unknown feature"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.api_docs import remove_api_docs_command
+
             remove_api_docs_command(dry_run=False, force=False)
 
     def test_remove_api_docs_already_removed(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.api_docs.check_virtual_environment"), \
-             patch("djboost.commands.remove.api_docs.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.api_docs.check_virtual_environment"),
+            patch("djboost.commands.remove.api_docs.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = True
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.api_docs import remove_api_docs_command
+
             remove_api_docs_command(dry_run=False, force=False)
 
 
@@ -1779,51 +1898,61 @@ class TestRemoveApiDocsEdges:
 # commands/remove/celery_beat.py lines 50-51, 74
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRemoveCeleryBeatEdges:
     def test_remove_celery_beat_plan_errors(self, tmp_path, monkeypatch):
         """Lines 50-51: plan.errors path when not dry_run."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.remove.celery_beat.check_virtual_environment"), \
-             patch("djboost.commands.remove.celery_beat.get_project_name", return_value="proj"), \
-             patch("djboost.commands.remove.celery_beat.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.celery_beat.check_virtual_environment"),
+            patch("djboost.commands.remove.celery_beat.get_project_name", return_value="proj"),
+            patch("djboost.commands.remove.celery_beat.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Celery Beat not enabled"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=False)
 
     def test_remove_celery_beat_no_crontab(self, tmp_path, monkeypatch):
         """Line 74: crontab import not found, skipping."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.remove.celery_beat.check_virtual_environment"), \
-             patch("djboost.commands.remove.celery_beat.get_project_name", return_value="proj"), \
-             patch("djboost.commands.remove.celery_beat.generate_remove_plan") as mock_plan, \
-             patch("djboost.commands.remove.celery_beat.scan_enabled_features"), \
-             patch("djboost.commands.remove.celery_beat.execute_plan"):
+        with (
+            patch("djboost.commands.remove.celery_beat.check_virtual_environment"),
+            patch("djboost.commands.remove.celery_beat.get_project_name", return_value="proj"),
+            patch("djboost.commands.remove.celery_beat.generate_remove_plan") as mock_plan,
+            patch("djboost.commands.remove.celery_beat.scan_enabled_features"),
+            patch("djboost.commands.remove.celery_beat.execute_plan"),
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
     def test_remove_celery_beat_not_enabled(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.remove.celery_beat.check_virtual_environment"), \
-             patch("djboost.commands.remove.celery_beat.get_project_name", return_value="proj"), \
-             patch("djboost.commands.remove.celery_beat.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.celery_beat.check_virtual_environment"),
+            patch("djboost.commands.remove.celery_beat.get_project_name", return_value="proj"),
+            patch("djboost.commands.remove.celery_beat.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = True
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=False)
 
 
@@ -1831,18 +1960,22 @@ class TestRemoveCeleryBeatEdges:
 # commands/remove/cicd.py lines 56-57, 66-67 — gitlab paths
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRemoveCicdGitlab:
     def test_remove_gitlab_ci_not_present(self, tmp_path, monkeypatch):
         """Lines 66-67: gitlab CI not present."""
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.cicd.check_virtual_environment"), \
-             patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.cicd.check_virtual_environment"),
+            patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="gitlab", dry_run=False, force=True)
 
@@ -1850,54 +1983,66 @@ class TestRemoveCicdGitlab:
         """Lines 56-57: gitlab CI file exists and gets deleted."""
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".gitlab-ci.yml").write_text("image: python:3.12\n", encoding="utf-8")
-        with patch("djboost.commands.remove.cicd.check_virtual_environment"), \
-             patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.cicd.check_virtual_environment"),
+            patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.cicd import remove_cicd_command
+
             remove_cicd_command(provider="gitlab", dry_run=False, force=True)
 
     def test_remove_github_ci_not_present(self, tmp_path, monkeypatch):
         """Cover github CI not present path."""
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.cicd.check_virtual_environment"), \
-             patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.cicd.check_virtual_environment"),
+            patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="github", dry_run=False, force=True)
 
     def test_remove_cicd_plan_errors(self, tmp_path, monkeypatch):
         """Cover plan.errors path."""
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.cicd.check_virtual_environment"), \
-             patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.cicd.check_virtual_environment"),
+            patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Unknown feature"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="github", dry_run=False, force=False)
 
     def test_remove_cicd_already_removed(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.cicd.check_virtual_environment"), \
-             patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.cicd.check_virtual_environment"),
+            patch("djboost.commands.remove.cicd.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = True
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="github", dry_run=False, force=False)
 
@@ -1906,30 +2051,37 @@ class TestRemoveCicdGitlab:
 # commands/remove/kubernetes.py line 37 — plan errors
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRemoveKubernetesEdges:
     def test_remove_kubernetes_plan_errors(self, tmp_path, monkeypatch):
         """Line 37: plan.errors path when not dry_run."""
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.kubernetes.check_virtual_environment"), \
-             patch("djboost.commands.remove.kubernetes.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.kubernetes.check_virtual_environment"),
+            patch("djboost.commands.remove.kubernetes.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Unknown feature"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.kubernetes import remove_kubernetes_command
+
             remove_kubernetes_command(dry_run=False, force=False)
 
     def test_remove_kubernetes_already_removed(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.remove.kubernetes.check_virtual_environment"), \
-             patch("djboost.commands.remove.kubernetes.generate_remove_plan") as mock_plan:
+        with (
+            patch("djboost.commands.remove.kubernetes.check_virtual_environment"),
+            patch("djboost.commands.remove.kubernetes.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = True
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.remove.kubernetes import remove_kubernetes_command
+
             remove_kubernetes_command(dry_run=False, force=False)
 
 
@@ -1937,13 +2089,17 @@ class TestRemoveKubernetesEdges:
 # commands/add/api_docs.py lines 34-36 — unsupported provider
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestAddApiDocsEdges:
     def test_unsupported_provider(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.api_docs.check_virtual_environment"), \
-             patch("djboost.commands.add.api_docs.get_project_name", return_value="proj"):
+        with (
+            patch("djboost.commands.add.api_docs.check_virtual_environment"),
+            patch("djboost.commands.add.api_docs.get_project_name", return_value="proj"),
+        ):
             from djboost.commands.add.api_docs import add_api_docs_command
+
             with pytest.raises(typer.Exit):
                 add_api_docs_command(provider="badprovider", dry_run=False, force=False)
 
@@ -1951,15 +2107,18 @@ class TestAddApiDocsEdges:
         """Lines 34-36: plan.errors path when not dry_run."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.api_docs.check_virtual_environment"), \
-             patch("djboost.commands.add.api_docs.get_project_name", return_value="proj"), \
-             patch("djboost.commands.add.api_docs.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.api_docs.check_virtual_environment"),
+            patch("djboost.commands.add.api_docs.get_project_name", return_value="proj"),
+            patch("djboost.commands.add.api_docs.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Conflicts detected: scheduler"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.api_docs import add_api_docs_command
+
             with pytest.raises(typer.Exit):
                 add_api_docs_command(provider="swagger", dry_run=False, force=False)
 
@@ -1968,14 +2127,18 @@ class TestAddApiDocsEdges:
 # commands/add/celery_beat.py lines 30-32, 35-36 — celery not installed
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestAddCeleryBeatEdges:
     def test_celery_not_installed(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), \
-             patch("djboost.commands.add.celery_beat.get_project_name", return_value="proj"), \
-             patch("djboost.commands.add.celery_beat.scan_enabled_features", return_value=set()):
+        with (
+            patch("djboost.commands.add.celery_beat.check_virtual_environment"),
+            patch("djboost.commands.add.celery_beat.get_project_name", return_value="proj"),
+            patch("djboost.commands.add.celery_beat.scan_enabled_features", return_value=set()),
+        ):
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=False, force=False)
 
@@ -1983,16 +2146,19 @@ class TestAddCeleryBeatEdges:
         """Lines 30-32, 35-36: celery installed but plan has errors."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), \
-             patch("djboost.commands.add.celery_beat.get_project_name", return_value="proj"), \
-             patch("djboost.commands.add.celery_beat.scan_enabled_features", return_value={"celery"}), \
-             patch("djboost.commands.add.celery_beat.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.celery_beat.check_virtual_environment"),
+            patch("djboost.commands.add.celery_beat.get_project_name", return_value="proj"),
+            patch("djboost.commands.add.celery_beat.scan_enabled_features", return_value={"celery"}),
+            patch("djboost.commands.add.celery_beat.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Conflict detected"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=False, force=False)
 
@@ -2001,30 +2167,37 @@ class TestAddCeleryBeatEdges:
 # commands/add/cicd.py lines 32-34 — plan errors
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestAddCicdEdges:
     def test_cicd_plan_errors(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             patch("djboost.commands.add.cicd.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.cicd.check_virtual_environment"),
+            patch("djboost.commands.add.cicd.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Conflicts detected"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.cicd import add_cicd_command
+
             with pytest.raises(typer.Exit):
                 add_cicd_command(provider="github", dry_run=False, force=False)
 
     def test_cicd_already_configured(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             patch("djboost.commands.add.cicd.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.cicd.check_virtual_environment"),
+            patch("djboost.commands.add.cicd.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = True
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.cicd import add_cicd_command
+
             with pytest.raises(typer.Exit):
                 add_cicd_command(provider="github", dry_run=False, force=False)
 
@@ -2033,20 +2206,24 @@ class TestAddCicdEdges:
 # commands/add/scheduler.py lines 33-35 — celery-beat conflict
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestAddSchedulerEdges:
     def test_scheduler_conflicts_with_celery_beat(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.scheduler.check_virtual_environment"), \
-             patch("djboost.commands.add.scheduler.get_project_name", return_value="proj"), \
-             patch("djboost.commands.add.scheduler.generate_add_plan") as mock_plan, \
-             patch("djboost.generators.features.scan_enabled_features", return_value={"celery-beat"}):
+        with (
+            patch("djboost.commands.add.scheduler.check_virtual_environment"),
+            patch("djboost.commands.add.scheduler.get_project_name", return_value="proj"),
+            patch("djboost.commands.add.scheduler.generate_add_plan") as mock_plan,
+            patch("djboost.generators.features.scan_enabled_features", return_value={"celery-beat"}),
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.scheduler import add_scheduler_command
+
             with pytest.raises(typer.Exit):
                 add_scheduler_command(dry_run=False, force=False)
 
@@ -2054,30 +2231,36 @@ class TestAddSchedulerEdges:
         """Lines 33-35: plan.errors path."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.scheduler.check_virtual_environment"), \
-             patch("djboost.commands.add.scheduler.get_project_name", return_value="proj"), \
-             patch("djboost.commands.add.scheduler.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.scheduler.check_virtual_environment"),
+            patch("djboost.commands.add.scheduler.get_project_name", return_value="proj"),
+            patch("djboost.commands.add.scheduler.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Conflicts detected"]
             plan.idempotent = False
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.scheduler import add_scheduler_command
+
             with pytest.raises(typer.Exit):
                 add_scheduler_command(dry_run=False, force=False)
 
     def test_scheduler_already_configured(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
-        with patch("djboost.commands.add.scheduler.check_virtual_environment"), \
-             patch("djboost.commands.add.scheduler.get_project_name", return_value="proj"), \
-             patch("djboost.commands.add.scheduler.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.scheduler.check_virtual_environment"),
+            patch("djboost.commands.add.scheduler.get_project_name", return_value="proj"),
+            patch("djboost.commands.add.scheduler.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = True
             plan.dry_run = False
             mock_plan.return_value = plan
             from djboost.commands.add.scheduler import add_scheduler_command
+
             with pytest.raises(typer.Exit):
                 add_scheduler_command(dry_run=False, force=False)
 
@@ -2086,12 +2269,16 @@ class TestAddSchedulerEdges:
 # commands/create/accounts.py line 23 — no project name
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCreateAccountsNoProject:
     def test_accounts_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.create.accounts.check_virtual_environment"), \
-             patch("djboost.commands.create.accounts.get_project_name", return_value=None):
+        with (
+            patch("djboost.commands.create.accounts.check_virtual_environment"),
+            patch("djboost.commands.create.accounts.get_project_name", return_value=None),
+        ):
             from djboost.commands.create.accounts import create_accounts_command
+
             with pytest.raises(typer.Exit):
                 create_accounts_command()
 
@@ -2099,6 +2286,7 @@ class TestCreateAccountsNoProject:
 # ═══════════════════════════════════════════════════════════════════════════════
 # commands/create/app.py lines 50, 131-132
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestCreateAppEdgeCases:
     def test_app_already_exists(self, tmp_path, monkeypatch):
@@ -2108,6 +2296,7 @@ class TestCreateAppEdgeCases:
         (tmp_path / "apps" / "myapp").mkdir()
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import create_app_command
+
             with pytest.raises(typer.Exit):
                 create_app_command(name="myapp")
 
@@ -2117,6 +2306,7 @@ class TestCreateAppEdgeCases:
         (tmp_path / "manage.py").write_text("x = 1\n", encoding="utf-8")
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import get_project_name
+
             with pytest.raises(typer.Exit):
                 get_project_name()
 
@@ -2124,12 +2314,14 @@ class TestCreateAppEdgeCases:
         """Cover update_settings when settings.py doesn't exist."""
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_settings
+
         update_settings("nonexistent", "myapp")
 
     def test_update_urls_no_file(self, tmp_path, monkeypatch):
         """Cover update_urls when urls.py doesn't exist."""
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_urls
+
         update_urls("nonexistent", "myapp")
 
     def test_update_settings_no_installed_apps(self, tmp_path, monkeypatch):
@@ -2139,6 +2331,7 @@ class TestCreateAppEdgeCases:
         project_dir.mkdir()
         (project_dir / "settings.py").write_text("DEBUG = True\n", encoding="utf-8")
         from djboost.commands.create.app import update_settings
+
         update_settings("proj", "myapp")
 
     def test_update_urls_no_urlpatterns(self, tmp_path, monkeypatch):
@@ -2148,6 +2341,7 @@ class TestCreateAppEdgeCases:
         project_dir.mkdir()
         (project_dir / "urls.py").write_text("from django.urls import path\n", encoding="utf-8")
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "myapp")
 
     def test_update_settings_app_already_registered(self, tmp_path, monkeypatch):
@@ -2155,10 +2349,9 @@ class TestCreateAppEdgeCases:
         monkeypatch.chdir(tmp_path)
         project_dir = tmp_path / "proj"
         project_dir.mkdir()
-        (project_dir / "settings.py").write_text(
-            "INSTALLED_APPS = ['apps.myapp',]\n", encoding="utf-8"
-        )
+        (project_dir / "settings.py").write_text("INSTALLED_APPS = ['apps.myapp',]\n", encoding="utf-8")
         from djboost.commands.create.app import update_settings
+
         update_settings("proj", "myapp")
 
     def test_update_urls_already_mapped(self, tmp_path, monkeypatch):
@@ -2171,6 +2364,7 @@ class TestCreateAppEdgeCases:
             encoding="utf-8",
         )
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "myapp")
 
 
@@ -2178,11 +2372,13 @@ class TestCreateAppEdgeCases:
 # commands/create/project.py line 7
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCreateProject:
     def test_create_project_command(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.create.project.create_project") as mock_create:
             from djboost.commands.create.project import create_project_command
+
             create_project_command(name="testproject")
             mock_create.assert_called_once_with("testproject")
 
@@ -2191,12 +2387,14 @@ class TestCreateProject:
 # commands/management/doctor.py line 41
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDoctorEdges:
     def test_doctor_custom_secret_key(self, tmp_path, monkeypatch):
         """Line 41: SECRET_KEY is custom (not default)."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_default_secret_key(self, tmp_path, monkeypatch):
@@ -2205,6 +2403,7 @@ class TestDoctorEdges:
         setup_project(tmp_path, "proj")
         (tmp_path / ".env").write_text("SECRET_KEY=your-secret-key\nDEBUG=True\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
 
@@ -2212,12 +2411,14 @@ class TestDoctorEdges:
 # commands/management/info.py lines 35-36, 57
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestInfoEdges:
     def test_info_with_project(self, tmp_path, monkeypatch):
         """Lines 35-36, 57: various import/version detection."""
         monkeypatch.chdir(tmp_path)
         setup_project(tmp_path, "proj")
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_version_fallback(self, tmp_path, monkeypatch):
@@ -2227,23 +2428,24 @@ class TestInfoEdges:
         project_dir = tmp_path / "proj"
         project_dir.mkdir()
         (tmp_path / "manage.py").write_text(MANAGE_PY.format(name="proj"), encoding="utf-8")
-        (project_dir / "settings.py").write_text(
-            "INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8"
-        )
+        (project_dir / "settings.py").write_text("INSTALLED_APPS = ['django.contrib.admin']\n", encoding="utf-8")
         (tmp_path / ".env").write_text("SECRET_KEY=test\n", encoding="utf-8")
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         (tmp_path / "apps").mkdir(exist_ok=True)
         (tmp_path / "common").mkdir(exist_ok=True)
         with patch("sys.modules", {**sys.modules}):  # Force fresh imports
             from djboost.commands.management.info import info_command
+
             info_command()
+
+
 # ── Coverage gap tests — final 100% ────────────────────────────────────────────
 
 import os
 import sys
 import textwrap
-import typer
 
+import typer
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -2326,7 +2528,9 @@ def setup_project(tmp_path, name="proj"):
         textwrap.dedent(f"from django.urls import path\nurlpatterns = []\n"), encoding="utf-8"
     )
     (project_dir / "wsgi.py").write_text(
-        textwrap.dedent(f"import os\nfrom django.core.wsgi import get_wsgi_application\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', '{name}.settings')\napplication = get_wsgi_application()\n"),
+        textwrap.dedent(
+            f"import os\nfrom django.core.wsgi import get_wsgi_application\nos.environ.setdefault('DJANGO_SETTINGS_MODULE', '{name}.settings')\napplication = get_wsgi_application()\n"
+        ),
         encoding="utf-8",
     )
     (project_dir / "__init__.py").write_text("", encoding="utf-8")
@@ -2351,9 +2555,12 @@ VPATCH = patch("djboost.generators.safe_engine._validate_project", return_value=
 class TestInitAndMain:
     def test_version_fallback(self):
         from importlib.metadata import PackageNotFoundError
+
         with patch("importlib.metadata.version", side_effect=PackageNotFoundError("djboost")):
-            import djboost
             import importlib
+
+            import djboost
+
             importlib.reload(djboost)
             assert djboost.__version__ == "0.8.0"
 
@@ -2363,6 +2570,7 @@ class TestInitAndMain:
         # which uses sys.argv (pytest's args). Instead verify the file exists
         # and contains the expected code.
         import djboost
+
         main_file = Path(djboost.__file__).parent / "__main__.py"
         assert main_file.exists()
         content = main_file.read_text(encoding="utf-8")
@@ -2372,6 +2580,7 @@ class TestInitAndMain:
     def test_cli_encoding_fix(self):
         """Test the Windows encoding fix path."""
         import djboost.cli as cli_mod
+
         # The fix runs at import time; just verify the module loaded
         assert cli_mod.app is not None
 
@@ -2391,13 +2600,17 @@ class TestAddCommandsErrorPaths:
         # Make scan_enabled_features detect the feature as already enabled
         # BUT also trigger a conflict/error via the plan
         # The easiest way: make generate_add_plan return errors
-        with patch(f"djboost.commands.add.{feature}.check_virtual_environment"), \
-             patch(f"djboost.commands.add.{feature}.generate_add_plan") as mock_plan:
+        with (
+            patch(f"djboost.commands.add.{feature}.check_virtual_environment"),
+            patch(f"djboost.commands.add.{feature}.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Simulated error"]
             plan.idempotent = False
             mock_plan.return_value = plan
-            cmd_module = __import__(f"djboost.commands.add.{feature}", fromlist=[f"add_{feature.replace('-', '_')}_command"])
+            cmd_module = __import__(
+                f"djboost.commands.add.{feature}", fromlist=[f"add_{feature.replace('-', '_')}_command"]
+            )
             func = getattr(cmd_module, f"add_{feature.replace('-', '_')}_command")
             with pytest.raises(typer.Exit):
                 func(dry_run=False, force=False)
@@ -2444,13 +2657,16 @@ class TestAddCommandsErrorPaths:
     def test_celery_beat_error(self, tmp_path, monkeypatch):
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), \
-             patch("djboost.commands.add.celery_beat.generate_add_plan") as mock_plan:
+        with (
+            patch("djboost.commands.add.celery_beat.check_virtual_environment"),
+            patch("djboost.commands.add.celery_beat.generate_add_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = ["Simulated error"]
             plan.idempotent = False
             mock_plan.return_value = plan
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=False, force=False)
 
@@ -2461,9 +2677,10 @@ class TestAddCommandsDryRunExit:
     def _make_add_dry_run(self, feature, tmp_path, monkeypatch):
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch(f"djboost.commands.add.{feature}.check_virtual_environment"), \
-             VPATCH:
-            cmd_module = __import__(f"djboost.commands.add.{feature}", fromlist=[f"add_{feature.replace('-', '_')}_command"])
+        with patch(f"djboost.commands.add.{feature}.check_virtual_environment"), VPATCH:
+            cmd_module = __import__(
+                f"djboost.commands.add.{feature}", fromlist=[f"add_{feature.replace('-', '_')}_command"]
+            )
             func = getattr(cmd_module, f"add_{feature.replace('-', '_')}_command")
             with pytest.raises(typer.Exit):
                 func(dry_run=True, force=False)
@@ -2511,18 +2728,18 @@ class TestAddCommandsDryRunExit:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
-        with patch("djboost.commands.add.api_docs.check_virtual_environment"), \
-             VPATCH:
+        with patch("djboost.commands.add.api_docs.check_virtual_environment"), VPATCH:
             from djboost.commands.add.api_docs import add_api_docs_command
+
             with pytest.raises(typer.Exit):
                 add_api_docs_command(provider="swagger", dry_run=True, force=False)
 
     def test_cicd_dry_run(self, tmp_path, monkeypatch):
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             VPATCH:
+        with patch("djboost.commands.add.cicd.check_virtual_environment"), VPATCH:
             from djboost.commands.add.cicd import add_cicd_command
+
             with pytest.raises(typer.Exit):
                 add_cicd_command(provider="github", dry_run=True, force=False)
 
@@ -2535,9 +2752,9 @@ class TestAddCommandsDryRunExit:
             settings.read_text(encoding="utf-8") + "\nCELERY_BROKER_URL = 'redis://'\n",
             encoding="utf-8",
         )
-        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), \
-             VPATCH:
+        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), VPATCH:
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=True, force=False)
 
@@ -2553,14 +2770,18 @@ class TestRemoveDryRun:
     def _make_remove_dry_run(self, feature, tmp_path, monkeypatch):
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch(f"djboost.commands.remove.{feature}.check_virtual_environment"), \
-             patch(f"djboost.commands.remove.{feature}.generate_remove_plan") as mock_plan:
+        with (
+            patch(f"djboost.commands.remove.{feature}.check_virtual_environment"),
+            patch(f"djboost.commands.remove.{feature}.generate_remove_plan") as mock_plan,
+        ):
             plan = MagicMock()
             plan.errors = []
             plan.idempotent = False
             plan.dry_run = True
             mock_plan.return_value = plan
-            cmd_module = __import__(f"djboost.commands.remove.{feature}", fromlist=[f"remove_{feature.replace('-', '_')}_command"])
+            cmd_module = __import__(
+                f"djboost.commands.remove.{feature}", fromlist=[f"remove_{feature.replace('-', '_')}_command"]
+            )
             func = getattr(cmd_module, f"remove_{feature.replace('-', '_')}_command")
             try:
                 func(dry_run=True, force=True)
@@ -2618,11 +2839,10 @@ class TestRemoveDockerNoFiles:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         # Enable docker detection
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ngunicorn>=21.2\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ngunicorn>=21.2\n", encoding="utf-8")
         with patch("djboost.commands.remove.docker.check_virtual_environment"):
             from djboost.commands.remove.docker import remove_docker_command
+
             remove_docker_command(dry_run=False, force=True)
 
 
@@ -2636,6 +2856,7 @@ class TestRemoveCicdDryRun:
         (tmp_path / ".github" / "workflows" / "main.yml").write_text("name: test", encoding="utf-8")
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="github", dry_run=True, force=True)
 
@@ -2645,6 +2866,7 @@ class TestRemoveCicdDryRun:
         (tmp_path / ".gitlab-ci.yml").write_text("stages:", encoding="utf-8")
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="gitlab", dry_run=True, force=True)
 
@@ -2663,6 +2885,7 @@ class TestRemoveCeleryBeatDryRun:
         )
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=True, force=True)
 
 
@@ -2675,12 +2898,14 @@ class TestApiDocsGetProjectName:
     def test_get_project_name_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import get_project_name
+
         assert get_project_name() is None
 
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("x = 1", encoding="utf-8")
         from djboost.generators.api_docs import get_project_name
+
         assert get_project_name() is None
 
 
@@ -2697,6 +2922,7 @@ class TestCeleryGeneratorEdgeCases:
         init = tmp_path / "proj" / "__init__.py"
         init.write_text("from .celery import app as celery_app\n__all__ = ('celery_app',)\n", encoding="utf-8")
         from djboost.generators.celery import generate_celery_files
+
         generate_celery_files("proj")
         content = init.read_text(encoding="utf-8")
         assert "celery_app" in content
@@ -2706,6 +2932,7 @@ class TestCeleryGeneratorEdgeCases:
         setup_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import generate_celery_beat_config
+
         assert generate_celery_beat_config("proj") is False
 
     def test_update_settings_celery_already_has_beat(self, tmp_path, monkeypatch):
@@ -2719,6 +2946,7 @@ class TestCeleryGeneratorEdgeCases:
             encoding="utf-8",
         )
         from djboost.generators.celery import generate_celery_beat_config
+
         assert generate_celery_beat_config("proj") is True
 
 
@@ -2730,12 +2958,14 @@ class TestCeleryGeneratorEdgeCases:
 class TestSafeEngineEdgeCases:
     def test_generate_add_plan_unknown_feature(self):
         from djboost.generators.safe_engine import generate_add_plan
+
         plan = generate_add_plan("nonexistent_feature")
         assert plan.errors
         assert "Unknown feature" in plan.errors[0]
 
     def test_generate_remove_plan_unknown_feature(self):
         from djboost.generators.safe_engine import generate_remove_plan
+
         plan = generate_remove_plan("nonexistent_feature")
         assert plan.errors
         assert "Unknown feature" in plan.errors[0]
@@ -2743,7 +2973,11 @@ class TestSafeEngineEdgeCases:
     def test_generate_add_plan_circular_dependency(self):
         """Trigger circular dependency error in resolve_dependencies."""
         from djboost.generators.safe_engine import generate_add_plan
-        with patch("djboost.generators.safe_engine.resolve_dependencies", side_effect=ValueError("Circular dependency detected")):
+
+        with patch(
+            "djboost.generators.safe_engine.resolve_dependencies",
+            side_effect=ValueError("Circular dependency detected"),
+        ):
             plan = generate_add_plan("celery")
             assert plan.errors
             assert "Circular" in plan.errors[0]
@@ -2751,6 +2985,7 @@ class TestSafeEngineEdgeCases:
     def test_execute_plan_dry_run(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import ChangePlan, execute_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=True)
         result = execute_plan(plan)
         assert result is None
@@ -2758,6 +2993,7 @@ class TestSafeEngineEdgeCases:
     def test_execute_plan_errors(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import ChangePlan, execute_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=False)
         plan.errors.append("test error")
         result = execute_plan(plan)
@@ -2766,6 +3002,7 @@ class TestSafeEngineEdgeCases:
     def test_execute_plan_idempotent(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import ChangePlan, execute_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=False)
         plan.idempotent = True
         result = execute_plan(plan)
@@ -2773,11 +3010,14 @@ class TestSafeEngineEdgeCases:
 
     def test_execute_plan_exception_triggers_rollback(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        from djboost.generators.safe_engine import ChangePlan, execute_plan, FileChange
+        from djboost.generators.safe_engine import ChangePlan, FileChange, execute_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=False)
         plan.files_to_change = [FileChange(path="test.py", action="create")]
+
         def bad_fn():
             raise RuntimeError("boom")
+
         result = execute_plan(plan, apply_fn=bad_fn)
         assert result is None
 
@@ -2790,24 +3030,29 @@ class TestSafeEngineEdgeCases:
 class TestValidateNameLegacy:
     def test_name_starts_with_digit(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("1project")
 
     def test_name_invalid_chars(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("my-project")
 
     def test_name_valid(self):
         from djboost.generators.validators import validate_name
+
         validate_name("myproject")  # Should not raise
 
     def test_name_with_underscores(self):
         from djboost.generators.validators import validate_name
+
         validate_name("my_project")
 
     def test_name_empty(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises(typer.Exit):
             validate_name("")
 
@@ -2820,18 +3065,23 @@ class TestValidateNameLegacy:
 class TestFeaturesEdgeCases:
     def test_scan_enabled_features_no_project(self):
         from djboost.generators.features import scan_enabled_features
+
         result = scan_enabled_features(None)
         assert isinstance(result, set)
 
     def test_detect_conflicts_no_conflicts(self):
         from djboost.generators.features import detect_conflicts
+
         result = detect_conflicts("celery", set())
         assert result == []
 
     def test_detect_reverse_dependencies_none(self):
         from djboost.generators.features import detect_reverse_dependencies
+
         result = detect_reverse_dependencies("celery", set())
         assert result == []
+
+
 """
 Final push to 90%+ coverage.
 Targets: cli.py, generator.py, app_structure.py, validators.py
@@ -2921,12 +3171,8 @@ def setup_django_project(tmp_path, name="testproject"):
     project_dir = tmp_path / name
     project_dir.mkdir()
 
-    (tmp_path / "manage.py").write_text(
-        MANAGE_PY_TEMPLATE.format(name=name), encoding="utf-8"
-    )
-    (project_dir / "settings.py").write_text(
-        SETTINGS_TEMPLATE.format(name=name), encoding="utf-8"
-    )
+    (tmp_path / "manage.py").write_text(MANAGE_PY_TEMPLATE.format(name=name), encoding="utf-8")
+    (project_dir / "settings.py").write_text(SETTINGS_TEMPLATE.format(name=name), encoding="utf-8")
     (project_dir / "urls.py").write_text(
         textwrap.dedent(f"""\
             from django.urls import path
@@ -2945,9 +3191,7 @@ def setup_django_project(tmp_path, name="testproject"):
         encoding="utf-8",
     )
     (project_dir / "__init__.py").write_text("", encoding="utf-8")
-    (tmp_path / ".env").write_text(
-        "SECRET_KEY=test-secret-key\nDEBUG=True\n", encoding="utf-8"
-    )
+    (tmp_path / ".env").write_text("SECRET_KEY=test-secret-key\nDEBUG=True\n", encoding="utf-8")
     (tmp_path / "requirements.txt").write_text(
         "Django>=5.0,<6\ndjangorestframework>=3.15,<4\n"
         "django-rest-framework-simplejwt>=5.3,<6\n"
@@ -2971,52 +3215,61 @@ class TestCliRunner:
 
     def test_cli_help(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0
         assert "djboost" in result.output.lower()
 
     def test_cli_version(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["--version"])
         assert result.exit_code == 0
         assert "djboost version" in result.output
 
     def test_cli_add_help(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "--help"])
         assert result.exit_code == 0
 
     def test_cli_remove_help(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "--help"])
         assert result.exit_code == 0
 
     def test_cli_startproject_help(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["startproject", "--help"])
         assert result.exit_code == 0
 
     def test_cli_doctor_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["doctor"])
         assert result.exit_code == 0
 
     def test_cli_validate_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["validate"])
         assert result.exit_code == 0
 
     def test_cli_features_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["features"])
         assert result.exit_code == 0
 
     def test_cli_info_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["info"])
         assert result.exit_code == 0
 
@@ -3024,6 +3277,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["doctor"])
         assert result.exit_code == 0
 
@@ -3031,6 +3285,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["validate"])
         assert result.exit_code == 0
 
@@ -3038,6 +3293,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["features"])
         assert result.exit_code == 0
 
@@ -3045,6 +3301,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["info"])
         assert result.exit_code == 0
 
@@ -3052,6 +3309,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "celery", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3059,6 +3317,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "docker", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3066,6 +3325,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "postgres", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3073,6 +3333,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "redis-cache", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3080,6 +3341,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "channels", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3087,6 +3349,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "graphql", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3094,6 +3357,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "monitoring", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3101,6 +3365,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "logging", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3108,6 +3373,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "sentry", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3115,6 +3381,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "security", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3122,6 +3389,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "storage", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3129,6 +3397,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "api-docs", "swagger", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3136,6 +3405,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "kubernetes", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3143,6 +3413,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "scheduler", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3150,6 +3421,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "cicd", "github", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3157,6 +3429,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "celery", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3164,6 +3437,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "docker", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3171,6 +3445,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "postgres", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3178,6 +3453,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "redis-cache", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3185,6 +3461,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "channels", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3192,6 +3469,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "graphql", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3199,6 +3477,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "monitoring", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3206,6 +3485,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "logging", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3213,6 +3493,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "sentry", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3220,6 +3501,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "security", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3227,6 +3509,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "storage", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3234,6 +3517,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "scheduler", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3241,6 +3525,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "kubernetes", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3248,6 +3533,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "celery-beat", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3255,6 +3541,7 @@ class TestCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "cicd", "github", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3262,6 +3549,7 @@ class TestCliRunner:
 # ═══════════════════════════════════════════════════════════════════════════════
 # GENERATOR (ORCHESTRATOR) TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestGeneratorOrchestrator:
     """Test djboost.generator module — the main orchestrator."""
@@ -3272,12 +3560,8 @@ class TestGeneratorOrchestrator:
             # Simulate Django creating the project structure
             proj_dir = tmp_path / "testproj"
             proj_dir.mkdir(exist_ok=True)
-            (proj_dir / "settings.py").write_text(
-                SETTINGS_TEMPLATE.format(name="testproj"), encoding="utf-8"
-            )
-            (proj_dir / "urls.py").write_text(
-                "from django.urls import path\nurlpatterns = []\n", encoding="utf-8"
-            )
+            (proj_dir / "settings.py").write_text(SETTINGS_TEMPLATE.format(name="testproj"), encoding="utf-8")
+            (proj_dir / "urls.py").write_text("from django.urls import path\nurlpatterns = []\n", encoding="utf-8")
             (proj_dir / "wsgi.py").write_text(
                 "import os\nfrom django.core.wsgi import get_wsgi_application\n", encoding="utf-8"
             )
@@ -3291,6 +3575,7 @@ class TestGeneratorOrchestrator:
         mock_run.side_effect = side_effect
         monkeypatch.chdir(tmp_path)
         from djboost.generator import create_project
+
         create_project("testproj")
         assert (tmp_path / "manage.py").exists()
         assert (tmp_path / "testproj").exists()
@@ -3300,6 +3585,7 @@ class TestGeneratorOrchestrator:
         mock_run.return_value = MagicMock(returncode=1, stdout="", stderr="pip error")
         monkeypatch.chdir(tmp_path)
         from djboost.generator import create_project
+
         with pytest.raises((SystemExit, typer.Exit)):
             create_project("testproj")
 
@@ -3313,6 +3599,7 @@ class TestGeneratorOrchestrator:
         mock_run.side_effect = side_effect
         monkeypatch.chdir(tmp_path)
         from djboost.generator import create_project
+
         with pytest.raises((SystemExit, typer.Exit)):
             create_project("testproj")
 
@@ -3320,6 +3607,7 @@ class TestGeneratorOrchestrator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "mydir").mkdir()
         from djboost.generator import create_project
+
         with pytest.raises((SystemExit, typer.Exit)):
             create_project("mydir")
 
@@ -3327,12 +3615,14 @@ class TestGeneratorOrchestrator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("x=1", encoding="utf-8")
         from djboost.generator import create_project
+
         with pytest.raises((SystemExit, typer.Exit)):
             create_project("testproj")
 
     def test_create_project_invalid_name(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generator import create_project
+
         with pytest.raises((SystemExit, typer.Exit)):
             create_project("my-project")
 
@@ -3340,6 +3630,7 @@ class TestGeneratorOrchestrator:
 # ═══════════════════════════════════════════════════════════════════════════════
 # APP STRUCTURE TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestAppStructure:
     """Test djboost.generators.app_structure module."""
@@ -3349,6 +3640,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "__init__.py").touch()
         from djboost.generators.app_structure import generate_standard_app
+
         generate_standard_app("products")
         # Check all expected files exist
         base = tmp_path / "apps" / "products"
@@ -3371,6 +3663,7 @@ class TestAppStructure:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "apps").mkdir()
         from djboost.generators.app_structure import create_standard_app_structure
+
         create_standard_app_structure("orders")
         assert (tmp_path / "apps" / "orders").is_dir()
         assert (tmp_path / "apps" / "orders" / "views").is_dir()
@@ -3383,6 +3676,7 @@ class TestAppStructure:
         (tmp_path / "apps" / "orders").mkdir()
         (tmp_path / "apps" / "orders" / "views").mkdir()
         from djboost.generators.app_structure import create_app_views
+
         create_app_views("orders")
         assert (tmp_path / "apps" / "orders" / "views" / "__init__.py").exists()
         assert (tmp_path / "apps" / "orders" / "views" / "orders.py").exists()
@@ -3396,6 +3690,7 @@ class TestAppStructure:
         (tmp_path / "apps" / "orders").mkdir()
         (tmp_path / "apps" / "orders" / "serializers").mkdir()
         from djboost.generators.app_structure import create_app_serializers
+
         create_app_serializers("orders")
         assert (tmp_path / "apps" / "orders" / "serializers" / "orders.py").exists()
         content = (tmp_path / "apps" / "orders" / "serializers" / "orders.py").read_text(encoding="utf-8")
@@ -3406,6 +3701,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_app_permissions
+
         create_app_permissions("orders")
         assert (tmp_path / "apps" / "orders" / "permissions.py").exists()
         content = (tmp_path / "apps" / "orders" / "permissions.py").read_text(encoding="utf-8")
@@ -3418,6 +3714,7 @@ class TestAppStructure:
         (tmp_path / "apps" / "orders").mkdir()
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.app_structure import create_app_tasks
+
         create_app_tasks("orders")
         assert (tmp_path / "apps" / "orders" / "tasks.py").exists()
         content = (tmp_path / "apps" / "orders" / "tasks.py").read_text(encoding="utf-8")
@@ -3427,10 +3724,9 @@ class TestAppStructure:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nredis>=5.0\n", encoding="utf-8")
         from djboost.generators.app_structure import create_app_tasks
+
         create_app_tasks("orders")
         assert (tmp_path / "apps" / "orders" / "tasks.py").exists()
         content = (tmp_path / "apps" / "orders" / "tasks.py").read_text(encoding="utf-8")
@@ -3441,6 +3737,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_app_tasks
+
         create_app_tasks("orders")
         assert (tmp_path / "apps" / "orders" / "tasks.py").exists()
 
@@ -3450,6 +3747,7 @@ class TestAppStructure:
         (tmp_path / "apps" / "orders").mkdir()
         (tmp_path / "apps" / "orders" / "service").mkdir()
         from djboost.generators.app_structure import create_app_service
+
         create_app_service("orders")
         assert (tmp_path / "apps" / "orders" / "service" / "__init__.py").exists()
         assert (tmp_path / "apps" / "orders" / "service" / "helpers.py").exists()
@@ -3459,6 +3757,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_standard_urls
+
         create_standard_urls("orders")
         assert (tmp_path / "apps" / "orders" / "urls.py").exists()
         content = (tmp_path / "apps" / "orders" / "urls.py").read_text(encoding="utf-8")
@@ -3469,6 +3768,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_standard_models
+
         create_standard_models("orders")
         assert (tmp_path / "apps" / "orders" / "models.py").exists()
         content = (tmp_path / "apps" / "orders" / "models.py").read_text(encoding="utf-8")
@@ -3479,6 +3779,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_standard_admin
+
         create_standard_admin("orders")
         assert (tmp_path / "apps" / "orders" / "admin.py").exists()
         content = (tmp_path / "apps" / "orders" / "admin.py").read_text(encoding="utf-8")
@@ -3489,6 +3790,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_standard_apps
+
         create_standard_apps("orders")
         assert (tmp_path / "apps" / "orders" / "apps.py").exists()
         content = (tmp_path / "apps" / "orders" / "apps.py").read_text(encoding="utf-8")
@@ -3499,6 +3801,7 @@ class TestAppStructure:
         (tmp_path / "apps").mkdir()
         (tmp_path / "apps" / "orders").mkdir()
         from djboost.generators.app_structure import create_standard_tests
+
         create_standard_tests("orders")
         assert (tmp_path / "apps" / "orders" / "tests.py").exists()
         content = (tmp_path / "apps" / "orders" / "tests.py").read_text(encoding="utf-8")
@@ -3509,73 +3812,88 @@ class TestAppStructure:
 # VALIDATORS TESTS (full coverage)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestValidatorsFull:
     """Test djboost.generators.validators — full coverage."""
 
     def test_validate_name_valid(self):
         from djboost.generators.validators import validate_name
+
         validate_name("myproject", "project name")
 
     def test_validate_name_underscores(self):
         from djboost.generators.validators import validate_name
+
         validate_name("my_project_123", "project name")
 
     def test_validate_name_single_char(self):
         from djboost.generators.validators import validate_name
+
         validate_name("a", "project name")
 
     def test_validate_name_invalid_hyphen(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("my-project", "project name")
 
     def test_validate_name_invalid_digit_start(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("1project", "project name")
 
     def test_validate_name_underscore_start_is_valid(self):
         from djboost.generators.validators import validate_name
+
         validate_name("_project", "project name")  # Underscore start is allowed
 
     def test_validate_name_empty(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("", "project name")
 
     def test_validate_name_special_chars(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("my@project", "project name")
 
     def test_validate_name_space(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("my project", "project name")
 
     def test_validate_name_dot(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("my.project", "project name")
 
     def test_check_virtual_environment(self):
         from djboost.generators.validators import check_virtual_environment
+
         check_virtual_environment()  # Should not raise
 
     def test_get_venv_python_path(self):
         from djboost.generators.validators import get_venv_python_path
+
         result = get_venv_python_path()
         # Returns Path or None depending on current environment
         assert result is None or isinstance(result, Path)
 
     def test_get_venv_python_path_custom(self, tmp_path):
         from djboost.generators.validators import get_venv_python_path
+
         result = get_venv_python_path(tmp_path)
         # Returns None if the python file doesn't exist
         assert result is None
 
     def test_get_venv_python_path_with_file(self, tmp_path):
         from djboost.generators.validators import get_venv_python_path
+
         # Create the actual python file
         if sys.platform == "win32":
             python_path = tmp_path / "Scripts" / "python.exe"
@@ -3588,18 +3906,21 @@ class TestValidatorsFull:
 
     def test_get_venv_python_path_none(self):
         from djboost.generators.validators import get_venv_python_path
+
         # Non-existent path should return None
         result = get_venv_python_path(Path("/nonexistent/path/xyz"))
         assert result is None
 
     def test_get_activate_command(self):
         from djboost.generators.validators import get_activate_command
+
         result = get_activate_command()
         assert isinstance(result, str)
         assert "activate" in result
 
     def test_get_activate_command_custom(self, tmp_path):
         from djboost.generators.validators import get_activate_command
+
         result = get_activate_command(tmp_path)
         assert isinstance(result, str)
         if sys.platform == "win32":
@@ -3612,6 +3933,7 @@ class TestValidatorsFull:
 # COMMAND MODULES — full CLI runner tests
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCommandModulesViaCliRunner:
     """Test all command modules through CliRunner for maximum coverage."""
 
@@ -3619,6 +3941,7 @@ class TestCommandModulesViaCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "api-docs", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3626,6 +3949,7 @@ class TestCommandModulesViaCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["remove", "celery-beat", "--dry-run"])
         assert result.exit_code == 0
 
@@ -3633,19 +3957,24 @@ class TestCommandModulesViaCliRunner:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.cli import app
+
         result = runner.invoke(app, ["add", "celery-beat", "--dry-run"])
         # celery-beat requires celery first, so exit code 1 is expected
         assert result.exit_code in (0, 1)
 
     def test_cli_startapp_help(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["startapp", "--help"])
         assert result.exit_code == 0
 
     def test_cli_startauth_help(self):
         from djboost.cli import app
+
         result = runner.invoke(app, ["startauth", "--help"])
         assert result.exit_code == 0
+
+
 """
 Tests for Windows-specific encoding and path handling.
 
@@ -3668,6 +3997,7 @@ class TestCliWindowsEncoding:
         """cli.py should import successfully (encoding fix applied at top)."""
         # If we got here, cli.py imported fine — the encoding fix didn't break it
         from djboost import cli
+
         assert hasattr(cli, "app")
 
     def test_stdout_has_reconfigure_method(self):
@@ -3879,8 +4209,9 @@ class TestValidateName:
 
     def test_invalid_names_with_special_chars(self):
         """Names with special characters should fail."""
-        from djboost.generators.validators import validate_name
         import typer
+
+        from djboost.generators.validators import validate_name
 
         with pytest.raises(typer.Exit):
             validate_name("my-project")
@@ -3896,8 +4227,9 @@ class TestValidateName:
 
     def test_name_starting_with_digit(self):
         """Names starting with digits should fail."""
-        from djboost.generators.validators import validate_name
         import typer
+
+        from djboost.generators.validators import validate_name
 
         with pytest.raises(typer.Exit):
             validate_name("1project")
@@ -3907,16 +4239,18 @@ class TestValidateName:
 
     def test_empty_name(self):
         """Empty name should fail."""
-        from djboost.generators.validators import validate_name
         import typer
+
+        from djboost.generators.validators import validate_name
 
         with pytest.raises(typer.Exit):
             validate_name("")
 
     def test_custom_label_in_error(self):
         """Error message should include the custom label."""
-        from djboost.generators.validators import validate_name
         import typer
+
+        from djboost.generators.validators import validate_name
 
         with pytest.raises(typer.Exit):
             validate_name("bad-name", label="app name")

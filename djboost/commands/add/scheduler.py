@@ -3,7 +3,12 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.scheduler import add_scheduler_settings, add_scheduler_to_requirements, generate_scheduler_config, get_project_name
+from djboost.generators.scheduler import (
+    add_scheduler_settings,
+    add_scheduler_to_requirements,
+    generate_scheduler_config,
+    get_project_name,
+)
 
 
 def add_scheduler_command(
@@ -28,6 +33,7 @@ def add_scheduler_command(
         raise typer.Exit(0)
 
     from djboost.generators.features import scan_enabled_features
+
     enabled = scan_enabled_features(name)
     if "celery-beat" in enabled and not force:
         print("[red]Error: Celery Beat is already installed. APScheduler conflicts with it.[/red]")

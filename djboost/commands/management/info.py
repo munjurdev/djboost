@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+
 from rich import print
 from rich.console import Console
 from rich.table import Table
@@ -75,7 +76,9 @@ def info_command():
     try:
         import drf_spectacular
 
-        packages["drf-spectacular"] = getattr(drf_spectacular, "VERSION", getattr(drf_spectacular, "__version__", "unknown"))
+        packages["drf-spectacular"] = getattr(
+            drf_spectacular, "VERSION", getattr(drf_spectacular, "__version__", "unknown")
+        )
     except (ImportError, AttributeError):
         packages["drf-spectacular"] = "not installed"
 

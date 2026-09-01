@@ -1,4 +1,5 @@
 """Tests for the safe operation engine — plan generation, dry-run, idempotency."""
+
 import json
 import os
 import shutil
@@ -7,7 +8,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 from djboost.generators.safe_engine import (
     ChangePlan,
@@ -101,6 +101,8 @@ class TestIdempotency:
         plan = generate_add_plan("celery", dry_run=True)
         assert plan.idempotent is True
         assert len(plan.warnings) > 0
+
+
 # ── Rollback edge case tests ──────────────────────────────────────────────────
 
 from djboost.generators.safe_engine import (
@@ -111,15 +113,14 @@ from djboost.generators.safe_engine import (
     _apply_delete,
     _apply_modify,
     _print_plan,
-    _rollback,
     _resolve_pattern,
+    _rollback,
     _save_change_record,
     execute_plan,
     generate_add_plan,
     generate_remove_plan,
     load_change_history,
 )
-
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 

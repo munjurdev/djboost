@@ -3,10 +3,17 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.docker import (
-    add_docker_to_requirements, generate_docker_compose_add,
-    generate_dockerfile, generate_dockerignore_add, get_project_name,
+    add_docker_to_requirements,
+    generate_docker_compose_add,
+    generate_dockerfile,
+    generate_dockerignore_add,
+    get_project_name,
 )
-from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_add_plan,
+    scan_enabled_features,
+)
 
 
 def add_docker_command(

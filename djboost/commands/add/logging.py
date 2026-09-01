@@ -2,7 +2,12 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.logging_config import add_logging_settings, add_logging_to_requirements, generate_logging_config, get_project_name
+from djboost.generators.logging_config import (
+    add_logging_settings,
+    add_logging_to_requirements,
+    generate_logging_config,
+    get_project_name,
+)
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 

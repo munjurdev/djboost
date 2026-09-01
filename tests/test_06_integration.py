@@ -1,4 +1,5 @@
 """Integration tests — end-to-end CLI commands."""
+
 import os
 import shutil
 import subprocess
@@ -46,7 +47,10 @@ def run_cli(*args):  # type: ignore[no-untyped-def]
     """Run djboost CLI with UTF-8 encoding."""
     return subprocess.run(
         ["djboost", *args],
-        capture_output=True, text=True, errors="replace", env=_env(),
+        capture_output=True,
+        text=True,
+        errors="replace",
+        env=_env(),
     )
 
 
@@ -82,7 +86,7 @@ class TestInfoCommand:
     def test_info_without_project(self, tmp_path):
         os.chdir(tmp_path)
         result = run_cli("info")
-        output = (result.stdout or result.stderr or "")
+        output = result.stdout or result.stderr or ""
         assert "manage.py" in output.lower() or "error" in output.lower()
 
     def test_info_with_project(self, live_project):

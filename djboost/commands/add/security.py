@@ -3,7 +3,11 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.security import add_security_to_requirements, get_project_name, update_settings_security
+from djboost.generators.security import (
+    add_security_to_requirements,
+    get_project_name,
+    update_settings_security,
+)
 
 
 def add_security_command(

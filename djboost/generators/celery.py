@@ -105,7 +105,9 @@ def update_settings_celery(name):
         return True
 
     if "from celery.schedules import crontab" not in content:
-        content = content.replace("from decouple import config", "from decouple import config\nfrom celery.schedules import crontab")
+        content = content.replace(
+            "from decouple import config", "from decouple import config\nfrom celery.schedules import crontab"
+        )
 
     celery_settings = """
 

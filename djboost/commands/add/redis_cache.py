@@ -2,7 +2,12 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.redis_cache import add_redis_cache_to_requirements, get_project_name, update_env_redis_cache, update_settings_redis_cache
+from djboost.generators.redis_cache import (
+    add_redis_cache_to_requirements,
+    get_project_name,
+    update_env_redis_cache,
+    update_settings_redis_cache,
+)
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
 
 

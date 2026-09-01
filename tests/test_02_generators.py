@@ -3,6 +3,7 @@ Tests for generator modules — celery, settings, dependencies, env, quality.
 
 These tests target the lowest-coverage modules to boost overall coverage.
 """
+
 import os
 import sys
 from pathlib import Path
@@ -23,8 +24,8 @@ from djboost.generators.features import (
     detect_conflicts,
     detect_reverse_dependencies,
     get_feature,
-    list_features,
     list_feature_names,
+    list_features,
     resolve_dependencies,
     scan_enabled_features,
 )
@@ -44,7 +45,6 @@ from djboost.generators.validators import (
     get_venv_python_path,
     validate_name,
 )
-
 
 # ── Dependencies Tests ────────────────────────────────────────────────────────
 
@@ -280,9 +280,7 @@ class TestSafeEngineExtended:
         os.chdir(tmp_path)
         # Enable cicd-github first
         (tmp_path / ".github" / "workflows" / "main.yml").mkdir(parents=True)
-        (tmp_path / ".github" / "workflows" / "main.yml" / "ci.yml").write_text(
-            "name: CI\n", encoding="utf-8"
-        )
+        (tmp_path / ".github" / "workflows" / "main.yml" / "ci.yml").write_text("name: CI\n", encoding="utf-8")
         # This should conflict, but force=True should bypass
         plan = generate_add_plan("cicd-gitlab", dry_run=True, force=True)
         # Should not have errors about conflicts
@@ -333,6 +331,8 @@ class TestValidatorsExtended:
         result = get_activate_command(Path("env"))
         assert "Scripts" in result
         assert "source" not in result
+
+
 # ── Comprehensive generator tests ──────────────────────────────────────────────
 
 
@@ -874,13 +874,12 @@ class TestSettingsGeneratorComprehensive:
         update_settings_file(str(django_project / "core" / "settings.py"), "core")
 
         content = (django_project / "core" / "settings.py").read_text(encoding="utf-8")
-        assert "STATIC_ROOT" in content or "whitenoise" in content.lower()# ── Extended generator tests ────────────────────────────────────────────────────
-
-
+        assert (
+            "STATIC_ROOT" in content or "whitenoise" in content.lower()
+        )  # ── Extended generator tests ────────────────────────────────────────────────────
 
 
 from djboost.generators.settings import update_settings_file
-
 
 # ── Settings Generator Tests ──────────────────────────────────────────────────
 
@@ -1172,6 +1171,7 @@ class TestProjectFilesGenerator:
         os.chdir(tmp_path)
         # create_directories creates common/ dir
         from djboost.generators.project_files import create_directories
+
         create_directories()
 
         create_common_files()
@@ -1287,9 +1287,7 @@ class TestAccountsAppGenerator:
         (tmp_path / "core").mkdir()
         (tmp_path / "core" / "__init__.py").touch()
         (tmp_path / "core" / "settings.py").write_text(
-            "SECRET_KEY = 'test'\n"
-            "INSTALLED_APPS = ['django.contrib.auth']\n"
-            "ROOT_URLCONF = 'core.urls'\n",
+            "SECRET_KEY = 'test'\n" "INSTALLED_APPS = ['django.contrib.auth']\n" "ROOT_URLCONF = 'core.urls'\n",
             encoding="utf-8",
         )
         (tmp_path / "core" / "urls.py").write_text(

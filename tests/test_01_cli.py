@@ -1,6 +1,7 @@
 """
 Tests for CLI management commands — validate, info, features, doctor.
 """
+
 import os
 from pathlib import Path
 
@@ -8,7 +9,6 @@ import pytest
 from typer.testing import CliRunner
 
 from djboost.cli import app
-
 
 runner = CliRunner()
 
@@ -174,6 +174,8 @@ class TestRemoveCommands:
         result = runner.invoke(app, ["remove", "channels", "--help"])
         assert result.exit_code == 0
         assert "Channels" in result.output
+
+
 """Tests for CLI command modules — add, remove, create, management."""
 from unittest.mock import MagicMock, patch
 

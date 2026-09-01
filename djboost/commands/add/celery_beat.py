@@ -2,8 +2,16 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.celery import add_crontab_import, generate_celery_beat_config, get_project_name
-from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
+from djboost.generators.celery import (
+    add_crontab_import,
+    generate_celery_beat_config,
+    get_project_name,
+)
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_add_plan,
+    scan_enabled_features,
+)
 
 
 def add_celery_beat_command(

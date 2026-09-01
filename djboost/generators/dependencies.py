@@ -42,11 +42,13 @@ def install_dependencies(packages=None):
         print(f"[cyan]   + {pkg}[/cyan]")
     result = subprocess.run(
         [_REAL_PYTHON, "-m", "pip", "install", "-q", *packages],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode != 0:
         print(f"[red]Error installing packages:\n{result.stderr}[/red]")
         import typer
+
         raise typer.Exit(1)
     print("[green]✔ All dependencies installed.[/green]")
 
@@ -66,6 +68,7 @@ def install_optional_packages(category: str):
 def add_to_requirements(packages):
     """Append specific packages to requirements.txt (no freeze)."""
     from pathlib import Path
+
     req_path = Path("requirements.txt")
     existing = req_path.read_text(encoding="utf-8") if req_path.exists() else ""
     added = []
@@ -85,6 +88,7 @@ def add_to_requirements(packages):
 def remove_from_requirements(packages):
     """Remove specific packages from requirements.txt."""
     from pathlib import Path
+
     req_path = Path("requirements.txt")
     if not req_path.exists():
         return
@@ -113,15 +117,13 @@ def uninstall_packages(packages):
     if not packages:
         return
     print("[cyan]📦 Uninstalling packages...[/cyan]")
-    pkg_names = [
-        package.split(">=")[0].split("<")[0].split("==")[0].strip()
-        for package in packages
-    ]
+    pkg_names = [package.split(">=")[0].split("<")[0].split("==")[0].strip() for package in packages]
     for name in pkg_names:
         print(f"[cyan]   - {name}[/cyan]")
     result = subprocess.run(
         [_REAL_PYTHON, "-m", "pip", "uninstall", "-y", "-q", *pkg_names],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     if result.returncode == 0:
         for name in pkg_names:

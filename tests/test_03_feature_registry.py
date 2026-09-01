@@ -1,8 +1,8 @@
 """Tests for the feature registry — dependency graph, conflict detection, state scanning."""
+
 import os
 
 import pytest
-
 
 from djboost.generators.features import (
     FEATURES,
@@ -14,17 +14,24 @@ from djboost.generators.features import (
     scan_enabled_features,
 )
 
-
 EXPECTED_FEATURES = {
-    "celery", "celery-beat", "scheduler",
-    "docker", "kubernetes",
-    "postgres", "redis-cache",
-    "api-docs", "graphql",
+    "celery",
+    "celery-beat",
+    "scheduler",
+    "docker",
+    "kubernetes",
+    "postgres",
+    "redis-cache",
+    "api-docs",
+    "graphql",
     "channels",
-    "cicd-github", "cicd-gitlab",
+    "cicd-github",
+    "cicd-gitlab",
     "storage",
     "security",
-    "sentry", "logging", "monitoring",
+    "sentry",
+    "logging",
+    "monitoring",
 }
 
 
@@ -50,24 +57,27 @@ class TestFeatureRegistry:
         """Every feature should have either packages or files."""
         for feat in FEATURES.values():
             assert (
-                feat.required_packages
-                or feat.files_created
-                or feat.files_modified
-                or feat.detection_settings
+                feat.required_packages or feat.files_created or feat.files_modified or feat.detection_settings
             ), f"Feature {feat.name} has no packages, files, or detection methods"
 
     def test_new_features_have_detection(self):
         """New enterprise features should have detection methods."""
-        enterprise_features = ["sentry", "postgres", "redis-cache", "storage", "graphql",
-                               "security", "logging", "monitoring", "kubernetes", "scheduler"]
+        enterprise_features = [
+            "sentry",
+            "postgres",
+            "redis-cache",
+            "storage",
+            "graphql",
+            "security",
+            "logging",
+            "monitoring",
+            "kubernetes",
+            "scheduler",
+        ]
         for name in enterprise_features:
             feat = get_feature(name)
             assert feat is not None, f"Feature {name} not found"
-            has_detection = (
-                feat.detection_packages
-                or feat.detection_files
-                or feat.detection_settings
-            )
+            has_detection = feat.detection_packages or feat.detection_files or feat.detection_settings
             assert has_detection, f"Feature {name} has no detection methods"
 
 
@@ -106,6 +116,7 @@ class TestDependencyResolution:
     def test_circular_dependency_detection(self):
         """Circular dependencies should be detected."""
         from djboost.generators import features
+
         original = features.FEATURES["celery"].requires
         features.FEATURES["celery"].requires = ["celery-beat"]
         try:

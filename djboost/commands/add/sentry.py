@@ -3,7 +3,11 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.sentry import add_sentry_to_requirements, add_sentry_to_settings, get_project_name
+from djboost.generators.sentry import (
+    add_sentry_to_requirements,
+    add_sentry_to_settings,
+    get_project_name,
+)
 
 
 def add_sentry_command(

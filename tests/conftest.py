@@ -4,6 +4,7 @@ Test fixtures for djboost integration tests.
 Each test gets a fresh temporary directory with a real Django project
 created by djboost's create command.
 """
+
 import os
 import shutil
 import subprocess
@@ -42,13 +43,15 @@ def djboost_project(temp_dir):
     # Install Django first
     subprocess.run(
         [_REAL_PYTHON, "-m", "pip", "install", "Django", "-q"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
 
     # Create project structure
     subprocess.run(
         [_REAL_PYTHON, "-m", "django", "startproject", project_name, "."],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
 
     # Create required directories

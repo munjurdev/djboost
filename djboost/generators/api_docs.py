@@ -1,6 +1,7 @@
 """
 API Documentation generator (Swagger / ReDoc).
 """
+
 import re
 from pathlib import Path
 
@@ -96,7 +97,8 @@ def generate_api_docs_urls(name: str):  # type: ignore[no-untyped-def]
     )
     content = content.replace(
         "urlpatterns = [",
-        "from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView\n\nurlpatterns = [" + doc_url,
+        "from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView\n\nurlpatterns = ["
+        + doc_url,
     )
     urls_path.write_text(content, encoding="utf-8")
     print("[green]✔ Added API documentation URLs to urls.py[/green]")
@@ -201,12 +203,14 @@ def _update_settings(name: str, doc_type: str):  # type: ignore[no-untyped-def]
         "}",
     ]
     if doc_type in ("redoc", "both"):
-        lines.extend([
-            "",
-            "# ReDoc settings",
-            "REDOC_SETTINGS = {",
-            '    "HIDE_HOSTNAME": True,',
-            "}",
-        ])
+        lines.extend(
+            [
+                "",
+                "# ReDoc settings",
+                "REDOC_SETTINGS = {",
+                '    "HIDE_HOSTNAME": True,',
+                "}",
+            ]
+        )
 
     return [FileChange(path=f"{name}/settings_docs.py", content="\n".join(lines), action="create")]

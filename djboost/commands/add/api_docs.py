@@ -3,10 +3,17 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.api_docs import (
-    add_spectacular_settings, add_spectacular_to_installed_apps,
-    add_spectacular_to_requirements, generate_api_docs_urls, get_project_name,
+    add_spectacular_settings,
+    add_spectacular_to_installed_apps,
+    add_spectacular_to_requirements,
+    generate_api_docs_urls,
+    get_project_name,
 )
-from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_add_plan,
+    scan_enabled_features,
+)
 
 
 def add_api_docs_command(

@@ -3,7 +3,12 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.safe_engine import execute_plan, generate_add_plan
-from djboost.generators.storage import add_storage_to_requirements, get_project_name, update_env_storage, update_settings_storage
+from djboost.generators.storage import (
+    add_storage_to_requirements,
+    get_project_name,
+    update_env_storage,
+    update_settings_storage,
+)
 
 
 def add_storage_command(

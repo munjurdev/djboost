@@ -11,10 +11,23 @@ from pathlib import Path
 
 from rich import print
 
-from djboost.generators.dependencies import ESSENTIAL_PACKAGES, add_to_requirements, install_dependencies
+from djboost.generators.dependencies import (
+    ESSENTIAL_PACKAGES,
+    add_to_requirements,
+    install_dependencies,
+)
 from djboost.generators.env import generate_env_file
-from djboost.generators.project_files import create_common_files, create_directories, create_utils_file, update_urls_file
-from djboost.generators.quality import generate_gitignore, generate_pre_commit_config, generate_pytest_ini
+from djboost.generators.project_files import (
+    create_common_files,
+    create_directories,
+    create_utils_file,
+    update_urls_file,
+)
+from djboost.generators.quality import (
+    generate_gitignore,
+    generate_pre_commit_config,
+    generate_pytest_ini,
+)
 from djboost.generators.settings import update_settings_file
 
 # ── Re-export for backward compatibility (commands import from here) ───────────
@@ -29,11 +42,13 @@ def create_project(name: str):
     if Path(name).exists():
         print(f"[red]Error: Directory '{name}' already exists. Choose a different name.[/red]")
         import typer
+
         raise typer.Exit(1)
 
     if Path("manage.py").exists():
         print("[red]Error: manage.py already exists. Run this in an empty folder.[/red]")
         import typer
+
         raise typer.Exit(1)
 
     print()
@@ -47,6 +62,7 @@ def create_project(name: str):
     if result.returncode != 0:
         print(f"[red]Failed to install Django:\n{result.stderr}[/red]")
         import typer
+
         raise typer.Exit(1)
     print("[green]   ✔ Django installed[/green]")
     print()
@@ -56,6 +72,7 @@ def create_project(name: str):
     if result.returncode != 0:
         print(f"[red]Failed to scaffold project:\n{result.stderr}[/red]")
         import typer
+
         raise typer.Exit(1)
     print(f"[green]   ✔ Created {name}/ directory[/green]")
     print("[green]   ✔ Created manage.py[/green]")

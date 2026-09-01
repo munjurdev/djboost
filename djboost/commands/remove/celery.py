@@ -3,11 +3,18 @@ from rich import print
 
 from djboost.generator import check_virtual_environment
 from djboost.generators.celery import (
-    get_project_name, remove_celery_files,
-    remove_celery_from_init, remove_celery_from_requirements, remove_celery_from_settings,
+    get_project_name,
+    remove_celery_files,
+    remove_celery_from_init,
+    remove_celery_from_requirements,
+    remove_celery_from_settings,
 )
 from djboost.generators.dependencies import uninstall_optional_packages
-from djboost.generators.safe_engine import execute_plan, generate_remove_plan, scan_enabled_features
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_remove_plan,
+    scan_enabled_features,
+)
 
 
 def remove_celery_command(

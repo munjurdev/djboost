@@ -91,14 +91,10 @@ def setup_django_project(tmp_path, name="testproject"):
     project_dir.mkdir()
 
     # manage.py
-    (tmp_path / "manage.py").write_text(
-        MANAGE_PY_TEMPLATE.format(name=name), encoding="utf-8"
-    )
+    (tmp_path / "manage.py").write_text(MANAGE_PY_TEMPLATE.format(name=name), encoding="utf-8")
 
     # settings.py
-    (project_dir / "settings.py").write_text(
-        SETTINGS_TEMPLATE.format(name=name), encoding="utf-8"
-    )
+    (project_dir / "settings.py").write_text(SETTINGS_TEMPLATE.format(name=name), encoding="utf-8")
 
     # urls.py
     (project_dir / "urls.py").write_text(
@@ -127,9 +123,7 @@ def setup_django_project(tmp_path, name="testproject"):
     (project_dir / "__init__.py").write_text("", encoding="utf-8")
 
     # .env
-    (tmp_path / ".env").write_text(
-        "SECRET_KEY=test-secret-key\nDEBUG=True\n", encoding="utf-8"
-    )
+    (tmp_path / ".env").write_text("SECRET_KEY=test-secret-key\nDEBUG=True\n", encoding="utf-8")
 
     # requirements.txt
     (tmp_path / "requirements.txt").write_text(
@@ -148,59 +142,98 @@ def setup_django_project(tmp_path, name="testproject"):
 # CLI TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCli:
     """Test djboost.cli module."""
 
     def test_cli_app_is_typer(self):
         from djboost.cli import app
+
         assert app is not None
 
     def test_cli_has_add_subcommand(self):
         from djboost.cli import app
+
         cmd_names = [cmd.name for cmd in app.registered_commands]
         assert "startproject" in cmd_names
 
     def test_cli_add_group_exists(self):
         from djboost.cli import add
+
         assert add is not None
 
     def test_cli_remove_group_exists(self):
         from djboost.cli import remove
+
         assert remove is not None
 
     def test_version_callback(self):
         from djboost.cli import version_callback
+
         with pytest.raises((SystemExit, typer.Exit)):
             version_callback(True)
 
     def test_version_callback_false(self):
         from djboost.cli import version_callback
+
         version_callback(False)  # Should not raise
 
     def test_cli_main_callback(self):
         from djboost.cli import main
+
         assert callable(main)
 
     def test_cli_has_all_add_commands(self):
         from djboost.cli import add
+
         cmd_names = [cmd.name for cmd in add.registered_commands]
-        for feat in ["celery", "docker", "postgres", "redis-cache", "channels",
-                      "graphql", "monitoring", "logging", "sentry", "security",
-                      "storage", "api-docs", "cicd", "kubernetes", "scheduler",
-                      "celery-beat"]:
+        for feat in [
+            "celery",
+            "docker",
+            "postgres",
+            "redis-cache",
+            "channels",
+            "graphql",
+            "monitoring",
+            "logging",
+            "sentry",
+            "security",
+            "storage",
+            "api-docs",
+            "cicd",
+            "kubernetes",
+            "scheduler",
+            "celery-beat",
+        ]:
             assert feat in cmd_names, f"Missing add command: {feat}"
 
     def test_cli_has_all_remove_commands(self):
         from djboost.cli import remove
+
         cmd_names = [cmd.name for cmd in remove.registered_commands]
-        for feat in ["celery", "docker", "postgres", "redis-cache", "channels",
-                      "graphql", "monitoring", "logging", "sentry", "security",
-                      "storage", "api-docs", "cicd", "kubernetes", "scheduler",
-                      "celery-beat"]:
+        for feat in [
+            "celery",
+            "docker",
+            "postgres",
+            "redis-cache",
+            "channels",
+            "graphql",
+            "monitoring",
+            "logging",
+            "sentry",
+            "security",
+            "storage",
+            "api-docs",
+            "cicd",
+            "kubernetes",
+            "scheduler",
+            "celery-beat",
+        ]:
             assert feat in cmd_names, f"Missing remove command: {feat}"
 
     def test_cli_has_management_commands(self):
         from djboost.cli import app
+
         cmd_names = [cmd.name for cmd in app.registered_commands]
         for cmd in ["doctor", "validate", "info", "features"]:
             assert cmd in cmd_names, f"Missing management command: {cmd}"
@@ -210,19 +243,23 @@ class TestCli:
 # GENERATOR (ORCHESTRATOR) TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestGenerator:
     """Test djboost.generator module."""
 
     def test_imports(self):
         from djboost.generator import create_project
+
         assert callable(create_project)
 
     def test_check_virtual_environment_import(self):
         from djboost.generator import check_virtual_environment
+
         assert callable(check_virtual_environment)
 
     def test_validate_name_import(self):
         from djboost.generator import validate_name
+
         assert callable(validate_name)
 
 
@@ -230,30 +267,35 @@ class TestGenerator:
 # CELERY GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCeleryGenerator:
     """Test djboost.generators.celery module."""
 
     def test_get_project_name_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import get_project_name
+
         assert get_project_name() is None
 
     def test_get_project_name_valid(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "myapp")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import get_project_name
+
         assert get_project_name() == "myapp"
 
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
         (tmp_path / "manage.py").write_text("x = 1", encoding="utf-8")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import get_project_name
+
         assert get_project_name() is None
 
     def test_generate_celery_files(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import generate_celery_files
+
         result = generate_celery_files("proj")
         assert (tmp_path / "proj" / "celery.py").exists()
         assert (tmp_path / "proj" / "tasks.py").exists()
@@ -265,12 +307,14 @@ class TestCeleryGenerator:
         (tmp_path / "proj" / "celery.py").write_text("old", encoding="utf-8")
         (tmp_path / "proj" / "tasks.py").write_text("old", encoding="utf-8")
         from djboost.generators.celery import generate_celery_files
+
         generate_celery_files("proj")  # Should not raise
 
     def test_update_settings_celery(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import update_settings_celery
+
         result = update_settings_celery("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -285,11 +329,13 @@ class TestCeleryGenerator:
             encoding="utf-8",
         )
         from djboost.generators.celery import update_settings_celery
+
         assert update_settings_celery("proj") is True
 
     def test_update_settings_celery_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import update_settings_celery
+
         assert update_settings_celery("nonexistent") is False
 
     def test_generate_celery_beat_config(self, tmp_path, monkeypatch):
@@ -298,11 +344,11 @@ class TestCeleryGenerator:
         # Add celery settings first
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nCELERY_BROKER_URL = 'redis://'\n",
+            settings.read_text(encoding="utf-8") + "\nCELERY_BROKER_URL = 'redis://'\n",
             encoding="utf-8",
         )
         from djboost.generators.celery import generate_celery_beat_config
+
         result = generate_celery_beat_config("proj")
         assert result is True
 
@@ -310,6 +356,7 @@ class TestCeleryGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import generate_celery_beat_config
+
         result = generate_celery_beat_config("proj")
         assert result is False
 
@@ -318,22 +365,24 @@ class TestCeleryGenerator:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nCELERY_BROKER_URL = 'redis://'\nCELERY_BEAT_SCHEDULE = {}\n",
+            settings.read_text(encoding="utf-8") + "\nCELERY_BROKER_URL = 'redis://'\nCELERY_BEAT_SCHEDULE = {}\n",
             encoding="utf-8",
         )
         from djboost.generators.celery import generate_celery_beat_config
+
         assert generate_celery_beat_config("proj") is True
 
     def test_generate_celery_beat_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import generate_celery_beat_config
+
         assert generate_celery_beat_config("nope") is False
 
     def test_add_crontab_import(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import add_crontab_import
+
         result = add_crontab_import("proj")
         assert result is True
 
@@ -342,16 +391,17 @@ class TestCeleryGenerator:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nfrom celery.schedules import crontab\n",
+            settings.read_text(encoding="utf-8") + "\nfrom celery.schedules import crontab\n",
             encoding="utf-8",
         )
         from djboost.generators.celery import add_crontab_import
+
         assert add_crontab_import("proj") is True
 
     def test_add_crontab_import_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import add_crontab_import
+
         assert add_crontab_import("nope") is False
 
     def test_remove_celery_files(self, tmp_path, monkeypatch):
@@ -360,6 +410,7 @@ class TestCeleryGenerator:
         (tmp_path / "proj" / "celery.py").write_text("c", encoding="utf-8")
         (tmp_path / "proj" / "tasks.py").write_text("t", encoding="utf-8")
         from djboost.generators.celery import remove_celery_files
+
         removed = remove_celery_files("proj")
         assert len(removed) == 2
 
@@ -367,6 +418,7 @@ class TestCeleryGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import remove_celery_files
+
         removed = remove_celery_files("proj")
         assert len(removed) == 0
 
@@ -379,17 +431,20 @@ class TestCeleryGenerator:
             encoding="utf-8",
         )
         from djboost.generators.celery import remove_celery_from_init
+
         assert remove_celery_from_init("proj") is True
 
     def test_remove_celery_from_init_no_celery(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import remove_celery_from_init
+
         assert remove_celery_from_init("proj") is True
 
     def test_remove_celery_from_init_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import remove_celery_from_init
+
         assert remove_celery_from_init("nope") is False
 
     def test_remove_celery_from_settings(self, tmp_path, monkeypatch):
@@ -402,6 +457,7 @@ class TestCeleryGenerator:
             encoding="utf-8",
         )
         from djboost.generators.celery import remove_celery_from_settings
+
         assert remove_celery_from_settings("proj") is True
         content = settings.read_text(encoding="utf-8")
         assert "CELERY_BROKER_URL" not in content
@@ -410,19 +466,20 @@ class TestCeleryGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import remove_celery_from_settings
+
         assert remove_celery_from_settings("proj") is True
 
     def test_remove_celery_from_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import remove_celery_from_settings
+
         assert remove_celery_from_settings("nope") is False
 
     def test_remove_celery_from_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nredis>=5.0\nDjango>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nredis>=5.0\nDjango>=5.0\n", encoding="utf-8")
         from djboost.generators.celery import remove_celery_from_requirements
+
         assert remove_celery_from_requirements() is True
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "celery" not in content.lower()
@@ -432,18 +489,21 @@ class TestCeleryGenerator:
     def test_remove_celery_from_requirements_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.celery import remove_celery_from_requirements
+
         assert remove_celery_from_requirements() is False
 
     def test_remove_celery_from_requirements_no_celery(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.celery import remove_celery_from_requirements
+
         assert remove_celery_from_requirements() is True
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # POSTGRES GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestPostgresGenerator:
     """Test djboost.generators.postgres module."""
@@ -459,6 +519,7 @@ class TestPostgresGenerator:
             encoding="utf-8",
         )
         from djboost.generators.postgres import update_settings_postgres
+
         result = update_settings_postgres("proj")
         assert result is True
         content = settings.read_text(encoding="utf-8")
@@ -469,22 +530,24 @@ class TestPostgresGenerator:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n'ENGINE': 'django.db.backends.postgresql'\n",
+            settings.read_text(encoding="utf-8") + "\n'ENGINE': 'django.db.backends.postgresql'\n",
             encoding="utf-8",
         )
         from djboost.generators.postgres import update_settings_postgres
+
         assert update_settings_postgres("proj") is True
 
     def test_update_settings_postgres_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.postgres import update_settings_postgres
+
         assert update_settings_postgres("nope") is False
 
     def test_update_env_postgres(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=x\n", encoding="utf-8")
         from djboost.generators.postgres import update_env_postgres
+
         result = update_env_postgres("proj")
         assert result is True
         content = (tmp_path / ".env").read_text(encoding="utf-8")
@@ -494,27 +557,29 @@ class TestPostgresGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("DB_ENGINE=xxx\n", encoding="utf-8")
         from djboost.generators.postgres import update_env_postgres
+
         assert update_env_postgres("proj") is True
 
     def test_update_env_postgres_no_env(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.postgres import update_env_postgres
+
         assert update_env_postgres("proj") is False
 
     def test_add_postgres_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.postgres import add_postgres_to_requirements
+
         add_postgres_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "psycopg2" in content
 
     def test_add_postgres_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "psycopg2-binary>=2.9\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("psycopg2-binary>=2.9\n", encoding="utf-8")
         from djboost.generators.postgres import add_postgres_to_requirements
+
         add_postgres_to_requirements()  # Should not raise
 
     def test_format_string_fix(self):
@@ -536,6 +601,7 @@ class TestPostgresGenerator:
 # REDIS CACHE GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRedisCacheGenerator:
     """Test djboost.generators.redis_cache module."""
 
@@ -543,6 +609,7 @@ class TestRedisCacheGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.redis_cache import update_settings_redis_cache
+
         result = update_settings_redis_cache("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -558,17 +625,20 @@ class TestRedisCacheGenerator:
             encoding="utf-8",
         )
         from djboost.generators.redis_cache import update_settings_redis_cache
+
         assert update_settings_redis_cache("proj") is True
 
     def test_update_settings_redis_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.redis_cache import update_settings_redis_cache
+
         assert update_settings_redis_cache("nope") is False
 
     def test_update_env_redis_cache(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=x\n", encoding="utf-8")
         from djboost.generators.redis_cache import update_env_redis_cache
+
         result = update_env_redis_cache("proj")
         assert result is True
         content = (tmp_path / ".env").read_text(encoding="utf-8")
@@ -578,17 +648,20 @@ class TestRedisCacheGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("REDIS_URL=redis://\n", encoding="utf-8")
         from djboost.generators.redis_cache import update_env_redis_cache
+
         assert update_env_redis_cache("proj") is True
 
     def test_update_env_redis_no_env(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.redis_cache import update_env_redis_cache
+
         assert update_env_redis_cache("proj") is False
 
     def test_add_redis_cache_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.redis_cache import add_redis_cache_to_requirements
+
         add_redis_cache_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "django-redis" in content
@@ -596,10 +669,9 @@ class TestRedisCacheGenerator:
 
     def test_add_redis_cache_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "django-redis>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-redis>=5.4\nredis>=5.0\n", encoding="utf-8")
         from djboost.generators.redis_cache import add_redis_cache_to_requirements
+
         add_redis_cache_to_requirements()  # Should not raise
 
     def test_format_string_fix(self):
@@ -624,21 +696,22 @@ class TestRedisCacheGenerator:
 # DOCKER GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDockerGenerator:
     """Test djboost.generators.docker module."""
 
     def test_check_installed_features_no_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.docker import _check_installed_features
+
         features = _check_installed_features()
         assert all(v is False for v in features.values())
 
     def test_check_installed_features_with_celery(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nchannels>=4.1\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nchannels>=4.1\n", encoding="utf-8")
         from djboost.generators.docker import _check_installed_features
+
         features = _check_installed_features()
         assert features["celery"] is True
         assert features["channels"] is True
@@ -646,6 +719,7 @@ class TestDockerGenerator:
     def test_generate_docker_files(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.docker import generate_docker_files
+
         generate_docker_files("proj")
         assert (tmp_path / "Dockerfile").exists()
         assert (tmp_path / "docker-compose.yml").exists()
@@ -654,6 +728,7 @@ class TestDockerGenerator:
     def test_generate_dockerfile(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.docker import generate_dockerfile
+
         result = generate_dockerfile()
         assert result is True
         assert (tmp_path / "Dockerfile").exists()
@@ -664,12 +739,14 @@ class TestDockerGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "Dockerfile").write_text("old", encoding="utf-8")
         from djboost.generators.docker import generate_dockerfile
+
         assert generate_dockerfile() is False
 
     def test_generate_docker_compose_add(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.docker import generate_docker_compose_add
+
         result = generate_docker_compose_add("proj")
         assert result is True
         content = (tmp_path / "docker-compose.yml").read_text(encoding="utf-8")
@@ -679,10 +756,9 @@ class TestDockerGenerator:
 
     def test_generate_docker_compose_add_with_celery(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nflower>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nflower>=2.0\n", encoding="utf-8")
         from djboost.generators.docker import generate_docker_compose_add
+
         result = generate_docker_compose_add("proj")
         assert result is True
         content = (tmp_path / "docker-compose.yml").read_text(encoding="utf-8")
@@ -693,6 +769,7 @@ class TestDockerGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("daphne>=4.1\n", encoding="utf-8")
         from djboost.generators.docker import generate_docker_compose_add
+
         result = generate_docker_compose_add("proj")
         assert result is True
         content = (tmp_path / "docker-compose.yml").read_text(encoding="utf-8")
@@ -703,11 +780,13 @@ class TestDockerGenerator:
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         (tmp_path / "docker-compose.yml").write_text("old", encoding="utf-8")
         from djboost.generators.docker import generate_docker_compose_add
+
         assert generate_docker_compose_add("proj") is False
 
     def test_generate_dockerignore_add(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.docker import generate_dockerignore_add
+
         result = generate_dockerignore_add()
         assert result is True
         assert (tmp_path / ".dockerignore").exists()
@@ -716,12 +795,14 @@ class TestDockerGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".dockerignore").write_text("old", encoding="utf-8")
         from djboost.generators.docker import generate_dockerignore_add
+
         assert generate_dockerignore_add() is False
 
     def test_add_docker_to_requirements_with_celery(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("celery>=5.4\n", encoding="utf-8")
         from djboost.generators.docker import add_docker_to_requirements
+
         add_docker_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "flower" in content
@@ -731,6 +812,7 @@ class TestDockerGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.docker import add_docker_to_requirements
+
         add_docker_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "gunicorn" in content
@@ -741,23 +823,27 @@ class TestDockerGenerator:
             "celery>=5.4\nflower>=2.0\ngunicorn>=21.2\ndaphne>=4.1\n", encoding="utf-8"
         )
         from djboost.generators.docker import add_docker_to_requirements
+
         add_docker_to_requirements()  # Should print "no additional needed"
 
     def test_get_project_name(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.docker import get_project_name
+
         assert get_project_name() == "proj"
 
     def test_get_project_name_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.docker import get_project_name
+
         assert get_project_name() is None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CHANNELS GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestChannelsGenerator:
     """Test djboost.generators.channels_gen module."""
@@ -766,6 +852,7 @@ class TestChannelsGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.channels_gen import generate_asgi_file
+
         result = generate_asgi_file("proj")
         assert result is True
         content = (tmp_path / "proj" / "asgi.py").read_text(encoding="utf-8")
@@ -776,12 +863,14 @@ class TestChannelsGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "proj" / "asgi.py").write_text("old", encoding="utf-8")
         from djboost.generators.channels_gen import generate_asgi_file
+
         assert generate_asgi_file("proj") is False
 
     def test_update_settings_channels(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.channels_gen import update_settings_channels
+
         result = update_settings_channels("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -794,22 +883,24 @@ class TestChannelsGenerator:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nASGI_APPLICATION = 'proj.asgi.application'\nchannels\n",
+            settings.read_text(encoding="utf-8") + "\nASGI_APPLICATION = 'proj.asgi.application'\nchannels\n",
             encoding="utf-8",
         )
         from djboost.generators.channels_gen import update_settings_channels
+
         assert update_settings_channels("proj") is True
 
     def test_update_settings_channels_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.channels_gen import update_settings_channels
+
         assert update_settings_channels("nope") is False
 
     def test_add_channels_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.channels_gen import add_channels_to_requirements
+
         add_channels_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "daphne" in content
@@ -822,12 +913,14 @@ class TestChannelsGenerator:
             "daphne>=4.1\nchannels>=4.1\nchannels-redis>=4.2\n", encoding="utf-8"
         )
         from djboost.generators.channels_gen import add_channels_to_requirements
+
         add_channels_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # GRAPHQL GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestGraphQLGenerator:
     """Test djboost.generators.graphql module."""
@@ -836,6 +929,7 @@ class TestGraphQLGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.graphql import generate_graphql_schema
+
         result = generate_graphql_schema("proj")
         assert result is True
         assert (tmp_path / "proj" / "schema.py").exists()
@@ -845,12 +939,14 @@ class TestGraphQLGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "proj" / "schema.py").write_text("old", encoding="utf-8")
         from djboost.generators.graphql import generate_graphql_schema
+
         assert generate_graphql_schema("proj") is False
 
     def test_add_graphql_urls(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.graphql import add_graphql_urls
+
         result = add_graphql_urls("proj")
         assert result is True
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
@@ -865,17 +961,20 @@ class TestGraphQLGenerator:
             encoding="utf-8",
         )
         from djboost.generators.graphql import add_graphql_urls
+
         assert add_graphql_urls("proj") is True
 
     def test_add_graphql_urls_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.graphql import add_graphql_urls
+
         assert add_graphql_urls("nope") is False
 
     def test_add_graphql_settings(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.graphql import add_graphql_settings
+
         result = add_graphql_settings("proj")
         assert result is True
 
@@ -888,33 +987,36 @@ class TestGraphQLGenerator:
             encoding="utf-8",
         )
         from djboost.generators.graphql import add_graphql_settings
+
         assert add_graphql_settings("proj") is True
 
     def test_add_graphql_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.graphql import add_graphql_settings
+
         assert add_graphql_settings("nope") is False
 
     def test_add_graphql_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.graphql import add_graphql_to_requirements
+
         add_graphql_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "strawberry" in content
 
     def test_add_graphql_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "strawberry-graphql>=0.22\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("strawberry-graphql>=0.22\n", encoding="utf-8")
         from djboost.generators.graphql import add_graphql_to_requirements
+
         add_graphql_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # MONITORING GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestMonitoringGenerator:
     """Test djboost.generators.monitoring module."""
@@ -923,6 +1025,7 @@ class TestMonitoringGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.monitoring import generate_telemetry
+
         result = generate_telemetry("proj")
         assert result is True
         assert (tmp_path / "proj" / "telemetry.py").exists()
@@ -932,12 +1035,14 @@ class TestMonitoringGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "proj" / "telemetry.py").write_text("old", encoding="utf-8")
         from djboost.generators.monitoring import generate_telemetry
+
         assert generate_telemetry("proj") is False
 
     def test_add_monitoring_settings(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.monitoring import add_monitoring_settings
+
         result = add_monitoring_settings("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -952,17 +1057,20 @@ class TestMonitoringGenerator:
             encoding="utf-8",
         )
         from djboost.generators.monitoring import add_monitoring_settings
+
         assert add_monitoring_settings("proj") is True
 
     def test_add_monitoring_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.monitoring import add_monitoring_settings
+
         assert add_monitoring_settings("nope") is False
 
     def test_add_monitoring_to_wsgi(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.monitoring import add_monitoring_to_wsgi
+
         result = add_monitoring_to_wsgi("proj")
         assert result is True
         content = (tmp_path / "proj" / "wsgi.py").read_text(encoding="utf-8")
@@ -977,17 +1085,20 @@ class TestMonitoringGenerator:
             encoding="utf-8",
         )
         from djboost.generators.monitoring import add_monitoring_to_wsgi
+
         assert add_monitoring_to_wsgi("proj") is True
 
     def test_add_monitoring_to_wsgi_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.monitoring import add_monitoring_to_wsgi
+
         assert add_monitoring_to_wsgi("nope") is False
 
     def test_add_monitoring_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.monitoring import add_monitoring_to_requirements
+
         add_monitoring_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "opentelemetry" in content.lower()
@@ -1002,12 +1113,14 @@ class TestMonitoringGenerator:
             encoding="utf-8",
         )
         from djboost.generators.monitoring import add_monitoring_to_requirements
+
         add_monitoring_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LOGGING CONFIG GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestLoggingConfigGenerator:
     """Test djboost.generators.logging_config module."""
@@ -1016,6 +1129,7 @@ class TestLoggingConfigGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.logging_config import generate_logging_config
+
         result = generate_logging_config("proj")
         assert result is True
         assert (tmp_path / "proj" / "logging_config.py").exists()
@@ -1025,12 +1139,14 @@ class TestLoggingConfigGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "proj" / "logging_config.py").write_text("old", encoding="utf-8")
         from djboost.generators.logging_config import generate_logging_config
+
         assert generate_logging_config("proj") is False
 
     def test_add_logging_settings(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.logging_config import add_logging_settings
+
         result = add_logging_settings("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -1046,33 +1162,36 @@ class TestLoggingConfigGenerator:
             encoding="utf-8",
         )
         from djboost.generators.logging_config import add_logging_settings
+
         assert add_logging_settings("proj") is True
 
     def test_add_logging_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.logging_config import add_logging_settings
+
         assert add_logging_settings("nope") is False
 
     def test_add_logging_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.logging_config import add_logging_to_requirements
+
         add_logging_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "structlog" in content
 
     def test_add_logging_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "structlog>=24.0\npython-json-logger>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("structlog>=24.0\npython-json-logger>=2.0\n", encoding="utf-8")
         from djboost.generators.logging_config import add_logging_to_requirements
+
         add_logging_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SCHEDULER GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestSchedulerGenerator:
     """Test djboost.generators.scheduler module."""
@@ -1081,6 +1200,7 @@ class TestSchedulerGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.scheduler import generate_scheduler_config
+
         result = generate_scheduler_config("proj")
         assert result is True
         assert (tmp_path / "proj" / "scheduler.py").exists()
@@ -1090,12 +1210,14 @@ class TestSchedulerGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "proj" / "scheduler.py").write_text("old", encoding="utf-8")
         from djboost.generators.scheduler import generate_scheduler_config
+
         assert generate_scheduler_config("proj") is False
 
     def test_add_scheduler_settings(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.scheduler import add_scheduler_settings
+
         result = add_scheduler_settings("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -1106,38 +1228,40 @@ class TestSchedulerGenerator:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nAPSCHEDULER_DATETIME_FORMAT\n",
+            settings.read_text(encoding="utf-8") + "\nAPSCHEDULER_DATETIME_FORMAT\n",
             encoding="utf-8",
         )
         from djboost.generators.scheduler import add_scheduler_settings
+
         assert add_scheduler_settings("proj") is True
 
     def test_add_scheduler_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.scheduler import add_scheduler_settings
+
         assert add_scheduler_settings("nope") is False
 
     def test_add_scheduler_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.scheduler import add_scheduler_to_requirements
+
         add_scheduler_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "django-apscheduler" in content
 
     def test_add_scheduler_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "django-apscheduler>=0.7\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-apscheduler>=0.7\n", encoding="utf-8")
         from djboost.generators.scheduler import add_scheduler_to_requirements
+
         add_scheduler_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STORAGE GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestStorageGenerator:
     """Test djboost.generators.storage module."""
@@ -1146,6 +1270,7 @@ class TestStorageGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.storage import update_settings_storage
+
         result = update_settings_storage("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -1156,22 +1281,24 @@ class TestStorageGenerator:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\nAWS_STORAGE_BUCKET_NAME\n",
+            settings.read_text(encoding="utf-8") + "\nAWS_STORAGE_BUCKET_NAME\n",
             encoding="utf-8",
         )
         from djboost.generators.storage import update_settings_storage
+
         assert update_settings_storage("proj") is True
 
     def test_update_settings_storage_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.storage import update_settings_storage
+
         assert update_settings_storage("nope") is False
 
     def test_update_env_storage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=x\n", encoding="utf-8")
         from djboost.generators.storage import update_env_storage
+
         result = update_env_storage("proj")
         assert result is True
         content = (tmp_path / ".env").read_text(encoding="utf-8")
@@ -1181,17 +1308,20 @@ class TestStorageGenerator:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("AWS_ACCESS_KEY_ID=xxx\n", encoding="utf-8")
         from djboost.generators.storage import update_env_storage
+
         assert update_env_storage("proj") is True
 
     def test_update_env_storage_no_env(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.storage import update_env_storage
+
         assert update_env_storage("proj") is False
 
     def test_add_storage_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.storage import add_storage_to_requirements
+
         add_storage_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "django-storages" in content
@@ -1199,16 +1329,16 @@ class TestStorageGenerator:
 
     def test_add_storage_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "django-storages[boto3]>=1.14\nboto3>=1.28\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-storages[boto3]>=1.14\nboto3>=1.28\n", encoding="utf-8")
         from djboost.generators.storage import add_storage_to_requirements
+
         add_storage_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECURITY GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestSecurityGenerator:
     """Test djboost.generators.security module."""
@@ -1217,6 +1347,7 @@ class TestSecurityGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.security import update_settings_security
+
         result = update_settings_security("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -1232,33 +1363,36 @@ class TestSecurityGenerator:
             encoding="utf-8",
         )
         from djboost.generators.security import update_settings_security
+
         assert update_settings_security("proj") is True
 
     def test_update_settings_security_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.security import update_settings_security
+
         assert update_settings_security("nope") is False
 
     def test_add_security_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.security import add_security_to_requirements
+
         add_security_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "django-csp" in content
 
     def test_add_security_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "django-csp>=3.8\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-csp>=3.8\n", encoding="utf-8")
         from djboost.generators.security import add_security_to_requirements
+
         add_security_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SENTRY GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestSentryGenerator:
     """Test djboost.generators.sentry module."""
@@ -1267,6 +1401,7 @@ class TestSentryGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.sentry import add_sentry_to_settings
+
         result = add_sentry_to_settings("proj")
         assert result is True
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
@@ -1281,44 +1416,49 @@ class TestSentryGenerator:
             encoding="utf-8",
         )
         from djboost.generators.sentry import add_sentry_to_settings
+
         assert add_sentry_to_settings("proj") is True
 
     def test_add_sentry_to_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.sentry import add_sentry_to_settings
+
         assert add_sentry_to_settings("nope") is False
 
     def test_add_sentry_to_wsgi(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.sentry import add_sentry_to_wsgi
+
         assert add_sentry_to_wsgi("proj") is True
 
     def test_add_sentry_to_wsgi_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.sentry import add_sentry_to_wsgi
+
         assert add_sentry_to_wsgi("nope") is False
 
     def test_add_sentry_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.sentry import add_sentry_to_requirements
+
         add_sentry_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "sentry-sdk" in content
 
     def test_add_sentry_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "sentry-sdk[django]>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("sentry-sdk[django]>=2.0\n", encoding="utf-8")
         from djboost.generators.sentry import add_sentry_to_requirements
+
         add_sentry_to_requirements()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # API DOCS GENERATOR TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestApiDocsGenerator:
     """Test djboost.generators.api_docs module."""
@@ -1327,6 +1467,7 @@ class TestApiDocsGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import add_spectacular_to_installed_apps
+
         add_spectacular_to_installed_apps("proj")
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "rest_framework" in content
@@ -1335,12 +1476,14 @@ class TestApiDocsGenerator:
     def test_add_spectacular_to_installed_apps_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import add_spectacular_to_installed_apps
+
         add_spectacular_to_installed_apps("nope")  # Should not raise
 
     def test_add_spectacular_settings(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import add_spectacular_settings
+
         add_spectacular_settings("proj")
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "SPECTACULAR_SETTINGS" in content
@@ -1354,17 +1497,20 @@ class TestApiDocsGenerator:
             encoding="utf-8",
         )
         from djboost.generators.api_docs import add_spectacular_settings
+
         add_spectacular_settings("proj")  # Should not raise
 
     def test_add_spectacular_settings_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import add_spectacular_settings
+
         add_spectacular_settings("nope")  # Should not raise
 
     def test_generate_api_docs_urls(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_urls
+
         generate_api_docs_urls("proj")
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "api/schema" in content
@@ -1378,17 +1524,20 @@ class TestApiDocsGenerator:
             encoding="utf-8",
         )
         from djboost.generators.api_docs import generate_api_docs_urls
+
         generate_api_docs_urls("proj")  # Should not raise
 
     def test_generate_api_docs_urls_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_urls
+
         generate_api_docs_urls("nope")  # Should not raise
 
     def test_add_spectacular_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django\n", encoding="utf-8")
         from djboost.generators.api_docs import add_spectacular_to_requirements
+
         add_spectacular_to_requirements()
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "drf-spectacular" in content
@@ -1396,16 +1545,16 @@ class TestApiDocsGenerator:
 
     def test_add_spectacular_to_requirements_already_exists(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "drf-spectacular>=0.27\nuritemplate>=4.1\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("drf-spectacular>=0.27\nuritemplate>=4.1\n", encoding="utf-8")
         from djboost.generators.api_docs import add_spectacular_to_requirements
+
         add_spectacular_to_requirements()  # Should not raise
 
     def test_generate_api_docs_files(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_files
+
         changes = generate_api_docs_files("proj", "both")
         assert len(changes) > 0
 
@@ -1413,6 +1562,7 @@ class TestApiDocsGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_files
+
         changes = generate_api_docs_files("proj", "swagger")
         assert len(changes) > 0
 
@@ -1420,6 +1570,7 @@ class TestApiDocsGenerator:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.api_docs import generate_api_docs_files
+
         changes = generate_api_docs_files("proj", "redoc")
         assert len(changes) > 0
 
@@ -1428,39 +1579,47 @@ class TestApiDocsGenerator:
 # VALIDATORS TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestValidators:
     """Test djboost.generators.validators module."""
 
     def test_validate_name_valid(self):
         from djboost.generators.validators import validate_name
+
         validate_name("myproject", "project name")  # Should not raise
 
     def test_validate_name_with_underscores(self):
         from djboost.generators.validators import validate_name
+
         validate_name("my_project", "project name")  # Should not raise
 
     def test_validate_name_invalid_hyphen(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("my-project", "project name")
 
     def test_validate_name_invalid_digit_start(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("1project", "project name")
 
     def test_validate_name_empty(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("", "project name")
 
     def test_validate_name_invalid_special_chars(self):
         from djboost.generators.validators import validate_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             validate_name("my@project", "project name")
 
     def test_check_virtual_environment(self):
         from djboost.generators.validators import check_virtual_environment
+
         # Should not raise (we're in a venv or it's lenient)
         check_virtual_environment()
 
@@ -1469,6 +1628,7 @@ class TestValidators:
 # MANAGEMENT COMMANDS TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestManagementCommands:
     """Test djboost.commands.management modules."""
 
@@ -1476,50 +1636,59 @@ class TestManagementCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()  # Should not raise
 
     def test_doctor_command_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()  # Should not raise
 
     def test_features_command(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.features import features_command
+
         features_command()  # Should not raise
 
     def test_features_command_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.features import features_command
+
         features_command()  # Should not raise
 
     def test_info_command(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.info import info_command
+
         info_command()  # Should not raise
 
     def test_info_command_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.info import info_command
+
         info_command()  # Should not raise
 
     def test_validate_command(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.validate import validate_command
+
         validate_command()  # Should not raise
 
     def test_validate_command_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.validate import validate_command
+
         validate_command()  # Should not raise
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ADD COMMAND MODULES TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestAddCommands:
     """Test djboost.commands.add.* modules."""
@@ -1528,6 +1697,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.celery import add_celery_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_celery_command(dry_run=True, force=False)
 
@@ -1535,6 +1705,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.docker import add_docker_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_docker_command(dry_run=True, force=False)
 
@@ -1542,6 +1713,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.postgres import add_postgres_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_postgres_command(dry_run=True, force=False)
 
@@ -1549,6 +1721,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.redis_cache import add_redis_cache_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_redis_cache_command(dry_run=True, force=False)
 
@@ -1556,6 +1729,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.channels import add_channels_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_channels_command(dry_run=True, force=False)
 
@@ -1563,6 +1737,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.graphql import add_graphql_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_graphql_command(dry_run=True, force=False)
 
@@ -1570,6 +1745,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.monitoring import add_monitoring_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_monitoring_command(dry_run=True, force=False)
 
@@ -1577,6 +1753,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.logging import add_logging_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_logging_command(dry_run=True, force=False)
 
@@ -1584,6 +1761,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.sentry import add_sentry_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_sentry_command(dry_run=True, force=False)
 
@@ -1591,6 +1769,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.security import add_security_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_security_command(dry_run=True, force=False)
 
@@ -1598,6 +1777,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.storage import add_storage_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_storage_command(dry_run=True, force=False)
 
@@ -1605,6 +1785,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.kubernetes import add_kubernetes_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_kubernetes_command(dry_run=True, force=False)
 
@@ -1612,6 +1793,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.scheduler import add_scheduler_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_scheduler_command(dry_run=True, force=False)
 
@@ -1619,6 +1801,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.api_docs import add_api_docs_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_api_docs_command(provider="swagger", dry_run=True, force=False)
 
@@ -1626,6 +1809,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.api_docs import add_api_docs_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_api_docs_command(provider="invalid", dry_run=False, force=False)
 
@@ -1633,6 +1817,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.cicd import add_cicd_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_cicd_command(provider="github", dry_run=True, force=False)
 
@@ -1640,6 +1825,7 @@ class TestAddCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.add.cicd import add_cicd_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             add_cicd_command(provider="invalid", dry_run=False, force=False)
 
@@ -1648,6 +1834,7 @@ class TestAddCommands:
 # REMOVE COMMAND MODULES TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestRemoveCommands:
     """Test djboost.commands.remove.* modules."""
 
@@ -1655,90 +1842,105 @@ class TestRemoveCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.docker import remove_docker_command
+
         remove_docker_command(dry_run=True, force=False)  # Should not raise
 
     def test_remove_postgres_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.postgres import remove_postgres_command
+
         remove_postgres_command(dry_run=True, force=False)
 
     def test_remove_redis_cache_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.redis_cache import remove_redis_cache_command
+
         remove_redis_cache_command(dry_run=True, force=False)
 
     def test_remove_channels_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.channels import remove_channels_command
+
         remove_channels_command(dry_run=True, force=False)
 
     def test_remove_graphql_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.graphql import remove_graphql_command
+
         remove_graphql_command(dry_run=True, force=False)
 
     def test_remove_monitoring_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.monitoring import remove_monitoring_command
+
         remove_monitoring_command(dry_run=True, force=False)
 
     def test_remove_logging_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.logging import remove_logging_command
+
         remove_logging_command(dry_run=True, force=False)
 
     def test_remove_sentry_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.sentry import remove_sentry_command
+
         remove_sentry_command(dry_run=True, force=False)
 
     def test_remove_security_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.security import remove_security_command
+
         remove_security_command(dry_run=True, force=False)
 
     def test_remove_storage_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.storage import remove_storage_command
+
         remove_storage_command(dry_run=True, force=False)
 
     def test_remove_scheduler_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.scheduler import remove_scheduler_command
+
         remove_scheduler_command(dry_run=True, force=False)
 
     def test_remove_kubernetes_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.kubernetes import remove_kubernetes_command
+
         remove_kubernetes_command(dry_run=True, force=False)
 
     def test_remove_api_docs_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.api_docs import remove_api_docs_command
+
         remove_api_docs_command(dry_run=True, force=False)
 
     def test_remove_celery_beat_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
         remove_celery_beat_command(dry_run=True, force=False)
 
     def test_remove_celery_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.celery import remove_celery_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             remove_celery_command(dry_run=True, force=False)
 
@@ -1746,6 +1948,7 @@ class TestRemoveCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.cicd import remove_cicd_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             remove_cicd_command(provider="github", dry_run=True, force=False)
 
@@ -1753,6 +1956,7 @@ class TestRemoveCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.remove.cicd import remove_cicd_command
+
         with pytest.raises((SystemExit, typer.Exit)):
             remove_cicd_command(provider="invalid", dry_run=False, force=False)
 
@@ -1763,6 +1967,7 @@ class TestRemoveCommands:
         (tmp_path / "docker-compose.yml").write_text("old", encoding="utf-8")
         (tmp_path / ".dockerignore").write_text("old", encoding="utf-8")
         from djboost.commands.remove.docker import remove_docker_command
+
         remove_docker_command(dry_run=False, force=True)
         assert not (tmp_path / "Dockerfile").exists()
         assert not (tmp_path / "docker-compose.yml").exists()
@@ -1772,14 +1977,12 @@ class TestRemoveCommands:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n'ENGINE': 'django.db.backends.postgresql'\n",
+            settings.read_text(encoding="utf-8") + "\n'ENGINE': 'django.db.backends.postgresql'\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "psycopg2-binary>=2.9\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("psycopg2-binary>=2.9\n", encoding="utf-8")
         from djboost.commands.remove.postgres import remove_postgres_command
+
         remove_postgres_command(dry_run=False, force=True)
         content = settings.read_text(encoding="utf-8")
         assert "sqlite3" in content
@@ -1789,14 +1992,12 @@ class TestRemoveCommands:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── Redis Cache\nCACHES = {}\n",
+            settings.read_text(encoding="utf-8") + "\n# ── Redis Cache\nCACHES = {}\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "django-redis>=5.4\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-redis>=5.4\n", encoding="utf-8")
         from djboost.commands.remove.redis_cache import remove_redis_cache_command
+
         remove_redis_cache_command(dry_run=False, force=True)
 
     def test_remove_channels_real(self, tmp_path, monkeypatch):
@@ -1804,16 +2005,14 @@ class TestRemoveCommands:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n    'daphne',\n# ── Django Channels\nASGI_APPLICATION\n",
+            settings.read_text(encoding="utf-8") + "\n    'daphne',\n# ── Django Channels\nASGI_APPLICATION\n",
             encoding="utf-8",
         )
         asgi = tmp_path / "proj" / "asgi.py"
         asgi.write_text("ProtocolTypeRouter", encoding="utf-8")
-        (tmp_path / "requirements.txt").write_text(
-            "daphne>=4.1\nchannels>=4.1\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("daphne>=4.1\nchannels>=4.1\n", encoding="utf-8")
         from djboost.commands.remove.channels import remove_channels_command
+
         remove_channels_command(dry_run=False, force=True)
 
     def test_remove_graphql_real(self, tmp_path, monkeypatch):
@@ -1827,10 +2026,9 @@ class TestRemoveCommands:
             + "    path('graphql/', ...),\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "strawberry-graphql>=0.22\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("strawberry-graphql>=0.22\n", encoding="utf-8")
         from djboost.commands.remove.graphql import remove_graphql_command
+
         remove_graphql_command(dry_run=False, force=True)
 
     def test_remove_monitoring_real(self, tmp_path, monkeypatch):
@@ -1839,14 +2037,12 @@ class TestRemoveCommands:
         (tmp_path / "proj" / "telemetry.py").write_text("t", encoding="utf-8")
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── OpenTelemetry\nOTEL_SERVICE_NAME\n",
+            settings.read_text(encoding="utf-8") + "\n# ── OpenTelemetry\nOTEL_SERVICE_NAME\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "opentelemetry-api>=1.25\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("opentelemetry-api>=1.25\n", encoding="utf-8")
         from djboost.commands.remove.monitoring import remove_monitoring_command
+
         remove_monitoring_command(dry_run=False, force=True)
 
     def test_remove_logging_real(self, tmp_path, monkeypatch):
@@ -1855,14 +2051,12 @@ class TestRemoveCommands:
         (tmp_path / "proj" / "logging_config.py").write_text("l", encoding="utf-8")
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── Structured Logging\nstructlog\nfrom proj.logging_config\n",
+            settings.read_text(encoding="utf-8") + "\n# ── Structured Logging\nstructlog\nfrom proj.logging_config\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "structlog>=24.0\npython-json-logger>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("structlog>=24.0\npython-json-logger>=2.0\n", encoding="utf-8")
         from djboost.commands.remove.logging import remove_logging_command
+
         remove_logging_command(dry_run=False, force=True)
 
     def test_remove_sentry_real(self, tmp_path, monkeypatch):
@@ -1870,14 +2064,12 @@ class TestRemoveCommands:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── Sentry\nimport sentry_sdk\nSENTRY_DSN\n",
+            settings.read_text(encoding="utf-8") + "\n# ── Sentry\nimport sentry_sdk\nSENTRY_DSN\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "sentry-sdk[django]>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("sentry-sdk[django]>=2.0\n", encoding="utf-8")
         from djboost.commands.remove.sentry import remove_sentry_command
+
         remove_sentry_command(dry_run=False, force=True)
 
     def test_remove_security_real(self, tmp_path, monkeypatch):
@@ -1889,10 +2081,9 @@ class TestRemoveCommands:
             + "\n    'csp.middleware.CSPMiddleware',\n# ── Security Headers\nCSP_DEFAULT_SRC\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "django-csp>=3.8\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-csp>=3.8\n", encoding="utf-8")
         from djboost.commands.remove.security import remove_security_command
+
         remove_security_command(dry_run=False, force=True)
 
     def test_remove_storage_real(self, tmp_path, monkeypatch):
@@ -1900,14 +2091,12 @@ class TestRemoveCommands:
         monkeypatch.chdir(tmp_path)
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── S3 / Cloud Storage\nAWS_STORAGE_BUCKET_NAME\n",
+            settings.read_text(encoding="utf-8") + "\n# ── S3 / Cloud Storage\nAWS_STORAGE_BUCKET_NAME\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "django-storages[boto3]>=1.14\nboto3>=1.28\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-storages[boto3]>=1.14\nboto3>=1.28\n", encoding="utf-8")
         from djboost.commands.remove.storage import remove_storage_command
+
         remove_storage_command(dry_run=False, force=True)
 
     def test_remove_scheduler_real(self, tmp_path, monkeypatch):
@@ -1916,14 +2105,12 @@ class TestRemoveCommands:
         (tmp_path / "proj" / "scheduler.py").write_text("s", encoding="utf-8")
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── APScheduler\nAPSCHEDULER_DATETIME_FORMAT\n",
+            settings.read_text(encoding="utf-8") + "\n# ── APScheduler\nAPSCHEDULER_DATETIME_FORMAT\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "django-apscheduler>=0.7\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("django-apscheduler>=0.7\n", encoding="utf-8")
         from djboost.commands.remove.scheduler import remove_scheduler_command
+
         remove_scheduler_command(dry_run=False, force=True)
 
     def test_remove_celery_real(self, tmp_path, monkeypatch):
@@ -1938,14 +2125,12 @@ class TestRemoveCommands:
         )
         settings = tmp_path / "proj" / "settings.py"
         settings.write_text(
-            settings.read_text(encoding="utf-8")
-            + "\n# ── Celery (Background Tasks)\nCELERY_BROKER_URL\n",
+            settings.read_text(encoding="utf-8") + "\n# ── Celery (Background Tasks)\nCELERY_BROKER_URL\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nredis>=5.0\n", encoding="utf-8")
         from djboost.commands.remove.celery import remove_celery_command
+
         remove_celery_command(dry_run=False, force=True)
 
     def test_remove_celery_beat_real(self, tmp_path, monkeypatch):
@@ -1957,16 +2142,16 @@ class TestRemoveCommands:
             + "\nfrom celery.schedules import crontab\nCELERY_BEAT_SCHEDULE = {}\n",
             encoding="utf-8",
         )
-        (tmp_path / "requirements.txt").write_text(
-            "celery-beat>=2.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery-beat>=2.0\n", encoding="utf-8")
         from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
         remove_celery_beat_command(dry_run=False, force=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CREATE COMMANDS TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestCreateCommands:
     """Test djboost.commands.create.* modules."""
@@ -1975,11 +2160,13 @@ class TestCreateCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import get_project_name
+
         assert get_project_name() == "proj"
 
     def test_create_app_get_project_name_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import get_project_name
+
         with pytest.raises((SystemExit, typer.Exit)):
             get_project_name()
 
@@ -1987,6 +2174,7 @@ class TestCreateCommands:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_settings
+
         update_settings("proj", "products")
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "'apps.products'," in content
@@ -2000,12 +2188,14 @@ class TestCreateCommands:
             encoding="utf-8",
         )
         from djboost.commands.create.app import update_settings
+
         update_settings("proj", "products")  # Should not add again
 
     def test_create_app_update_urls(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "products")
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "apps.products.urls" in content
@@ -2019,12 +2209,14 @@ class TestCreateCommands:
             encoding="utf-8",
         )
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "products")  # Should not add again
 
     def test_create_accounts_get_project_name(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.accounts_app import get_project_name
+
         assert get_project_name() == "proj"
 
 
@@ -2032,11 +2224,13 @@ class TestCreateCommands:
 # FEATURES REGISTRY TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestFeaturesRegistryExtended:
     """Additional tests for djboost.generators.features."""
 
     def test_list_features(self):
         from djboost.generators.features import list_features
+
         features = list_features()
         assert len(features) >= 15
         names = [f.name for f in features]
@@ -2046,46 +2240,52 @@ class TestFeaturesRegistryExtended:
 
     def test_get_feature(self):
         from djboost.generators.features import get_feature
+
         feat = get_feature("celery")
         assert feat is not None
         assert feat.name == "celery"
 
     def test_get_feature_unknown(self):
         from djboost.generators.features import get_feature
+
         assert get_feature("nonexistent") is None
 
     def test_scan_enabled_features_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.features import scan_enabled_features
+
         enabled = scan_enabled_features(None)
         assert isinstance(enabled, set)
 
     def test_scan_enabled_features_with_celery(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "celery>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("celery>=5.4\nredis>=5.0\n", encoding="utf-8")
         from djboost.generators.features import scan_enabled_features
+
         enabled = scan_enabled_features(None)
         assert "celery" in enabled
 
     def test_resolve_dependencies(self):
         from djboost.generators.features import resolve_dependencies
+
         deps = resolve_dependencies("celery-beat")
         assert "celery" in deps
 
     def test_resolve_dependencies_no_deps(self):
         from djboost.generators.features import resolve_dependencies
+
         deps = resolve_dependencies("celery")
         assert isinstance(deps, (set, list))
 
     def test_detect_conflicts(self):
         from djboost.generators.features import detect_conflicts
+
         conflicts = detect_conflicts("scheduler", {"celery-beat"})
         assert len(conflicts) > 0
 
     def test_detect_reverse_dependencies(self):
         from djboost.generators.features import detect_reverse_dependencies
+
         deps = detect_reverse_dependencies("celery", {"celery-beat"})
         assert "celery-beat" in deps
 
@@ -2094,23 +2294,27 @@ class TestFeaturesRegistryExtended:
 # SAFE ENGINE EXTENDED TESTS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestSafeEngineExtended:
     """Additional tests for djboost.generators.safe_engine."""
 
     def test_generate_add_plan(self):
         from djboost.generators.safe_engine import generate_add_plan
+
         plan = generate_add_plan("celery", dry_run=True, project_name="testproj")
         assert plan is not None
         assert plan.dry_run is True
 
     def test_generate_remove_plan(self):
         from djboost.generators.safe_engine import generate_remove_plan
+
         plan = generate_remove_plan("celery", dry_run=True, project_name="testproj")
         assert plan is not None
         assert plan.dry_run is True
 
     def test_scan_enabled_features(self):
         from djboost.generators.safe_engine import scan_enabled_features
+
         enabled = scan_enabled_features(None)
         assert isinstance(enabled, set)
 
@@ -2119,12 +2323,14 @@ class TestSafeEngineExtended:
 # DEPENDENCIES TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestDependenciesExtended:
     """Additional tests for djboost.generators.dependencies."""
 
     def test_add_to_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.dependencies import add_to_requirements
+
         add_to_requirements(["Django>=5.0", "celery>=5.4"])
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "Django" in content
@@ -2134,6 +2340,7 @@ class TestDependenciesExtended:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.dependencies import add_to_requirements
+
         add_to_requirements(["Django>=5.0"])  # Should not duplicate
 
 
@@ -2141,24 +2348,28 @@ class TestDependenciesExtended:
 # QUALITY TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestQualityExtended:
     """Additional tests for djboost.generators.quality."""
 
     def test_generate_gitignore(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.quality import generate_gitignore
+
         generate_gitignore()
         assert (tmp_path / ".gitignore").exists()
 
     def test_generate_pre_commit_config(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.quality import generate_pre_commit_config
+
         generate_pre_commit_config()
         assert (tmp_path / ".pre-commit-config.yaml").exists()
 
     def test_generate_pytest_ini(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.quality import generate_pytest_ini
+
         generate_pytest_ini("proj")
         assert (tmp_path / "pytest.ini").exists()
 
@@ -2167,12 +2378,14 @@ class TestQualityExtended:
 # ENV TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestEnvExtended:
     """Additional tests for djboost.generators.env."""
 
     def test_generate_env_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.env import generate_env_file
+
         generate_env_file("test-secret-key", "proj")
         assert (tmp_path / ".env").exists()
         content = (tmp_path / ".env").read_text(encoding="utf-8")
@@ -2184,12 +2397,14 @@ class TestEnvExtended:
 # PROJECT FILES TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestProjectFilesExtended:
     """Additional tests for djboost.generators.project_files."""
 
     def test_create_directories(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.project_files import create_directories
+
         create_directories()
         assert (tmp_path / "apps").exists()
         assert (tmp_path / "media").exists()
@@ -2200,6 +2415,7 @@ class TestProjectFilesExtended:
         (tmp_path / "common").mkdir()
         (tmp_path / "common" / "__init__.py").write_text("", encoding="utf-8")
         from djboost.generators.project_files import create_common_files
+
         create_common_files()
         assert (tmp_path / "common" / "responses.py").exists()
         assert (tmp_path / "common" / "pagination.py").exists()
@@ -2209,6 +2425,7 @@ class TestProjectFilesExtended:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.project_files import create_utils_file
+
         create_utils_file("proj")
         assert (tmp_path / "proj" / "utils.py").exists()
 
@@ -2216,6 +2433,7 @@ class TestProjectFilesExtended:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.project_files import update_urls_file
+
         update_urls_file("proj")
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "admin" in content
@@ -2225,18 +2443,21 @@ class TestProjectFilesExtended:
 # CICD TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestCicdExtended:
     """Additional tests for djboost.generators.cicd."""
 
     def test_generate_github_actions(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.cicd import generate_github_actions
+
         generate_github_actions()
         assert (tmp_path / ".github" / "workflows" / "main.yml").exists()
 
     def test_generate_gitlab_ci(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.cicd import generate_gitlab_ci
+
         generate_gitlab_ci()
         assert (tmp_path / ".gitlab-ci.yml").exists()
 
@@ -2245,12 +2466,14 @@ class TestCicdExtended:
 # KUBERNETES TESTS (additional)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class TestKubernetesExtended:
     """Additional tests for djboost.generators.kubernetes."""
 
     def test_generate_k8s_manifests(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.kubernetes import generate_k8s_manifests
+
         generate_k8s_manifests("proj")
         assert (tmp_path / "k8s").exists()
         assert (tmp_path / "k8s" / "deployment.yaml").exists()
@@ -2260,21 +2483,23 @@ class TestKubernetesExtended:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.generators.kubernetes import get_project_name
+
         assert get_project_name() == "proj"
 
     def test_get_project_name_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.kubernetes import get_project_name
-        assert get_project_name() is None# ── Commands integration tests ─────────────────────────────────────────────────
+
+        assert (
+            get_project_name() is None
+        )  # ── Commands integration tests ─────────────────────────────────────────────────
+
 
 import json
 import os
 import subprocess
 import textwrap
-from unittest.mock import MagicMock, patch, call
-
-
-
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 import typer
@@ -2373,12 +2598,8 @@ def setup_django_project(tmp_path, name="proj"):
     project_dir = tmp_path / name
     project_dir.mkdir()
 
-    (tmp_path / "manage.py").write_text(
-        MANAGE_PY_TEMPLATE.format(name=name), encoding="utf-8"
-    )
-    (project_dir / "settings.py").write_text(
-        SETTINGS_TEMPLATE.format(name=name), encoding="utf-8"
-    )
+    (tmp_path / "manage.py").write_text(MANAGE_PY_TEMPLATE.format(name=name), encoding="utf-8")
+    (project_dir / "settings.py").write_text(SETTINGS_TEMPLATE.format(name=name), encoding="utf-8")
     (project_dir / "urls.py").write_text(
         textwrap.dedent(f"""\
             from django.urls import path
@@ -2399,9 +2620,7 @@ def setup_django_project(tmp_path, name="proj"):
         encoding="utf-8",
     )
     (project_dir / "__init__.py").write_text("", encoding="utf-8")
-    (tmp_path / ".env").write_text(
-        "SECRET_KEY=test-secret-key\nDEBUG=True\n", encoding="utf-8"
-    )
+    (tmp_path / ".env").write_text("SECRET_KEY=test-secret-key\nDEBUG=True\n", encoding="utf-8")
     (tmp_path / "requirements.txt").write_text(
         "Django>=5.0,<6\ndjangorestframework>=3.15,<4\n"
         "django-rest-framework-simplejwt>=5.3,<6\n"
@@ -2446,27 +2665,27 @@ class TestAddCommandsIntegration:
     def test_add_celery_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.celery.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.celery.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.celery import add_celery_command
+
             add_celery_command(dry_run=False, force=False)
         assert (tmp_path / "proj" / "celery.py").exists()
 
     def test_add_celery_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.celery.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.celery.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.celery import add_celery_command
+
             with pytest.raises(typer.Exit):
                 add_celery_command(dry_run=True, force=False)
 
     def test_add_docker_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.docker.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.docker.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.docker import add_docker_command
+
             add_docker_command(dry_run=False, force=False)
         assert (tmp_path / "Dockerfile").exists()
         assert (tmp_path / "docker-compose.yml").exists()
@@ -2474,9 +2693,9 @@ class TestAddCommandsIntegration:
     def test_add_docker_dry_run(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.docker.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.docker.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.docker import add_docker_command
+
             with pytest.raises(typer.Exit):
                 add_docker_command(dry_run=True, force=False)
 
@@ -2490,9 +2709,9 @@ class TestAddCommandsIntegration:
             + "\nDATABASES = {\n    'default': {\n        'ENGINE': 'django.db.backends.sqlite3',\n        'NAME': BASE_DIR / 'db.sqlite3',\n    }\n}\n",
             encoding="utf-8",
         )
-        with patch("djboost.commands.add.postgres.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.postgres.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.postgres import add_postgres_command
+
             add_postgres_command(dry_run=False, force=False)
         content = settings.read_text(encoding="utf-8")
         assert "postgresql" in content
@@ -2500,9 +2719,9 @@ class TestAddCommandsIntegration:
     def test_add_redis_cache_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.redis_cache.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.redis_cache.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.redis_cache import add_redis_cache_command
+
             add_redis_cache_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "CACHES" in content
@@ -2510,9 +2729,9 @@ class TestAddCommandsIntegration:
     def test_add_channels_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.channels.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.channels.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.channels import add_channels_command
+
             add_channels_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "ASGI_APPLICATION" in content
@@ -2520,9 +2739,9 @@ class TestAddCommandsIntegration:
     def test_add_graphql_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.graphql.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.graphql.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.graphql import add_graphql_command
+
             add_graphql_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "graphql" in content.lower()
@@ -2530,9 +2749,9 @@ class TestAddCommandsIntegration:
     def test_add_monitoring_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.monitoring.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.monitoring.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.monitoring import add_monitoring_command
+
             add_monitoring_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "OTEL_SERVICE_NAME" in content
@@ -2540,9 +2759,9 @@ class TestAddCommandsIntegration:
     def test_add_logging_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.logging.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.logging.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.logging import add_logging_command
+
             add_logging_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "logging_config" in content
@@ -2550,9 +2769,9 @@ class TestAddCommandsIntegration:
     def test_add_sentry_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.sentry.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.sentry.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.sentry import add_sentry_command
+
             add_sentry_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "sentry" in content.lower() or "SENTRY" in content
@@ -2560,9 +2779,9 @@ class TestAddCommandsIntegration:
     def test_add_security_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.security.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.security.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.security import add_security_command
+
             add_security_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "CSP" in content or "SecurityMiddleware" in content
@@ -2570,9 +2789,9 @@ class TestAddCommandsIntegration:
     def test_add_storage_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.storage.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.storage.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.storage import add_storage_command
+
             add_storage_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "STORAGES" in content or "DEFAULT_FILE_STORAGE" in content
@@ -2580,9 +2799,9 @@ class TestAddCommandsIntegration:
     def test_add_scheduler_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.scheduler.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.scheduler.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.scheduler import add_scheduler_command
+
             add_scheduler_command(dry_run=False, force=False)
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "APSCHEDULER" in content
@@ -2591,12 +2810,10 @@ class TestAddCommandsIntegration:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         # Remove drf-spectacular from requirements so feature isn't detected as already enabled
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0,<6\ndjangorestframework>=3.15,<4\n", encoding="utf-8"
-        )
-        with patch("djboost.commands.add.api_docs.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        (tmp_path / "requirements.txt").write_text("Django>=5.0,<6\ndjangorestframework>=3.15,<4\n", encoding="utf-8")
+        with patch("djboost.commands.add.api_docs.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.api_docs import add_api_docs_command
+
             add_api_docs_command(provider="swagger", dry_run=False, force=False)
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "schema" in content.lower()
@@ -2604,12 +2821,10 @@ class TestAddCommandsIntegration:
     def test_add_api_docs_redoc(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0,<6\ndjangorestframework>=3.15,<4\n", encoding="utf-8"
-        )
-        with patch("djboost.commands.add.api_docs.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        (tmp_path / "requirements.txt").write_text("Django>=5.0,<6\ndjangorestframework>=3.15,<4\n", encoding="utf-8")
+        with patch("djboost.commands.add.api_docs.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.api_docs import add_api_docs_command
+
             add_api_docs_command(provider="redoc", dry_run=False, force=False)
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "redoc" in content.lower()
@@ -2618,24 +2833,25 @@ class TestAddCommandsIntegration:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.api_docs.check_virtual_environment"):
             from djboost.commands.add.api_docs import add_api_docs_command
+
             with pytest.raises(typer.Exit):
                 add_api_docs_command(provider="invalid", dry_run=False, force=False)
 
     def test_add_cicd_github(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.cicd.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.cicd import add_cicd_command
+
             add_cicd_command(provider="github", dry_run=False, force=False)
         assert (tmp_path / ".github" / "workflows" / "main.yml").exists()
 
     def test_add_cicd_gitlab(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.cicd.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.cicd import add_cicd_command
+
             add_cicd_command(provider="gitlab", dry_run=False, force=False)
         assert (tmp_path / ".gitlab-ci.yml").exists()
 
@@ -2643,15 +2859,16 @@ class TestAddCommandsIntegration:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.cicd.check_virtual_environment"):
             from djboost.commands.add.cicd import add_cicd_command
+
             with pytest.raises(typer.Exit):
                 add_cicd_command(provider="invalid", dry_run=False, force=False)
 
     def test_add_kubernetes_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.kubernetes.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.kubernetes.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.kubernetes import add_kubernetes_command
+
             add_kubernetes_command(dry_run=False, force=False)
         assert (tmp_path / "k8s").exists()
 
@@ -2668,6 +2885,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.celery.check_virtual_environment"):
             from djboost.commands.add.celery import add_celery_command
+
             with pytest.raises(typer.Exit):
                 add_celery_command(dry_run=False, force=False)
 
@@ -2675,6 +2893,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.docker.check_virtual_environment"):
             from djboost.commands.add.docker import add_docker_command
+
             with pytest.raises(typer.Exit):
                 add_docker_command(dry_run=False, force=False)
 
@@ -2682,6 +2901,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.postgres.check_virtual_environment"):
             from djboost.commands.add.postgres import add_postgres_command
+
             with pytest.raises(typer.Exit):
                 add_postgres_command(dry_run=False, force=False)
 
@@ -2689,6 +2909,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.redis_cache.check_virtual_environment"):
             from djboost.commands.add.redis_cache import add_redis_cache_command
+
             with pytest.raises(typer.Exit):
                 add_redis_cache_command(dry_run=False, force=False)
 
@@ -2696,6 +2917,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.channels.check_virtual_environment"):
             from djboost.commands.add.channels import add_channels_command
+
             with pytest.raises(typer.Exit):
                 add_channels_command(dry_run=False, force=False)
 
@@ -2703,6 +2925,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.graphql.check_virtual_environment"):
             from djboost.commands.add.graphql import add_graphql_command
+
             with pytest.raises(typer.Exit):
                 add_graphql_command(dry_run=False, force=False)
 
@@ -2710,6 +2933,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.monitoring.check_virtual_environment"):
             from djboost.commands.add.monitoring import add_monitoring_command
+
             with pytest.raises(typer.Exit):
                 add_monitoring_command(dry_run=False, force=False)
 
@@ -2717,6 +2941,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.logging.check_virtual_environment"):
             from djboost.commands.add.logging import add_logging_command
+
             with pytest.raises(typer.Exit):
                 add_logging_command(dry_run=False, force=False)
 
@@ -2724,6 +2949,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.sentry.check_virtual_environment"):
             from djboost.commands.add.sentry import add_sentry_command
+
             with pytest.raises(typer.Exit):
                 add_sentry_command(dry_run=False, force=False)
 
@@ -2731,6 +2957,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.security.check_virtual_environment"):
             from djboost.commands.add.security import add_security_command
+
             with pytest.raises(typer.Exit):
                 add_security_command(dry_run=False, force=False)
 
@@ -2738,6 +2965,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.storage.check_virtual_environment"):
             from djboost.commands.add.storage import add_storage_command
+
             with pytest.raises(typer.Exit):
                 add_storage_command(dry_run=False, force=False)
 
@@ -2745,6 +2973,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.scheduler.check_virtual_environment"):
             from djboost.commands.add.scheduler import add_scheduler_command
+
             with pytest.raises(typer.Exit):
                 add_scheduler_command(dry_run=False, force=False)
 
@@ -2752,6 +2981,7 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.kubernetes.check_virtual_environment"):
             from djboost.commands.add.kubernetes import add_kubernetes_command
+
             with pytest.raises(typer.Exit):
                 add_kubernetes_command(dry_run=False, force=False)
 
@@ -2759,14 +2989,15 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.api_docs.check_virtual_environment"):
             from djboost.commands.add.api_docs import add_api_docs_command
+
             with pytest.raises(typer.Exit):
                 add_api_docs_command(provider="swagger", dry_run=False, force=False)
 
     def test_cicd_no_project(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.cicd.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.cicd import add_cicd_command
+
             add_cicd_command(provider="github", dry_run=False, force=False)
         assert (tmp_path / ".github" / "workflows" / "main.yml").exists()
 
@@ -2774,14 +3005,15 @@ class TestAddCommandsNoProject:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.celery_beat.check_virtual_environment"):
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=False, force=False)
 
     def test_cicd_no_project_gitlab(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        with patch("djboost.commands.add.cicd.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.cicd.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.cicd import add_cicd_command
+
             add_cicd_command(provider="gitlab", dry_run=False, force=False)
         assert (tmp_path / ".gitlab-ci.yml").exists()
 
@@ -2804,9 +3036,9 @@ class TestAddCeleryBeat:
             settings.read_text(encoding="utf-8") + "\nCELERY_BROKER_URL = 'redis://'\n",
             encoding="utf-8",
         )
-        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), \
-             VALIDATE_PATCH:
+        with patch("djboost.commands.add.celery_beat.check_virtual_environment"), VALIDATE_PATCH:
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             add_celery_beat_command(dry_run=False, force=False)
         content = settings.read_text(encoding="utf-8")
         assert "CELERY_BEAT_SCHEDULE" in content
@@ -2817,6 +3049,7 @@ class TestAddCeleryBeat:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.add.celery_beat.check_virtual_environment"):
             from djboost.commands.add.celery_beat import add_celery_beat_command
+
             with pytest.raises(typer.Exit):
                 add_celery_beat_command(dry_run=False, force=False)
 
@@ -2840,6 +3073,7 @@ class TestRemoveCommandsIntegration:
         )
         with patch("djboost.commands.remove.celery_beat.check_virtual_environment"):
             from djboost.commands.remove.celery_beat import remove_celery_beat_command
+
             remove_celery_beat_command(dry_run=False, force=True)
 
     def test_remove_cicd_github(self, tmp_path, monkeypatch):
@@ -2849,6 +3083,7 @@ class TestRemoveCommandsIntegration:
         (tmp_path / ".github" / "workflows" / "main.yml").write_text("name: test", encoding="utf-8")
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             remove_cicd_command(provider="github", dry_run=False, force=True)
         assert not (tmp_path / ".github").exists()
 
@@ -2858,6 +3093,7 @@ class TestRemoveCommandsIntegration:
         (tmp_path / ".gitlab-ci.yml").write_text("stages:", encoding="utf-8")
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             remove_cicd_command(provider="gitlab", dry_run=False, force=True)
         assert not (tmp_path / ".gitlab-ci.yml").exists()
 
@@ -2866,6 +3102,7 @@ class TestRemoveCommandsIntegration:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="github", dry_run=False, force=True)
 
@@ -2874,6 +3111,7 @@ class TestRemoveCommandsIntegration:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="gitlab", dry_run=False, force=True)
 
@@ -2881,6 +3119,7 @@ class TestRemoveCommandsIntegration:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.cicd.check_virtual_environment"):
             from djboost.commands.remove.cicd import remove_cicd_command
+
             with pytest.raises(typer.Exit):
                 remove_cicd_command(provider="invalid", dry_run=False, force=True)
 
@@ -2891,6 +3130,7 @@ class TestRemoveCommandsIntegration:
         (tmp_path / "k8s" / "deployment.yaml").write_text("apiVersion: v1", encoding="utf-8")
         with patch("djboost.commands.remove.kubernetes.check_virtual_environment"):
             from djboost.commands.remove.kubernetes import remove_kubernetes_command
+
             remove_kubernetes_command(dry_run=False, force=True)
         assert not (tmp_path / "k8s").exists()
 
@@ -2899,6 +3139,7 @@ class TestRemoveCommandsIntegration:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.remove.kubernetes.check_virtual_environment"):
             from djboost.commands.remove.kubernetes import remove_kubernetes_command
+
             # kubernetes is not configured, should handle gracefully
             remove_kubernetes_command(dry_run=False, force=True)
 
@@ -2921,6 +3162,7 @@ class TestRemoveCommandsIntegration:
         )
         with patch("djboost.commands.remove.api_docs.check_virtual_environment"):
             from djboost.commands.remove.api_docs import remove_api_docs_command
+
             remove_api_docs_command(dry_run=False, force=True)
         content = urls.read_text(encoding="utf-8")
         assert "SpectacularAPIView" not in content
@@ -2941,14 +3183,13 @@ class TestRemoveCommandsIntegration:
         )
         with patch("djboost.commands.remove.api_docs.check_virtual_environment"):
             from djboost.commands.remove.api_docs import remove_api_docs_command
+
             remove_api_docs_command(dry_run=False, force=True)
 
     def test_remove_api_docs_with_requirements(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ndrf-spectacular>=0.27\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ndrf-spectacular>=0.27\n", encoding="utf-8")
         urls = tmp_path / "proj" / "urls.py"
         urls.write_text(
             "from django.urls import path\nfrom drf_spectacular.views import SpectacularAPIView\nurlpatterns = [\n    path('api/schema/', SpectacularAPIView.as_view(url_name='schema'), name='schema'),\n]\n",
@@ -2956,6 +3197,7 @@ class TestRemoveCommandsIntegration:
         )
         with patch("djboost.commands.remove.api_docs.check_virtual_environment"):
             from djboost.commands.remove.api_docs import remove_api_docs_command
+
             remove_api_docs_command(dry_run=False, force=True)
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "spectacular" not in content.lower()
@@ -2974,16 +3216,19 @@ class TestCreateAccountsCommand:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.create.accounts.check_virtual_environment"):
             from djboost.commands.create.accounts import create_accounts_command
+
             create_accounts_command()
 
     def test_create_accounts_no_project(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         import shutil
+
         shutil.rmtree(tmp_path / "common", ignore_errors=True)
         shutil.rmtree(tmp_path / "apps", ignore_errors=True)
         with patch("djboost.commands.create.accounts.check_virtual_environment"):
             from djboost.commands.create.accounts import create_accounts_command
+
             create_accounts_command()  # Should still work with warning
 
 
@@ -2995,6 +3240,7 @@ class TestCreateAppCommand:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import create_app_command
+
             create_app_command(name="myapp")
         assert (tmp_path / "apps" / "myapp").exists()
 
@@ -3004,6 +3250,7 @@ class TestCreateAppCommand:
         (tmp_path / "apps" / "myapp").mkdir()
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import create_app_command
+
             with pytest.raises(typer.Exit):
                 create_app_command(name="myapp")
 
@@ -3011,6 +3258,7 @@ class TestCreateAppCommand:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import create_app_command
+
             with pytest.raises(typer.Exit):
                 create_app_command(name="myapp")
 
@@ -3018,10 +3266,12 @@ class TestCreateAppCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         import shutil
+
         shutil.rmtree(tmp_path / "apps", ignore_errors=True)
         shutil.rmtree(tmp_path / "common", ignore_errors=True)
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import create_app_command
+
             create_app_command(name="myapp")
 
     def test_create_app_invalid_name(self, tmp_path, monkeypatch):
@@ -3029,6 +3279,7 @@ class TestCreateAppCommand:
         monkeypatch.chdir(tmp_path)
         with patch("djboost.commands.create.app.check_virtual_environment"):
             from djboost.commands.create.app import create_app_command
+
             with pytest.raises(typer.Exit):
                 create_app_command(name="my-app")
 
@@ -3036,6 +3287,7 @@ class TestCreateAppCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_settings
+
         update_settings("proj", "testapp")
         content = (tmp_path / "proj" / "settings.py").read_text(encoding="utf-8")
         assert "apps.testapp" in content
@@ -3044,18 +3296,21 @@ class TestCreateAppCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_settings
+
         update_settings("proj", "testapp")
         update_settings("proj", "testapp")  # Should warn
 
     def test_update_settings_no_settings(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_settings
+
         update_settings("nonexistent", "testapp")
 
     def test_update_urls(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "testapp")
         content = (tmp_path / "proj" / "urls.py").read_text(encoding="utf-8")
         assert "apps.testapp.urls" in content
@@ -3064,12 +3319,14 @@ class TestCreateAppCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "testapp")
         update_urls("proj", "testapp")  # Should warn
 
     def test_update_urls_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import update_urls
+
         update_urls("nonexistent", "testapp")
 
     def test_update_urls_no_urlpatterns(self, tmp_path, monkeypatch):
@@ -3078,6 +3335,7 @@ class TestCreateAppCommand:
         urls = tmp_path / "proj" / "urls.py"
         urls.write_text("urlpatterns_not_found = []\n", encoding="utf-8")
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "testapp")
 
     def test_update_urls_no_include_import(self, tmp_path, monkeypatch):
@@ -3090,6 +3348,7 @@ class TestCreateAppCommand:
             encoding="utf-8",
         )
         from djboost.commands.create.app import update_urls
+
         update_urls("proj", "testapp")
         content = urls.read_text(encoding="utf-8")
         assert "include" in content
@@ -3098,12 +3357,14 @@ class TestCreateAppCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.create.app import get_project_name
+
         assert get_project_name() == "proj"
 
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("x = 1", encoding="utf-8")
         from djboost.commands.create.app import get_project_name
+
         with pytest.raises(typer.Exit):
             get_project_name()
 
@@ -3120,6 +3381,7 @@ class TestDoctorCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_with_celery(self, tmp_path, monkeypatch):
@@ -3131,6 +3393,7 @@ class TestDoctorCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_debug_true(self, tmp_path, monkeypatch):
@@ -3138,6 +3401,7 @@ class TestDoctorCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=test\nDEBUG=True\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_debug_false(self, tmp_path, monkeypatch):
@@ -3145,6 +3409,7 @@ class TestDoctorCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=test\nDEBUG=False\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_default_secret_key(self, tmp_path, monkeypatch):
@@ -3152,6 +3417,7 @@ class TestDoctorCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=your-secret-key\nDEBUG=True\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_default_secret_key_generated(self, tmp_path, monkeypatch):
@@ -3159,6 +3425,7 @@ class TestDoctorCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=your-generated-secret\nDEBUG=True\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_custom_secret_key(self, tmp_path, monkeypatch):
@@ -3166,6 +3433,7 @@ class TestDoctorCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".env").write_text("SECRET_KEY=super-secret-123!\nDEBUG=False\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_precommit_and_gitignore(self, tmp_path, monkeypatch):
@@ -3174,6 +3442,7 @@ class TestDoctorCommand:
         (tmp_path / ".pre-commit-config.yaml").write_text("repos:", encoding="utf-8")
         (tmp_path / ".gitignore").write_text("*.pyc\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_github_actions(self, tmp_path, monkeypatch):
@@ -3182,6 +3451,7 @@ class TestDoctorCommand:
         (tmp_path / ".github" / "workflows").mkdir(parents=True)
         (tmp_path / ".github" / "workflows" / "main.yml").write_text("name: test", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_gitlab_ci(self, tmp_path, monkeypatch):
@@ -3189,6 +3459,7 @@ class TestDoctorCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".gitlab-ci.yml").write_text("stages:", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_docker_compose(self, tmp_path, monkeypatch):
@@ -3199,6 +3470,7 @@ class TestDoctorCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_urls_with_swagger(self, tmp_path, monkeypatch):
@@ -3210,6 +3482,7 @@ class TestDoctorCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_urls_with_redoc(self, tmp_path, monkeypatch):
@@ -3221,12 +3494,14 @@ class TestDoctorCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_urls_no_docs(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_with_apps(self, tmp_path, monkeypatch):
@@ -3236,32 +3511,38 @@ class TestDoctorCommand:
         app_dir.mkdir()
         (app_dir / "apps.py").write_text("class AppConfig:\n    name = 'myapp'\n", encoding="utf-8")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_empty_apps(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_no_manage_py(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_no_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_no_env(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_no_common(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
     def test_doctor_common_missing_files(self, tmp_path, monkeypatch):
@@ -3272,6 +3553,7 @@ class TestDoctorCommand:
         os.remove(tmp_path / "common" / "pagination.py")
         os.remove(tmp_path / "common" / "exceptions.py")
         from djboost.commands.management.doctor import doctor_command
+
         doctor_command()
 
 
@@ -3282,6 +3564,7 @@ class TestInfoCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_with_celery(self, tmp_path, monkeypatch):
@@ -3294,6 +3577,7 @@ class TestInfoCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_with_docker(self, tmp_path, monkeypatch):
@@ -3304,6 +3588,7 @@ class TestInfoCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_github_actions(self, tmp_path, monkeypatch):
@@ -3312,6 +3597,7 @@ class TestInfoCommand:
         (tmp_path / ".github" / "workflows").mkdir(parents=True)
         (tmp_path / ".github" / "workflows" / "main.yml").write_text("name: test", encoding="utf-8")
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_gitlab_ci(self, tmp_path, monkeypatch):
@@ -3319,12 +3605,14 @@ class TestInfoCommand:
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".gitlab-ci.yml").write_text("stages:", encoding="utf-8")
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_no_ci_cd(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_with_accounts(self, tmp_path, monkeypatch):
@@ -3333,6 +3621,7 @@ class TestInfoCommand:
         (tmp_path / "apps" / "accounts").mkdir()
         (tmp_path / "apps" / "accounts" / "__init__.py").touch()
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_with_custom_app(self, tmp_path, monkeypatch):
@@ -3342,6 +3631,7 @@ class TestInfoCommand:
         app_dir.mkdir()
         (app_dir / "apps.py").write_text("class AppConfig:\n    name = 'myapp'\n", encoding="utf-8")
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_with_api_docs(self, tmp_path, monkeypatch):
@@ -3349,22 +3639,24 @@ class TestInfoCommand:
         monkeypatch.chdir(tmp_path)
         urls = tmp_path / "proj" / "urls.py"
         urls.write_text(
-            urls.read_text(encoding="utf-8")
-            + "\nSpectacularSwaggerView\nSpectacularRedocView\n",
+            urls.read_text(encoding="utf-8") + "\nSpectacularSwaggerView\nSpectacularRedocView\n",
             encoding="utf-8",
         )
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_no_manage_py(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.info import info_command
+
         info_command()
 
     def test_info_no_settings(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "manage.py").write_text("# manage", encoding="utf-8")
         from djboost.commands.management.info import info_command
+
         info_command()
 
 
@@ -3375,11 +3667,13 @@ class TestValidateCommand:
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_manage_py(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_with_asgi(self, tmp_path, monkeypatch):
@@ -3391,6 +3685,7 @@ class TestValidateCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_cors(self, tmp_path, monkeypatch):
@@ -3401,6 +3696,7 @@ class TestValidateCommand:
         content = content.replace("CORS_ALLOWED_ORIGINS", "CORS_REMOVED")
         settings.write_text(content, encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_jwt(self, tmp_path, monkeypatch):
@@ -3411,21 +3707,25 @@ class TestValidateCommand:
         content = content.replace("SIMPLE_JWT", "JWT_REMOVED")
         settings.write_text(content, encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_jwt_full(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_common_no_apps(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         import shutil
+
         shutil.rmtree(tmp_path / "common", ignore_errors=True)
         shutil.rmtree(tmp_path / "apps", ignore_errors=True)
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_requirements(self, tmp_path, monkeypatch):
@@ -3433,6 +3733,7 @@ class TestValidateCommand:
         monkeypatch.chdir(tmp_path)
         os.remove(tmp_path / "requirements.txt")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_env(self, tmp_path, monkeypatch):
@@ -3440,6 +3741,7 @@ class TestValidateCommand:
         monkeypatch.chdir(tmp_path)
         os.remove(tmp_path / ".env")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_leading_slash_in_urls(self, tmp_path, monkeypatch):
@@ -3451,6 +3753,7 @@ class TestValidateCommand:
             encoding="utf-8",
         )
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_installed_apps(self, tmp_path, monkeypatch):
@@ -3461,6 +3764,7 @@ class TestValidateCommand:
         content = content.replace("INSTALLED_APPS", "REMOVED_APPS")
         settings.write_text(content, encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_rest_framework(self, tmp_path, monkeypatch):
@@ -3471,6 +3775,7 @@ class TestValidateCommand:
         content = content.replace("REST_FRAMEWORK", "RF_REMOVED")
         settings.write_text(content, encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_optional_in_base(self, tmp_path, monkeypatch):
@@ -3481,6 +3786,7 @@ class TestValidateCommand:
         content += "\n'channels'\n'daphne'\n"
         settings.write_text(content, encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_exception_handler(self, tmp_path, monkeypatch):
@@ -3492,15 +3798,15 @@ class TestValidateCommand:
         content = content.replace("DEFAULT_PAGINATION_CLASS", "DPC_REMOVED")
         settings.write_text(content, encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_circular_import_in_common(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "common" / "responses.py").write_text(
-            "from common.responses import custom\n", encoding="utf-8"
-        )
+        (tmp_path / "common" / "responses.py").write_text("from common.responses import custom\n", encoding="utf-8")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_apps_init(self, tmp_path, monkeypatch):
@@ -3508,22 +3814,27 @@ class TestValidateCommand:
         monkeypatch.chdir(tmp_path)
         os.remove(tmp_path / "apps" / "__init__.py")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_common_dir(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         import shutil
+
         shutil.rmtree(tmp_path / "common")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
     def test_validate_no_apps_dir(self, tmp_path, monkeypatch):
         setup_django_project(tmp_path, "proj")
         monkeypatch.chdir(tmp_path)
         import shutil
+
         shutil.rmtree(tmp_path / "apps")
         from djboost.commands.management.validate import validate_command
+
         validate_command()
 
 
@@ -3537,9 +3848,9 @@ class TestValidatorsAutoCreate:
 
     def test_in_venv(self):
         """When already in a venv, should return True immediately."""
-        with patch.object(sys, "base_prefix", "/usr"), \
-             patch.object(sys, "prefix", "/usr/env"):
+        with patch.object(sys, "base_prefix", "/usr"), patch.object(sys, "prefix", "/usr/env"):
             from djboost.generators.validators import check_virtual_environment
+
             result = check_virtual_environment()
             assert result is True
 
@@ -3554,9 +3865,9 @@ class TestValidatorsAutoCreate:
             (tmp_path / "env" / "bin").mkdir()
             (tmp_path / "env" / "bin" / "python").touch()
 
-        with patch.object(sys, "base_prefix", sys.prefix), \
-             patch.object(sys, "prefix", sys.prefix):
+        with patch.object(sys, "base_prefix", sys.prefix), patch.object(sys, "prefix", sys.prefix):
             from djboost.generators.validators import check_virtual_environment
+
             with patch("djboost.generators.validators.subprocess.run") as mock_run:
                 mock_run.return_value = MagicMock(returncode=0)
                 result = check_virtual_environment()
@@ -3567,9 +3878,9 @@ class TestValidatorsAutoCreate:
         monkeypatch.chdir(tmp_path)
         real_executable = sys.executable  # Save real path
         try:
-            with patch.object(sys, "base_prefix", sys.prefix), \
-                 patch.object(sys, "prefix", sys.prefix):
+            with patch.object(sys, "base_prefix", sys.prefix), patch.object(sys, "prefix", sys.prefix):
                 from djboost.generators.validators import check_virtual_environment
+
                 with patch("djboost.generators.validators.subprocess.run") as mock_run:
                     mock_run.return_value = MagicMock(returncode=0)
                     with patch("djboost.generators.validators.get_venv_python_path") as mock_venv:
@@ -3585,9 +3896,9 @@ class TestValidatorsAutoCreate:
         monkeypatch.chdir(tmp_path)
         real_executable = sys.executable
         try:
-            with patch.object(sys, "base_prefix", sys.prefix), \
-                 patch.object(sys, "prefix", sys.prefix):
+            with patch.object(sys, "base_prefix", sys.prefix), patch.object(sys, "prefix", sys.prefix):
                 from djboost.generators.validators import check_virtual_environment
+
                 with patch("djboost.generators.validators.subprocess.run") as mock_run:
                     mock_run.return_value = MagicMock(returncode=1, stderr="error creating")
                     with pytest.raises(typer.Exit):
@@ -3601,9 +3912,9 @@ class TestValidatorsAutoCreate:
         (tmp_path / "env").mkdir()
         real_executable = sys.executable
         try:
-            with patch.object(sys, "base_prefix", sys.prefix), \
-                 patch.object(sys, "prefix", sys.prefix):
+            with patch.object(sys, "base_prefix", sys.prefix), patch.object(sys, "prefix", sys.prefix):
                 from djboost.generators.validators import check_virtual_environment
+
                 with patch("djboost.generators.validators.subprocess.run") as mock_run:
                     mock_run.return_value = MagicMock(returncode=0)
                     with pytest.raises(typer.Exit):
@@ -3616,9 +3927,9 @@ class TestValidatorsAutoCreate:
         monkeypatch.chdir(tmp_path)
         real_executable = sys.executable
         try:
-            with patch.object(sys, "base_prefix", sys.prefix), \
-                 patch.object(sys, "prefix", sys.prefix):
+            with patch.object(sys, "base_prefix", sys.prefix), patch.object(sys, "prefix", sys.prefix):
                 from djboost.generators.validators import check_virtual_environment
+
                 with patch("djboost.generators.validators.subprocess.run") as mock_run:
                     mock_run.side_effect = Exception("subprocess error")
                     with pytest.raises(typer.Exit):
@@ -3638,6 +3949,7 @@ class TestDependencies:
     def test_add_to_requirements_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.dependencies import add_to_requirements
+
         add_to_requirements(["celery>=5.4", "redis>=5.0"])
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "celery" in content
@@ -3647,14 +3959,14 @@ class TestDependencies:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("celery>=5.4\n", encoding="utf-8")
         from djboost.generators.dependencies import add_to_requirements
+
         add_to_requirements(["celery>=5.4"])
 
     def test_remove_from_requirements(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
-        (tmp_path / "requirements.txt").write_text(
-            "Django>=5.0\ncelery>=5.4\nredis>=5.0\n", encoding="utf-8"
-        )
+        (tmp_path / "requirements.txt").write_text("Django>=5.0\ncelery>=5.4\nredis>=5.0\n", encoding="utf-8")
         from djboost.generators.dependencies import remove_from_requirements
+
         remove_from_requirements(["celery", "redis"])
         content = (tmp_path / "requirements.txt").read_text(encoding="utf-8")
         assert "celery" not in content
@@ -3664,38 +3976,45 @@ class TestDependencies:
     def test_remove_from_requirements_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.dependencies import remove_from_requirements
+
         remove_from_requirements(["celery"])
 
     def test_remove_from_requirements_empty(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "requirements.txt").write_text("Django>=5.0\n", encoding="utf-8")
         from djboost.generators.dependencies import remove_from_requirements
+
         remove_from_requirements(["celery"])
 
     def test_install_optional_packages_unknown(self):
         from djboost.generators.dependencies import install_optional_packages
+
         with patch("djboost.generators.dependencies.subprocess.run"):
             assert install_optional_packages("unknown_category") is False
 
     def test_install_optional_packages_valid(self):
         from djboost.generators.dependencies import install_optional_packages
+
         with patch("djboost.generators.dependencies.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             assert install_optional_packages("celery") is True
 
     def test_uninstall_optional_packages_unknown(self):
         from djboost.generators.dependencies import uninstall_optional_packages
+
         with patch("djboost.generators.dependencies.subprocess.run"):
             assert uninstall_optional_packages("unknown_category") is False
 
     def test_uninstall_optional_packages_valid(self):
         from djboost.generators.dependencies import uninstall_optional_packages
+
         with patch("djboost.generators.dependencies.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             assert uninstall_optional_packages("celery") is True
 
     def test_install_dependencies_error(self):
         from djboost.generators.dependencies import install_dependencies
+
         with patch("djboost.generators.dependencies.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=1, stderr="install error")
             with pytest.raises(typer.Exit):
@@ -3703,18 +4022,21 @@ class TestDependencies:
 
     def test_install_dependencies_success(self):
         from djboost.generators.dependencies import install_dependencies
+
         with patch("djboost.generators.dependencies.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             install_dependencies(["good-package>=1.0"])
 
     def test_uninstall_packages(self):
         from djboost.generators.dependencies import uninstall_packages
+
         with patch("djboost.generators.dependencies.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=0)
             uninstall_packages(["celery>=5.4"])
 
     def test_uninstall_packages_not_installed(self):
         from djboost.generators.dependencies import uninstall_packages
+
         with patch("djboost.generators.dependencies.subprocess.run") as mock_run:
             mock_run.return_value = MagicMock(returncode=1)
             uninstall_packages(["nonexistent>=1.0"])
@@ -3731,6 +4053,7 @@ class TestSafeEngineRemaining:
     def test_load_change_history_empty(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         from djboost.generators.safe_engine import load_change_history
+
         assert load_change_history() == []
 
     def test_load_change_history_corrupt(self, tmp_path, monkeypatch):
@@ -3738,22 +4061,23 @@ class TestSafeEngineRemaining:
         (tmp_path / ".djboost_backup").mkdir()
         (tmp_path / ".djboost_backup" / "changes.json").write_text("not json", encoding="utf-8")
         from djboost.generators.safe_engine import load_change_history
+
         assert load_change_history() == []
 
     def test_load_change_history_valid(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         (tmp_path / ".djboost_backup").mkdir()
         data = [{"feature_name": "test", "operation": "add"}]
-        (tmp_path / ".djboost_backup" / "changes.json").write_text(
-            json.dumps(data), encoding="utf-8"
-        )
+        (tmp_path / ".djboost_backup" / "changes.json").write_text(json.dumps(data), encoding="utf-8")
         from djboost.generators.safe_engine import load_change_history
+
         result = load_change_history()
         assert len(result) == 1
         assert result[0]["feature_name"] == "test"
 
     def test_print_plan_all_fields(self):
         from djboost.generators.safe_engine import ChangePlan, FileChange, _print_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=False)
         plan.errors.append("test error")
         plan.warnings.append("test warning")
@@ -3770,11 +4094,13 @@ class TestSafeEngineRemaining:
 
     def test_print_plan_remove_operation(self):
         from djboost.generators.safe_engine import ChangePlan, _print_plan
+
         plan = ChangePlan(feature_name="test", operation="remove", dry_run=False)
         _print_plan(plan)
 
     def test_print_plan_dry_run_with_reverse_deps(self):
         from djboost.generators.safe_engine import ChangePlan, _print_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=True)
         plan.packages_to_uninstall = ["pkg1>=1.0"]
         plan.reverse_deps = ["dep1"]
@@ -3782,16 +4108,19 @@ class TestSafeEngineRemaining:
 
     def test_print_plan_no_changes(self):
         from djboost.generators.safe_engine import ChangePlan, _print_plan
+
         plan = ChangePlan(feature_name="test", operation="add", dry_run=False)
         _print_plan(plan)  # No errors, warnings, deps, etc.
+
+
 # ── Project files tests ────────────────────────────────────────────────────────
 
 import pytest
 
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # PROJECT FILES — uncovered functions
 # ═══════════════════════════════════════════════════════════════════════════════
+
 
 class TestProjectFilesUncovered:
     """Test uncovered functions in djboost.generators.project_files."""
@@ -3800,6 +4129,7 @@ class TestProjectFilesUncovered:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "myapp").mkdir()
         from djboost.generators.project_files import create_celery_file
+
         create_celery_file("myapp")
         assert (tmp_path / "myapp" / "celery.py").exists()
         content = (tmp_path / "myapp" / "celery.py").read_text(encoding="utf-8")
@@ -3810,6 +4140,7 @@ class TestProjectFilesUncovered:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "myapp").mkdir()
         from djboost.generators.project_files import create_tasks_file
+
         create_tasks_file("myapp")
         assert (tmp_path / "myapp" / "tasks.py").exists()
         content = (tmp_path / "myapp" / "tasks.py").read_text(encoding="utf-8")
@@ -3820,6 +4151,7 @@ class TestProjectFilesUncovered:
         monkeypatch.chdir(tmp_path)
         (tmp_path / "myapp").mkdir()
         from djboost.generators.project_files import update_init_file
+
         update_init_file("myapp")
         assert (tmp_path / "myapp" / "__init__.py").exists()
         content = (tmp_path / "myapp" / "__init__.py").read_text(encoding="utf-8")

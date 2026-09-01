@@ -2,9 +2,17 @@ import typer
 from rich import print
 
 from djboost.generator import check_virtual_environment
-from djboost.generators.celery import generate_celery_files, get_project_name, update_settings_celery
+from djboost.generators.celery import (
+    generate_celery_files,
+    get_project_name,
+    update_settings_celery,
+)
 from djboost.generators.dependencies import add_to_requirements
-from djboost.generators.safe_engine import execute_plan, generate_add_plan, scan_enabled_features
+from djboost.generators.safe_engine import (
+    execute_plan,
+    generate_add_plan,
+    scan_enabled_features,
+)
 
 
 def add_celery_command(

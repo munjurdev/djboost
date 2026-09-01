@@ -15,11 +15,11 @@ def create_directories():
 
 def create_utils_file(name: str):
     """Create core/utils.py — imports exception handler from common.exceptions."""
-    content = '''from common.exceptions import custom_exception_handler
+    content = """from common.exceptions import custom_exception_handler
 
 
 __all__ = ("custom_exception_handler",)
-'''
+"""
     with open(f"{name}/utils.py", "w", encoding="utf-8") as f:
         f.write(content)
 

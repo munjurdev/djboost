@@ -6,16 +6,6 @@ Public API:
     - All generator modules (celery, docker, postgres, etc.)
 """
 
-from djboost.generators.safe_engine import (
-    ChangePlan,
-    ChangeRecord,
-    FileChange,
-    execute_plan,
-    generate_add_plan,
-    generate_remove_plan,
-    load_change_history,
-)
-
 from djboost.generators.features import (
     FEATURES,
     Feature,
@@ -26,6 +16,15 @@ from djboost.generators.features import (
     list_features,
     resolve_dependencies,
     scan_enabled_features,
+)
+from djboost.generators.safe_engine import (
+    ChangePlan,
+    ChangeRecord,
+    FileChange,
+    execute_plan,
+    generate_add_plan,
+    generate_remove_plan,
+    load_change_history,
 )
 
 __all__ = [
