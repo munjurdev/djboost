@@ -16,8 +16,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import typer
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility for administrative tasks.\"\"\"
@@ -138,11 +137,7 @@ def setup_django_project(tmp_path, name="testproject"):
     return tmp_path, name
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CLI TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CLI TESTS ─
 class TestCli:
     """Test djboost.cli module."""
 
@@ -239,11 +234,7 @@ class TestCli:
             assert cmd in cmd_names, f"Missing management command: {cmd}"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# GENERATOR (ORCHESTRATOR) TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── GENERATOR (ORCHESTRATOR) TESTS ─
 class TestGenerator:
     """Test djboost.generator module."""
 
@@ -263,11 +254,7 @@ class TestGenerator:
         assert callable(validate_name)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CELERY GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CELERY GENERATOR TESTS ─
 class TestCeleryGenerator:
     """Test djboost.generators.celery module."""
 
@@ -500,11 +487,7 @@ class TestCeleryGenerator:
         assert remove_celery_from_requirements() is True
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# POSTGRES GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── POSTGRES GENERATOR TESTS ─
 class TestPostgresGenerator:
     """Test djboost.generators.postgres module."""
 
@@ -597,11 +580,7 @@ class TestPostgresGenerator:
         assert "DATABASES = {" in new_db
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# REDIS CACHE GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── REDIS CACHE GENERATOR TESTS ─
 class TestRedisCacheGenerator:
     """Test djboost.generators.redis_cache module."""
 
@@ -692,11 +671,7 @@ class TestRedisCacheGenerator:
         assert "'CLIENT_CLASS'" in cache_settings
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DOCKER GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── DOCKER GENERATOR TESTS ─
 class TestDockerGenerator:
     """Test djboost.generators.docker module."""
 
@@ -840,11 +815,7 @@ class TestDockerGenerator:
         assert get_project_name() is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CHANNELS GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CHANNELS GENERATOR TESTS ─
 class TestChannelsGenerator:
     """Test djboost.generators.channels_gen module."""
 
@@ -917,11 +888,7 @@ class TestChannelsGenerator:
         add_channels_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# GRAPHQL GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── GRAPHQL GENERATOR TESTS ─
 class TestGraphQLGenerator:
     """Test djboost.generators.graphql module."""
 
@@ -1013,11 +980,7 @@ class TestGraphQLGenerator:
         add_graphql_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MONITORING GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── MONITORING GENERATOR TESTS ─
 class TestMonitoringGenerator:
     """Test djboost.generators.monitoring module."""
 
@@ -1117,11 +1080,7 @@ class TestMonitoringGenerator:
         add_monitoring_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# LOGGING CONFIG GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── LOGGING CONFIG GENERATOR TESTS ─
 class TestLoggingConfigGenerator:
     """Test djboost.generators.logging_config module."""
 
@@ -1188,11 +1147,7 @@ class TestLoggingConfigGenerator:
         add_logging_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SCHEDULER GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── SCHEDULER GENERATOR TESTS ─
 class TestSchedulerGenerator:
     """Test djboost.generators.scheduler module."""
 
@@ -1258,11 +1213,7 @@ class TestSchedulerGenerator:
         add_scheduler_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# STORAGE GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── STORAGE GENERATOR TESTS ─
 class TestStorageGenerator:
     """Test djboost.generators.storage module."""
 
@@ -1335,11 +1286,7 @@ class TestStorageGenerator:
         add_storage_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SECURITY GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── SECURITY GENERATOR TESTS ─
 class TestSecurityGenerator:
     """Test djboost.generators.security module."""
 
@@ -1389,11 +1336,7 @@ class TestSecurityGenerator:
         add_security_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SENTRY GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── SENTRY GENERATOR TESTS ─
 class TestSentryGenerator:
     """Test djboost.generators.sentry module."""
 
@@ -1455,11 +1398,7 @@ class TestSentryGenerator:
         add_sentry_to_requirements()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# API DOCS GENERATOR TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── API DOCS GENERATOR TESTS ─
 class TestApiDocsGenerator:
     """Test djboost.generators.api_docs module."""
 
@@ -1575,11 +1514,7 @@ class TestApiDocsGenerator:
         assert len(changes) > 0
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# VALIDATORS TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── VALIDATORS TESTS ─
 class TestValidators:
     """Test djboost.generators.validators module."""
 
@@ -1624,11 +1559,7 @@ class TestValidators:
         check_virtual_environment()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MANAGEMENT COMMANDS TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── MANAGEMENT COMMANDS TESTS ─
 class TestManagementCommands:
     """Test djboost.commands.management modules."""
 
@@ -1685,11 +1616,7 @@ class TestManagementCommands:
         validate_command()  # Should not raise
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ADD COMMAND MODULES TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── ADD COMMAND MODULES TESTS ─
 class TestAddCommands:
     """Test djboost.commands.add.* modules."""
 
@@ -1830,11 +1757,7 @@ class TestAddCommands:
             add_cicd_command(provider="invalid", dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# REMOVE COMMAND MODULES TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── REMOVE COMMAND MODULES TESTS ─
 class TestRemoveCommands:
     """Test djboost.commands.remove.* modules."""
 
@@ -2148,11 +2071,7 @@ class TestRemoveCommands:
         remove_celery_beat_command(dry_run=False, force=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CREATE COMMANDS TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CREATE COMMANDS TESTS ─
 class TestCreateCommands:
     """Test djboost.commands.create.* modules."""
 
@@ -2220,11 +2139,7 @@ class TestCreateCommands:
         assert get_project_name() == "proj"
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# FEATURES REGISTRY TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── FEATURES REGISTRY TESTS (additional) ─
 class TestFeaturesRegistryExtended:
     """Additional tests for djboost.generators.features."""
 
@@ -2290,11 +2205,7 @@ class TestFeaturesRegistryExtended:
         assert "celery-beat" in deps
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SAFE ENGINE EXTENDED TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── SAFE ENGINE EXTENDED TESTS ─
 class TestSafeEngineExtended:
     """Additional tests for djboost.generators.safe_engine."""
 
@@ -2319,11 +2230,7 @@ class TestSafeEngineExtended:
         assert isinstance(enabled, set)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DEPENDENCIES TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── DEPENDENCIES TESTS (additional) ─
 class TestDependenciesExtended:
     """Additional tests for djboost.generators.dependencies."""
 
@@ -2344,11 +2251,7 @@ class TestDependenciesExtended:
         add_to_requirements(["Django>=5.0"])  # Should not duplicate
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# QUALITY TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── QUALITY TESTS (additional) ─
 class TestQualityExtended:
     """Additional tests for djboost.generators.quality."""
 
@@ -2374,11 +2277,7 @@ class TestQualityExtended:
         assert (tmp_path / "pytest.ini").exists()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ENV TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── ENV TESTS (additional) ─
 class TestEnvExtended:
     """Additional tests for djboost.generators.env."""
 
@@ -2393,11 +2292,7 @@ class TestEnvExtended:
         assert "proj" in content
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# PROJECT FILES TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── PROJECT FILES TESTS (additional) ─
 class TestProjectFilesExtended:
     """Additional tests for djboost.generators.project_files."""
 
@@ -2439,11 +2334,7 @@ class TestProjectFilesExtended:
         assert "admin" in content
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CICD TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CICD TESTS (additional) ─
 class TestCicdExtended:
     """Additional tests for djboost.generators.cicd."""
 
@@ -2462,11 +2353,7 @@ class TestCicdExtended:
         assert (tmp_path / ".gitlab-ci.yml").exists()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# KUBERNETES TESTS (additional)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── KUBERNETES TESTS (additional) ─
 class TestKubernetesExtended:
     """Additional tests for djboost.generators.kubernetes."""
 
@@ -2504,8 +2391,7 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 import typer
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility for administrative tasks.\"\"\"
@@ -2654,11 +2540,7 @@ VALIDATE_PATCH = patch(
 )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ADD COMMAND INTEGRATION TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── ADD COMMAND INTEGRATION TESTS ─
 class TestAddCommandsIntegration:
     """Test add commands with a real project (hits apply_fn paths)."""
 
@@ -2873,11 +2755,7 @@ class TestAddCommandsIntegration:
         assert (tmp_path / "k8s").exists()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ADD COMMAND ERROR PATHS (no project name = Exit 1)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── ADD COMMAND ERROR PATHS (no project name = Exit 1) ─
 class TestAddCommandsNoProject:
     """Test add commands when no project is found (no manage.py)."""
 
@@ -3018,11 +2896,7 @@ class TestAddCommandsNoProject:
         assert (tmp_path / ".gitlab-ci.yml").exists()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CELERY BEAT ADD COMMAND
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CELERY BEAT ADD COMMAND ─
 class TestAddCeleryBeat:
     """Test celery beat add command paths."""
 
@@ -3054,11 +2928,7 @@ class TestAddCeleryBeat:
                 add_celery_beat_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# REMOVE COMMAND INTEGRATION TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── REMOVE COMMAND INTEGRATION TESTS ─
 class TestRemoveCommandsIntegration:
     """Test remove commands with a real project."""
 
@@ -3095,6 +2965,7 @@ class TestRemoveCommandsIntegration:
             from djboost.commands.remove.cicd import remove_cicd_command
 
             remove_cicd_command(provider="gitlab", dry_run=False, force=True)
+        assert not (tmp_path / ".gitlab-ci.yml").exists()
         assert not (tmp_path / ".gitlab-ci.yml").exists()
 
     def test_remove_cicd_github_not_present(self, tmp_path, monkeypatch):
@@ -3203,11 +3074,7 @@ class TestRemoveCommandsIntegration:
         assert "spectacular" not in content.lower()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CREATE COMMAND TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CREATE COMMAND TESTS ─
 class TestCreateAccountsCommand:
     """Test djboost startauth command."""
 
@@ -3369,11 +3236,7 @@ class TestCreateAppCommand:
             get_project_name()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# MANAGEMENT COMMAND TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── MANAGEMENT COMMAND TESTS ─
 class TestDoctorCommand:
     """Test djboost doctor with real projects."""
 
@@ -3838,11 +3701,7 @@ class TestValidateCommand:
         validate_command()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# VALIDATORS.PY TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── VALIDATORS.PY TESTS ─
 class TestValidatorsAutoCreate:
     """Test check_virtual_environment auto-create paths."""
 
@@ -3938,11 +3797,7 @@ class TestValidatorsAutoCreate:
             sys.executable = real_executable
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# DEPENDENCIES.PY TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── DEPENDENCIES.PY TESTS ─
 class TestDependencies:
     """Test djboost.generators.dependencies uncovered paths."""
 
@@ -4042,11 +3897,7 @@ class TestDependencies:
             uninstall_packages(["nonexistent>=1.0"])
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# SAFE ENGINE REMAINING LINES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── SAFE ENGINE REMAINING LINES ─
 class TestSafeEngineRemaining:
     """Test safe_engine.py remaining uncovered lines."""
 
@@ -4113,15 +3964,10 @@ class TestSafeEngineRemaining:
         _print_plan(plan)  # No errors, warnings, deps, etc.
 
 
-# ── Project files tests ────────────────────────────────────────────────────────
-
+# ── Project files tests ─
 import pytest
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# PROJECT FILES — uncovered functions
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── PROJECT FILES — uncovered functions ─
 class TestProjectFilesUncovered:
     """Test uncovered functions in djboost.generators.project_files."""
 

@@ -182,9 +182,7 @@ from unittest.mock import MagicMock, patch
 runner = CliRunner()
 
 
-# ── Add Command Help Tests ────────────────────────────────────────────────────
-
-
+# ── Add Command Help Tests ─
 class TestAddCommandHelp:
     """Test that all add commands are registered and show help."""
 
@@ -267,9 +265,7 @@ class TestAddCommandHelp:
         assert "monitoring" in result.output.lower() or "opentelemetry" in result.output.lower()
 
 
-# ── Remove Command Help Tests ─────────────────────────────────────────────────
-
-
+# ── Remove Command Help Tests ─
 class TestRemoveCommandHelp:
     """Test that all remove commands are registered and show help."""
 
@@ -338,9 +334,7 @@ class TestRemoveCommandHelp:
         assert result.exit_code == 0
 
 
-# ── Add Command Dry Run Tests ─────────────────────────────────────────────────
-
-
+# ── Add Command Dry Run Tests ─
 class TestAddCommandDryRun:
     """Test add commands with --dry-run flag."""
 
@@ -361,9 +355,7 @@ class TestAddCommandDryRun:
         assert result.exit_code in (0, 1)
 
 
-# ── Remove Command Dry Run Tests ──────────────────────────────────────────────
-
-
+# ── Remove Command Dry Run Tests ─
 class TestRemoveCommandDryRun:
     """Test remove commands with --dry-run flag."""
 
@@ -379,9 +371,7 @@ class TestRemoveCommandDryRun:
         assert result.exit_code in (0, 1)
 
 
-# ── Management Command Tests ──────────────────────────────────────────────────
-
-
+# ── Management Command Tests ─
 class TestManagementCommands:
     """Test management commands (doctor, validate, info, features)."""
 
@@ -423,9 +413,7 @@ class TestManagementCommands:
         assert result.exit_code == 0
 
 
-# ── Create Command Tests ──────────────────────────────────────────────────────
-
-
+# ── Create Command Tests ─
 class TestCreateCommands:
     """Test create commands (startproject, startapp, startauth)."""
 
@@ -452,9 +440,7 @@ class TestCreateCommands:
         assert result.exit_code in (0, 1, 2)
 
 
-# ── Add Command Error Handling Tests ──────────────────────────────────────────
-
-
+# ── Add Command Error Handling Tests ─
 class TestAddCommandErrors:
     """Test error handling in add commands."""
 
@@ -473,9 +459,7 @@ class TestAddCommandErrors:
         assert result.exit_code in (0, 1)
 
 
-# ── Remove Command Error Handling Tests ───────────────────────────────────────
-
-
+# ── Remove Command Error Handling Tests ─
 class TestRemoveCommandErrors:
     """Test error handling in remove commands."""
 
@@ -493,9 +477,7 @@ class TestRemoveCommandErrors:
         assert result.exit_code in (0, 1)
 
 
-# ── Force Flag Tests ──────────────────────────────────────────────────────────
-
-
+# ── Force Flag Tests ─
 class TestForceFlag:
     """Test --force flag bypasses conflict/reverse dependency checks."""
 

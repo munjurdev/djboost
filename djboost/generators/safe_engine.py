@@ -39,9 +39,7 @@ from djboost.generators.features import (
     scan_enabled_features,
 )
 
-# ── Change tracking ───────────────────────────────────────────────────────────
-
-
+# ── Change tracking ─
 @dataclass
 class FileChange:
     """A single file change to be applied."""
@@ -87,9 +85,7 @@ class ChangeRecord:
     settings_content_backup: Optional[str] = None
 
 
-# ── Plan generation ───────────────────────────────────────────────────────────
-
-
+# ── Plan generation ─
 def generate_add_plan(
     feature_name: str, dry_run: bool = False, project_name: Optional[str] = None, force: bool = False
 ) -> ChangePlan:
@@ -165,9 +161,7 @@ def generate_remove_plan(
     return plan
 
 
-# ── File planning ─────────────────────────────────────────────────────────────
-
-
+# ── File planning ─
 def _plan_feature_files(feat: Feature, project_name: Optional[str], operation: str) -> List[FileChange]:
     """Plan file changes for a feature."""
     changes = []
@@ -204,9 +198,7 @@ def _resolve_pattern(pattern: str, project_name: Optional[str] = None) -> Path:
     return Path(pattern)
 
 
-# ── Plan execution ────────────────────────────────────────────────────────────
-
-
+# ── Plan execution ─
 def execute_plan(
     plan: ChangePlan, project_name: Optional[str] = None, apply_fn: Optional[Callable[[], None]] = None
 ) -> Optional[ChangeRecord]:
@@ -295,9 +287,7 @@ def execute_plan(
         return None
 
 
-# ── Apply helpers ─────────────────────────────────────────────────────────────
-
-
+# ── Apply helpers ─
 def _apply_create(change: FileChange, project_name: Optional[str] = None):
     """Create a new file."""
     path = Path(change.path)
@@ -327,9 +317,7 @@ def _apply_modify(change: FileChange, plan: ChangePlan, project_name: Optional[s
         print(f"  [yellow]⚠ {change.path} not found, skipping[/yellow]")
 
 
-# ── Package management ────────────────────────────────────────────────────────
-
-
+# ── Package management ─
 def _install_packages(packages: List[str]):
     """Install pip packages in a single batch call."""
     if not packages:
@@ -364,9 +352,7 @@ def _uninstall_packages(packages: List[str]):
             print(f"  [yellow]⚠ {name} not installed, skipping[/yellow]")
 
 
-# ── Validation ────────────────────────────────────────────────────────────────
-
-
+# ── Validation ─
 def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[str]]:
     """Run Django system checks to validate the project."""
     errors = []
@@ -398,9 +384,7 @@ def _validate_project(project_name: Optional[str] = None) -> Tuple[bool, List[st
     return len(errors) == 0, errors
 
 
-# ── Rollback ──────────────────────────────────────────────────────────────────
-
-
+# ── Rollback ─
 def _rollback(record: ChangeRecord):
     """Rollback a completed change using the change record."""
     for orig_path, bak_path in record.files_backed_up.items():
@@ -440,9 +424,7 @@ def _rollback(record: ChangeRecord):
         backup_dir.rmdir()
 
 
-# ── Change record persistence ─────────────────────────────────────────────────
-
-
+# ── Change record persistence ─
 def _save_change_record(record: ChangeRecord):
     """Save a change record to .djboost_backup/changes.json."""
     changes_file = Path(".djboost_backup/changes.json")
@@ -481,9 +463,7 @@ def load_change_history() -> List[dict]:
     return []
 
 
-# ── Plan display ──────────────────────────────────────────────────────────────
-
-
+# ── Plan display ─
 def _print_plan(plan: ChangePlan):
     """Pretty-print the change plan."""
     mode = "[yellow]DRY RUN[/yellow]" if plan.dry_run else "[green]EXECUTE[/green]"

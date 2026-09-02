@@ -80,7 +80,7 @@ def update_settings_channels(name: str):
 
     channels_settings = """
 
-# ── Django Channels ────────────────────────────────────────────────────────────
+# ── Django Channels ─
 ASGI_APPLICATION = '{name}.asgi.application'
 
 CHANNEL_LAYERS = {{

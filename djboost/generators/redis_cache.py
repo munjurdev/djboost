@@ -34,7 +34,7 @@ def update_settings_redis_cache(name: str):
 
     cache_settings = """
 
-# ── Redis Cache ────────────────────────────────────────────────────────────────
+# ── Redis Cache ─
 CACHES = {{
     'default': {{
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -70,7 +70,7 @@ def update_env_redis_cache(name: str):
         return True
 
     redis_env = """
-# ── Redis Cache ────────────────────────────────────────────────────────────────
+# ── Redis Cache ─
 REDIS_URL=redis://127.0.0.1:6379/1
 """
     content += redis_env

@@ -71,7 +71,7 @@ def update_env_postgres(name: str):
         return True
 
     pg_env = f"""
-# ── PostgreSQL ────────────────────────────────────────────────────────────────
+# ── PostgreSQL ─
 DB_ENGINE=django.db.backends.postgresql
 DB_NAME={name}_db
 DB_USER={name}_user

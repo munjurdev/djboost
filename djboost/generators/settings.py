@@ -89,7 +89,7 @@ def _build_extra_config(name: str) -> str:
     """Return the extra settings block appended at the end of settings.py."""
     return f"""
 
-# ── Security & Performance ────────────────────────────────────────────────────
+# ── Security & Performance ─
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
@@ -100,7 +100,7 @@ STORAGES = {{
     }},
 }}
 
-# ── REST Framework ────────────────────────────────────────────────────────────
+# ── REST Framework ─
 REST_FRAMEWORK = {{
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -116,7 +116,7 @@ REST_FRAMEWORK = {{
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }}
 
-# ── Swagger / ReDoc ───────────────────────────────────────────────────────────
+# ── Swagger / ReDoc ─
 SPECTACULAR_SETTINGS = {{
     'TITLE': 'API Documentation',
     'DESCRIPTION': 'Project API Documentation',
@@ -124,7 +124,7 @@ SPECTACULAR_SETTINGS = {{
     'SERVE_INCLUDE_SCHEMA': False,
 }}
 
-# ── Simple JWT ────────────────────────────────────────────────────────────────
+# ── Simple JWT ─
 SIMPLE_JWT = {{
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
@@ -135,7 +135,7 @@ SIMPLE_JWT = {{
     'AUTH_HEADER_TYPES': ('Bearer',),
 }}
 
-# ── CORS & CSRF ───────────────────────────────────────────────────────────────
+# ── CORS & CSRF ─
 CSRF_TRUSTED_ORIGINS = [i.strip() for i in config("CSRF_TRUSTED_ORIGINS", "").split(",") if i]
 CORS_ALLOWED_ORIGINS = [i.strip() for i in config("CORS_ALLOWED_ORIGINS", "").split(",") if i]
 CORS_ALLOW_CREDENTIALS = True
@@ -145,7 +145,7 @@ CORS_ALLOW_HEADERS = [
 ]
 CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 
-# ── Email ─────────────────────────────────────────────────────────────────────
+# ── Email ─
 EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=True, cast=bool)
 EMAIL_HOST = config('EMAIL_HOST', default='')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
@@ -153,7 +153,7 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_PORT = config('EMAIL_PORT', default=465, cast=int)
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 
-# ── Logging ───────────────────────────────────────────────────────────────────
+# ── Logging ─
 LOGGING = {{
     "version": 1,
     "disable_existing_loggers": False,

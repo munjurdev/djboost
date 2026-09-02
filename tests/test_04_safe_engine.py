@@ -103,8 +103,7 @@ class TestIdempotency:
         assert len(plan.warnings) > 0
 
 
-# ── Rollback edge case tests ──────────────────────────────────────────────────
-
+# ── Rollback edge case tests ─
 from djboost.generators.safe_engine import (
     ChangePlan,
     ChangeRecord,
@@ -122,9 +121,7 @@ from djboost.generators.safe_engine import (
     load_change_history,
 )
 
-# ── Fixtures ─────────────────────────────────────────────────────────────────
-
-
+# ── Fixtures ─
 @pytest.fixture
 def clean_project(tmp_path):
     """Create a minimal project structure for testing."""
@@ -158,9 +155,7 @@ def backup_dir(tmp_path):
     return tmp_path
 
 
-# ── Rollback File Restore Tests ──────────────────────────────────────────────
-
-
+# ── Rollback File Restore Tests ─
 class TestRollbackRestoresFiles:
     """Test that rollback correctly restores backed-up files."""
 
@@ -273,9 +268,7 @@ class TestRollbackRestoresFiles:
         assert original.read_text(encoding="utf-8") == "restored content\n"
 
 
-# ── Rollback Created File Cleanup Tests ──────────────────────────────────────
-
-
+# ── Rollback Created File Cleanup Tests ─
 class TestRollbackRemovesCreatedFiles:
     """Test that rollback removes files created during the operation."""
 
@@ -362,9 +355,7 @@ class TestRollbackRemovesCreatedFiles:
             assert not Path(f).exists()
 
 
-# ── Rollback Package Tests ───────────────────────────────────────────────────
-
-
+# ── Rollback Package Tests ─
 class TestRollbackPackages:
     """Test rollback package install/uninstall behavior."""
 
@@ -430,9 +421,7 @@ class TestRollbackPackages:
             assert pkg_name == expected_name, f"Failed for {pkg_spec}"
 
 
-# ── Backup Directory Cleanup Tests ───────────────────────────────────────────
-
-
+# ── Backup Directory Cleanup Tests ─
 class TestBackupDirectoryCleanup:
     """Test that .djboost_backup directory is cleaned up properly."""
 
@@ -490,9 +479,7 @@ class TestBackupDirectoryCleanup:
         assert bak_dir.exists()
 
 
-# ── Change Record Persistence Tests ──────────────────────────────────────────
-
-
+# ── Change Record Persistence Tests ─
 class TestChangeRecordPersistence:
     """Test saving and loading change records."""
 
@@ -618,9 +605,7 @@ class TestChangeRecordPersistence:
         assert entry["packages_uninstalled"] == ["gunicorn>=21.2,<23"]
 
 
-# ── Execute Plan Edge Cases ──────────────────────────────────────────────────
-
-
+# ── Execute Plan Edge Cases ─
 class TestExecutePlanEdgeCases:
     """Test execute_plan with various edge cases."""
 
@@ -754,9 +739,7 @@ class TestExecutePlanEdgeCases:
         assert "original" in content
 
 
-# ── File Change Apply Tests ──────────────────────────────────────────────────
-
-
+# ── File Change Apply Tests ─
 class TestApplyHelpers:
     """Test _apply_create, _apply_delete, _apply_modify helpers."""
 
@@ -827,9 +810,7 @@ class TestApplyHelpers:
         _apply_modify(change, plan)
 
 
-# ── Print Plan Tests ─────────────────────────────────────────────────────────
-
-
+# ── Print Plan Tests ─
 class TestPrintPlan:
     """Test _print_plan displays plan correctly."""
 
@@ -888,9 +869,7 @@ class TestPrintPlan:
         assert "already enabled" in captured.out.lower()
 
 
-# ── Resolve Pattern Tests ────────────────────────────────────────────────────
-
-
+# ── Resolve Pattern Tests ─
 class TestResolvePattern:
     """Test _resolve_pattern edge cases."""
 
@@ -923,9 +902,7 @@ class TestResolvePattern:
         assert isinstance(result, Path)
 
 
-# ── ChangeRecord Dataclass Tests ─────────────────────────────────────────────
-
-
+# ── ChangeRecord Dataclass Tests ─
 class TestChangeRecordDataclass:
     """Test ChangeRecord dataclass behavior."""
 
@@ -976,9 +953,7 @@ class TestChangeRecordDataclass:
         assert record.files_backed_up["/orig"] == "/bak"
 
 
-# ── FileChange Dataclass Tests ───────────────────────────────────────────────
-
-
+# ── FileChange Dataclass Tests ─
 class TestFileChangeDataclass:
     """Test FileChange dataclass behavior."""
 

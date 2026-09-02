@@ -88,7 +88,7 @@ def add_monitoring_settings(name: str):
 
     settings = """
 
-# ── OpenTelemetry ──────────────────────────────────────────────────────────────
+# ── OpenTelemetry ─
 OTEL_SERVICE_NAME = config('OTEL_SERVICE_NAME', default='{name}')
 OTEL_EXPORTER_OTLP_ENDPOINT = config('OTEL_EXPORTER_OTLP_ENDPOINT', default='http://localhost:4317')
 """.format(name=name)

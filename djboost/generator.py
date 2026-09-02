@@ -30,7 +30,7 @@ from djboost.generators.quality import (
 )
 from djboost.generators.settings import update_settings_file
 
-# ── Re-export for backward compatibility (commands import from here) ───────────
+# ── Re-export for backward compatibility (commands import from here) ─
 from djboost.generators.validators import check_virtual_environment, validate_name
 
 

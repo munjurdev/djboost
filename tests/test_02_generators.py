@@ -46,9 +46,7 @@ from djboost.generators.validators import (
     validate_name,
 )
 
-# ── Dependencies Tests ────────────────────────────────────────────────────────
-
-
+# ── Dependencies Tests ─
 class TestDependencies:
     """Test dependency management functions."""
 
@@ -93,9 +91,7 @@ class TestDependencies:
             assert mock_run.called
 
 
-# ── Environment File Tests ────────────────────────────────────────────────────
-
-
+# ── Environment File Tests ─
 class TestEnvFile:
     """Test environment file generation."""
 
@@ -127,9 +123,7 @@ class TestEnvFile:
         assert "DEBUG" in content
 
 
-# ── Quality Config Tests ──────────────────────────────────────────────────────
-
-
+# ── Quality Config Tests ─
 class TestQualityConfigs:
     """Test quality configuration generators."""
 
@@ -160,9 +154,7 @@ class TestQualityConfigs:
         assert (tmp_path / ".pre-commit-config.yaml").exists()
 
 
-# ── Features Registry Tests ───────────────────────────────────────────────────
-
-
+# ── Features Registry Tests ─
 class TestFeaturesRegistryExtended:
     """Extended tests for features registry."""
 
@@ -221,9 +213,7 @@ class TestFeaturesRegistryExtended:
         assert "celery" in enabled
 
 
-# ── Safe Engine Extended Tests ────────────────────────────────────────────────
-
-
+# ── Safe Engine Extended Tests ─
 class TestSafeEngineExtended:
     """Extended tests for safe engine."""
 
@@ -288,9 +278,7 @@ class TestSafeEngineExtended:
         assert len(conflict_errors) == 0
 
 
-# ── Validators Extended Tests ─────────────────────────────────────────────────
-
-
+# ── Validators Extended Tests ─
 class TestValidatorsExtended:
     """Extended tests for validators."""
 
@@ -333,12 +321,8 @@ class TestValidatorsExtended:
         assert "source" not in result
 
 
-# ── Comprehensive generator tests ──────────────────────────────────────────────
-
-
-# ── Helper fixtures ───────────────────────────────────────────────────────────
-
-
+# ── Comprehensive generator tests ─
+# ── Helper fixtures ─
 @pytest.fixture
 def django_project(tmp_path):
     """Create a minimal Django project structure for generator testing."""
@@ -424,9 +408,7 @@ def django_project(tmp_path):
     return tmp_path
 
 
-# ── Celery Generator Tests ────────────────────────────────────────────────────
-
-
+# ── Celery Generator Tests ─
 class TestCeleryGeneratorComprehensive:
     """Comprehensive celery generator tests."""
 
@@ -475,9 +457,7 @@ class TestCeleryGeneratorComprehensive:
         remove_celery_from_settings("core")
 
 
-# ── Docker Generator Tests ────────────────────────────────────────────────────
-
-
+# ── Docker Generator Tests ─
 class TestDockerGeneratorComprehensive:
     """Comprehensive docker generator tests."""
 
@@ -510,9 +490,7 @@ class TestDockerGeneratorComprehensive:
         assert "services" in content or "version" in content
 
 
-# ── Channels Generator Tests ──────────────────────────────────────────────────
-
-
+# ── Channels Generator Tests ─
 class TestChannelsGenerator:
     """Test channels generator."""
 
@@ -537,9 +515,7 @@ class TestChannelsGenerator:
         assert "CHANNEL_LAYERS" in content or "CHANNEL" in content
 
 
-# ── GraphQL Generator Tests ───────────────────────────────────────────────────
-
-
+# ── GraphQL Generator Tests ─
 class TestGraphQLGenerator:
     """Test graphql generator."""
 
@@ -564,9 +540,7 @@ class TestGraphQLGenerator:
         assert "graphql" in content.lower() or "path" in content
 
 
-# ── PostgreSQL Generator Tests ────────────────────────────────────────────────
-
-
+# ── PostgreSQL Generator Tests ─
 class TestPostgresGenerator:
     """Test postgres generator."""
 
@@ -590,9 +564,7 @@ class TestPostgresGenerator:
         assert "DB_" in content
 
 
-# ── Redis Cache Generator Tests ───────────────────────────────────────────────
-
-
+# ── Redis Cache Generator Tests ─
 class TestRedisCacheGenerator:
     """Test redis_cache generator."""
 
@@ -616,9 +588,7 @@ class TestRedisCacheGenerator:
         assert "REDIS_" in content
 
 
-# ── Scheduler Generator Tests ─────────────────────────────────────────────────
-
-
+# ── Scheduler Generator Tests ─
 class TestSchedulerGenerator:
     """Test scheduler generator."""
 
@@ -641,9 +611,7 @@ class TestSchedulerGenerator:
         assert "APSCHEDULER" in content or "SCHEDULER" in content
 
 
-# ── Security Generator Tests ──────────────────────────────────────────────────
-
-
+# ── Security Generator Tests ─
 class TestSecurityGenerator:
     """Test security generator."""
 
@@ -657,9 +625,7 @@ class TestSecurityGenerator:
         assert "SECURE_" in content or "CSP_" in content
 
 
-# ── Sentry Generator Tests ────────────────────────────────────────────────────
-
-
+# ── Sentry Generator Tests ─
 class TestSentryGenerator:
     """Test sentry generator."""
 
@@ -673,9 +639,7 @@ class TestSentryGenerator:
         assert "SENTRY" in content or "sentry" in content.lower()
 
 
-# ── Logging Generator Tests ───────────────────────────────────────────────────
-
-
+# ── Logging Generator Tests ─
 class TestLoggingGenerator:
     """Test logging generator."""
 
@@ -698,9 +662,7 @@ class TestLoggingGenerator:
         assert "LOGGING" in content or "logging" in content.lower()
 
 
-# ── Monitoring Generator Tests ────────────────────────────────────────────────
-
-
+# ── Monitoring Generator Tests ─
 class TestMonitoringGenerator:
     """Test monitoring generator."""
 
@@ -723,9 +685,7 @@ class TestMonitoringGenerator:
         assert "OTEL" in content or "opentelemetry" in content.lower()
 
 
-# ── Storage Generator Tests ───────────────────────────────────────────────────
-
-
+# ── Storage Generator Tests ─
 class TestStorageGenerator:
     """Test storage generator."""
 
@@ -748,9 +708,7 @@ class TestStorageGenerator:
         assert "AWS_" in content
 
 
-# ── Kubernetes Generator Tests ────────────────────────────────────────────────
-
-
+# ── Kubernetes Generator Tests ─
 class TestKubernetesGenerator:
     """Test kubernetes generator."""
 
@@ -766,9 +724,7 @@ class TestKubernetesGenerator:
         assert (k8s_dir / "service.yaml").exists()
 
 
-# ── API Docs Generator Tests ──────────────────────────────────────────────────
-
-
+# ── API Docs Generator Tests ─
 class TestApiDocsGenerator:
     """Test api_docs generator."""
 
@@ -780,9 +736,7 @@ class TestApiDocsGenerator:
         generate_api_docs_files("core", "both")
 
 
-# ── CI/CD Generator Tests ─────────────────────────────────────────────────────
-
-
+# ── CI/CD Generator Tests ─
 class TestCICDGenerator:
     """Test cicd generator."""
 
@@ -804,9 +758,7 @@ class TestCICDGenerator:
         assert (django_project / ".gitlab-ci.yml").exists()
 
 
-# ── Dependencies Generator Tests ──────────────────────────────────────────────
-
-
+# ── Dependencies Generator Tests ─
 class TestDependenciesComprehensive:
     """Comprehensive dependency tests."""
 
@@ -840,9 +792,7 @@ class TestDependenciesComprehensive:
         assert "django" not in content.lower()
 
 
-# ── Settings Generator Comprehensive Tests ────────────────────────────────────
-
-
+# ── Settings Generator Comprehensive Tests ─
 class TestSettingsGeneratorComprehensive:
     """Comprehensive settings generator tests."""
 
@@ -881,9 +831,7 @@ class TestSettingsGeneratorComprehensive:
 
 from djboost.generators.settings import update_settings_file
 
-# ── Settings Generator Tests ──────────────────────────────────────────────────
-
-
+# ── Settings Generator Tests ─
 class TestSettingsGenerator:
     """Test settings.py generator."""
 
@@ -1031,9 +979,7 @@ class TestSettingsGenerator:
         assert "DEFAULT_THROTTLE_RATES" in content or "throttle" in content.lower()
 
 
-# ── Celery Generator Tests ────────────────────────────────────────────────────
-
-
+# ── Celery Generator Tests ─
 class TestCeleryGenerator:
     """Test celery generator functions."""
 
@@ -1091,9 +1037,7 @@ class TestCeleryGenerator:
         assert name is None or isinstance(name, str)
 
 
-# ── Docker Generator Tests ────────────────────────────────────────────────────
-
-
+# ── Docker Generator Tests ─
 class TestDockerGenerator:
     """Test docker generator functions."""
 
@@ -1146,9 +1090,7 @@ class TestDockerGenerator:
         assert "services" in compose or "version" in compose
 
 
-# ── Project Files Generator Tests ─────────────────────────────────────────────
-
-
+# ── Project Files Generator Tests ─
 class TestProjectFilesGenerator:
     """Test project_files generator functions."""
 
@@ -1214,9 +1156,7 @@ class TestProjectFilesGenerator:
         assert "urlpatterns" in content
 
 
-# ── App Structure Generator Tests ─────────────────────────────────────────────
-
-
+# ── App Structure Generator Tests ─
 class TestAppStructureGenerator:
     """Test app_structure generator functions."""
 
@@ -1268,9 +1208,7 @@ class TestAppStructureGenerator:
         assert "uuid" in models_content.lower() or "UUID" in models_content
 
 
-# ── Accounts App Generator Tests ──────────────────────────────────────────────
-
-
+# ── Accounts App Generator Tests ─
 class TestAccountsAppGenerator:
     """Test accounts_app generator functions."""
 
@@ -1303,9 +1241,7 @@ class TestAccountsAppGenerator:
         assert (accounts_dir / "views").exists()
 
 
-# ── Environment Generator Tests ───────────────────────────────────────────────
-
-
+# ── Environment Generator Tests ─
 class TestEnvironmentGenerator:
     """Test env.py generator."""
 
@@ -1323,9 +1259,7 @@ class TestEnvironmentGenerator:
         assert "myproject" in content
 
 
-# ── Quality Generator Tests ───────────────────────────────────────────────────
-
-
+# ── Quality Generator Tests ─
 class TestQualityGeneratorExtended:
     """Extended tests for quality generators."""
 

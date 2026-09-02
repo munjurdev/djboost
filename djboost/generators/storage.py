@@ -34,7 +34,7 @@ def update_settings_storage(name: str):
 
     storage_settings = """
 
-# ── S3 / Cloud Storage ────────────────────────────────────────────────────────
+# ── S3 / Cloud Storage ─
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
 AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME', default='')
@@ -73,7 +73,7 @@ def update_env_storage(name: str):
         return True
 
     s3_env = """
-# ── S3 / Cloud Storage ────────────────────────────────────────────────────────
+# ── S3 / Cloud Storage ─
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 AWS_STORAGE_BUCKET_NAME=your-bucket-name

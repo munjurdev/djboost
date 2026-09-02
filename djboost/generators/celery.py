@@ -21,9 +21,7 @@ def get_project_name():
     return None
 
 
-# ── ADD CELERY ────────────────────────────────────────────────────────────────
-
-
+# ── ADD CELERY ─
 def generate_celery_files(name):
     """Generate Celery app configuration and tasks file."""
 
@@ -58,7 +56,7 @@ def sample_task():
     return "done"
 
 
-# ── Example: send email async ─────────────────────────────────────────────────
+# ── Example: send email async ─
 # @shared_task
 # def send_welcome_email(user_id):
 #     from django.contrib.auth import get_user_model
@@ -111,7 +109,7 @@ def update_settings_celery(name):
 
     celery_settings = """
 
-# ── Celery (Background Tasks) ────────────────────────────────────────────────
+# ── Celery (Background Tasks) ─
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", default="redis://127.0.0.1:6379/0")
 CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND", default="redis://127.0.0.1:6379/0")
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -137,9 +135,7 @@ CELERY_BEAT_SCHEDULE = {
     return True
 
 
-# ── ADD CELERY BEAT ───────────────────────────────────────────────────────────
-
-
+# ── ADD CELERY BEAT ─
 def generate_celery_beat_config(name):
     """Add Celery Beat schedule settings to settings.py."""
     settings_path = Path(f"{name}/settings.py")
@@ -162,7 +158,7 @@ def generate_celery_beat_config(name):
 
     beat_settings = """
 
-# ── Celery Beat Schedule ─────────────────────────────────────────────────────
+# ── Celery Beat Schedule ─
 CELERY_BEAT_SCHEDULE = {
     # "sample-periodic-task": {
     #     "task": "{name}.tasks.sample_task",
@@ -206,9 +202,7 @@ except ImportError:
     return True
 
 
-# ── REMOVE CELERY ─────────────────────────────────────────────────────────────
-
-
+# ── REMOVE CELERY ─
 def remove_celery_files(name):
     """Remove Celery-related files from the project."""
     files_to_remove = [Path(f"{name}/celery.py"), Path(f"{name}/tasks.py")]

@@ -228,7 +228,7 @@ def sample_task():
     return "done"
 
 
-# ── Example: send email async ─────────────────────────────────────────────────
+# ── Example: send email async ─
 # @shared_task
 # def send_welcome_email(user_id):
 #     from django.contrib.auth import get_user_model

@@ -7,7 +7,7 @@ from rich import print
 # can mutate sys.executable via check_virtual_environment().
 _REAL_PYTHON = sys.executable
 
-# ── Essential packages (always installed with create project) ────────────────
+# ── Essential packages (always installed with create project) ─
 ESSENTIAL_PACKAGES = [
     "djangorestframework>=3.15,<4",
     "djangorestframework-simplejwt>=5.3,<6",
@@ -24,7 +24,7 @@ ESSENTIAL_PACKAGES = [
     "isort>=5.12,<7",
 ]
 
-# ── Optional packages (only installed when needed) ───────────────────────────
+# ── Optional packages (only installed when needed) ─
 OPTIONAL_PACKAGES = {
     "celery": ["celery>=5.4,<6", "redis>=5.0,<6"],
     "channels": ["daphne>=4.1,<5", "channels>=4.1,<5", "channels-redis>=4.2,<5"],

@@ -41,7 +41,7 @@ def update_settings_security(name: str):
 
     security_settings = """
 
-# ── Security Headers ───────────────────────────────────────────────────────────
+# ── Security Headers ─
 # Content Security Policy (django-csp)
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'",)

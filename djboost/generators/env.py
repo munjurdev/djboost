@@ -5,11 +5,11 @@ DEBUG=True
 SECRET_KEY={secret_key}
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# ── CORS & CSRF ───────────────────────────────────────────────────────────────
+# ── CORS & CSRF ─
 CSRF_TRUSTED_ORIGINS=http://localhost:5173,http://127.0.0.1:8000
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:8000
 
-# ── Database (uncomment to use PostgreSQL) ────────────────────────────────────
+# ── Database (uncomment to use PostgreSQL) ─
 # DB_ENGINE=django.db.backends.postgresql
 # DB_NAME={name}_db
 # DB_USER={name}_user
@@ -18,7 +18,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:8000
 # DB_PORT=5432
 # CONN_MAX_AGE=600
 
-# ── Email (SMTP) ──────────────────────────────────────────────────────────────
+# ── Email (SMTP) ─
 EMAIL_USE_SSL=True
 EMAIL_HOST=smtp.gmail.com
 EMAIL_HOST_USER=your-email@gmail.com

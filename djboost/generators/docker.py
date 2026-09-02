@@ -25,9 +25,7 @@ def _check_installed_features():
     return features
 
 
-# ── CREATE PROJECT DOCKER ─────────────────────────────────────────────────────
-
-
+# ── CREATE PROJECT DOCKER ─
 def generate_docker_files(name):
     """Generate Dockerfile, docker-compose.yml, and .dockerignore.
 
@@ -127,9 +125,7 @@ htmlcov/
         f.write(content)
 
 
-# ── ADD DOCKER ────────────────────────────────────────────────────────────────
-
-
+# ── ADD DOCKER ─
 def get_project_name():
     """Extract project name from manage.py."""
     import re

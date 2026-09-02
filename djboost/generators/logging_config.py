@@ -102,7 +102,7 @@ def add_logging_settings(name: str):
 
     logging_settings = """
 
-# ── Structured Logging ─────────────────────────────────────────────────────────
+# ── Structured Logging ─
 import os
 from {name}.logging_config import setup_logging
 

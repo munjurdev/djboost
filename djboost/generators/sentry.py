@@ -34,7 +34,7 @@ def add_sentry_to_settings(name: str):
 
     sentry_settings = """
 
-# ── Sentry Error Tracking ──────────────────────────────────────────────────────
+# ── Sentry Error Tracking ─
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 

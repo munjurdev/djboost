@@ -73,7 +73,7 @@ def add_scheduler_settings(name: str):
 
     scheduler_settings = """
 
-# ── APScheduler ────────────────────────────────────────────────────────────────
+# ── APScheduler ─
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 SCHEDULER_DEFAULT = {{
     "max_instances": 3,

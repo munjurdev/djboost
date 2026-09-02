@@ -108,7 +108,7 @@ def add_graphql_settings(name: str):
 
     settings = """
 
-# ── Strawberry GraphQL ─────────────────────────────────────────────────────────
+# ── Strawberry GraphQL ─
 STRAWBERRY = {{
     'DEBUG': DEBUG,
 }}

@@ -15,7 +15,7 @@ pyvenv.cfg
 *.pyo
 *.pyd
 
-# ── Database ──────────────────────────────────────────────────────────────────
+# ── Database ─
 db.sqlite3
 db.sqlite3-journal
 *.sqlite3
@@ -23,14 +23,14 @@ db.sqlite3-journal
 *.dump
 *.backup
 
-# ── Static / Media ────────────────────────────────────────────────────────────
+# ── Static / Media ─
 /static/
 /staticfiles/
 /media/
 /mediafiles/
 /assets/
 
-# ── Secrets ───────────────────────────────────────────────────────────────────
+# ── Secrets ─
 .env
 .env.*
 *.key
@@ -39,28 +39,28 @@ db.sqlite3-journal
 credentials.json
 secrets.json
 
-# ── Celery ────────────────────────────────────────────────────────────────────
+# ── Celery ─
 celerybeat-schedule*
 *.pid
 
-# ── Testing ───────────────────────────────────────────────────────────────────
+# ── Testing ─
 .coverage
 htmlcov/
 .pytest_cache/
 .tox/
 .nox/
 
-# ── IDEs ──────────────────────────────────────────────────────────────────────
+# ── IDEs ─
 .vscode/
 .idea/
 *.swp
 *~
 
-# ── OS ────────────────────────────────────────────────────────────────────────
+# ── OS ─
 .DS_Store
 Thumbs.db
 
-# ── Docker ────────────────────────────────────────────────────────────────────
+# ── Docker ─
 docker-compose.override.yml
 """
     with open(".gitignore", "w", encoding="utf-8") as f:

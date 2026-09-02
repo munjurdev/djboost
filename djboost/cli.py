@@ -1,7 +1,7 @@
 import os
 import sys
 
-# ── Fix Windows encoding for emoji output ──────────────────────────────────────
+# ── Fix Windows encoding for emoji output ─
 if sys.platform == "win32":
     os.environ.setdefault("PYTHONIOENCODING", "utf-8")
     for stream_name in ("stdout", "stderr"):
@@ -62,12 +62,12 @@ remove = typer.Typer(help="Remove integrations from your project")
 app.add_typer(add, name="add")
 app.add_typer(remove, name="remove")
 
-# ── Create commands (top-level) ───────────────────────────────────────────────
+# ── Create commands (top-level) ─
 app.command("startproject")(create_project_command)
 app.command("startapp")(create_app_command)
 app.command("startauth")(create_accounts_command)
 
-# ── Add commands ──────────────────────────────────────────────────────────────
+# ── Add commands ─
 add.command("celery")(add_celery_command)
 add.command("celery-beat")(add_celery_beat_command)
 add.command("scheduler")(add_scheduler_command)
@@ -85,7 +85,7 @@ add.command("logging")(add_logging_command)
 add.command("sentry")(add_sentry_command)
 add.command("monitoring")(add_monitoring_command)
 
-# ── Remove commands ───────────────────────────────────────────────────────────
+# ── Remove commands ─
 remove.command("celery")(remove_celery_command)
 remove.command("celery-beat")(remove_celery_beat_command)
 remove.command("scheduler")(remove_scheduler_command)
@@ -103,7 +103,7 @@ remove.command("logging")(remove_logging_command)
 remove.command("sentry")(remove_sentry_command)
 remove.command("monitoring")(remove_monitoring_command)
 
-# ── Management commands ───────────────────────────────────────────────────────
+# ── Management commands ─
 app.command("doctor")(doctor_command)
 app.command("validate")(validate_command)
 app.command("info")(info_command)

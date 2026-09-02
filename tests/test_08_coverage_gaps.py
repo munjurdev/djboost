@@ -21,8 +21,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import typer
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility.\"\"\"
@@ -130,11 +129,7 @@ VALIDATE_PATCH = patch(
 )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CELERY BEAT REMOVE — ALL PATHS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CELERY BEAT REMOVE — ALL PATHS ─
 class TestRemoveCeleryBeat:
     """Cover all code paths in commands/remove/celery_beat.py."""
 
@@ -237,10 +232,7 @@ class TestRemoveCeleryBeat:
             remove_celery_beat_command(dry_run=False, force=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# COMMANDS/ADD — ERROR PATHS (conflicts, reverse-deps, idempotent)
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── COMMANDS/ADD — ERROR PATHS (conflicts, reverse-deps, idempotent) 
 
 class TestAddCommandsIdempotent:
     """Test add commands when feature is already enabled (idempotent path)."""
@@ -466,11 +458,7 @@ class TestAddCommandsWithErrors:
                 add_celery_beat_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# INFO.PY — PACKAGE VERSION IMPORT PATHS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── INFO.PY — PACKAGE VERSION IMPORT PATHS ─
 class TestInfoPackageImports:
     """Test info command covers all package version import paths."""
 
@@ -538,11 +526,7 @@ class TestInfoPackageImports:
             info_command()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ACCOUNTS APP — TEMPLATE CREATION FUNCTIONS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── ACCOUNTS APP — TEMPLATE CREATION FUNCTIONS ─
 class TestAccountsAppTemplates:
     """Test accounts_app.py template creation functions."""
 
@@ -748,11 +732,7 @@ class TestAccountsAppTemplates:
         assert get_project_name() is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# REMOVE COMMANDS — IDEMPOTENT AND EDGE-CASE PATHS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── REMOVE COMMANDS — IDEMPOTENT AND EDGE-CASE PATHS ─
 class TestRemoveCommandsIdempotent:
     """Test remove commands when feature is not enabled (idempotent)."""
 
@@ -870,11 +850,7 @@ class TestRemoveCommandsIdempotent:
             remove_kubernetes_command(dry_run=False, force=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CLI ENCODING AND EDGE CASES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── CLI ENCODING AND EDGE CASES ─
 class TestCliEncoding:
     """Test Windows encoding fix in cli.py."""
 
@@ -916,8 +892,7 @@ class TestCliEncoding:
         assert remove is not None
 
 
-# ── Coverage gap tests — last 3% ──────────────────────────────────────────────
-
+# ── Coverage gap tests — last 3% ─
 import json
 import subprocess
 import sys
@@ -928,8 +903,7 @@ import textwrap
 _REAL_PYTHON = sys.executable
 
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility.\"\"\"
@@ -1016,11 +990,7 @@ def setup_project(tmp_path, name="proj"):
 VPATCH = patch("djboost.generators.safe_engine._validate_project", return_value=(True, []))
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 1. __main__.py — run as subprocess
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 1. __main__.py — run as subprocess ─
 class TestMainEntryPoint:
     def test_run_as_module(self):
         result = subprocess.run(
@@ -1033,11 +1003,7 @@ class TestMainEntryPoint:
         assert "0.8" in result.stdout
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 2. cli.py lines 12-13 — reconfigure exception handler
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 2. cli.py lines 12-13 — reconfigure exception handler ─
 class TestCliEncodingException:
     def test_reconfigure_exception_path(self):
         """Make reconfigure raise an exception to hit lines 12-13."""
@@ -1068,10 +1034,7 @@ class TestCliEncodingException:
             sys.stderr = real_stderr
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 3. generators/*/get_project_name lines 18-19 (bad manage.py)
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── 3. generators/*/get_project_name lines 18-19 (bad manage.py) 
 
 class TestGetProjectNameBadManage:
     """Cover the 'Could not determine project name' error path in each generator."""
@@ -1110,11 +1073,7 @@ class TestGetProjectNameBadManage:
         self._test_bad_manage("storage", tmp_path, monkeypatch)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 4. safe_engine.py — edge cases
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 4. safe_engine.py — edge cases ─
 class TestSafeEngineLastLines:
     def test_install_packages_success(self, tmp_path, monkeypatch):
         """Cover line 320 — _install_packages success path."""
@@ -1231,11 +1190,7 @@ class TestSafeEngineLastLines:
             assert is_valid
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 5. validators.py — edge cases
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 5. validators.py — edge cases ─
 class TestValidatorsLastLines:
     def test_get_venv_python_path_none(self, tmp_path, monkeypatch):
         """Cover line 25 — get_venv_python_path returns None."""
@@ -1274,11 +1229,7 @@ class TestValidatorsLastLines:
             assert check_virtual_environment() is True
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 6. commands/remove/* — error paths (lines 21-23)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 6. commands/remove/* — error paths (lines 21-23) ─
 class TestRemoveCommandsErrorPaths:
     """Cover the plan.errors printing + return/Exit paths."""
 
@@ -1368,11 +1319,7 @@ class TestRemoveCommandsErrorPaths:
                 pass
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 7. celery.py generator — remaining lines 90-91
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 7. celery.py generator — remaining lines 90-91 ─
 class TestCeleryGeneratorLastLines:
     def test_update_settings_celery_no_settings_file(self, tmp_path, monkeypatch):
         """Cover celery.py line 90-91 — settings.py not found."""
@@ -1393,11 +1340,7 @@ class TestCeleryGeneratorLastLines:
         assert result is True
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 8. api_docs.py generator — remaining lines 33-46
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 8. api_docs.py generator — remaining lines 33-46 ─
 class TestApiDocsGeneratorLastLines:
     def test_add_spectacular_settings_no_settings(self, tmp_path, monkeypatch):
         """Cover api_docs.py lines 33-38 — settings.py not found."""
@@ -1415,8 +1358,7 @@ class TestApiDocsGeneratorLastLines:
         # Function returns None (not False) when urls.py not found
 
 
-# ── Coverage gap tests — final push ────────────────────────────────────────────
-
+# ── Coverage gap tests — final push ─
 import json
 import os
 import subprocess
@@ -1428,8 +1370,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import typer
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility.\"\"\"
@@ -1515,9 +1456,7 @@ def setup_project(tmp_path, name="proj"):
     return tmp_path, name
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/api_docs.py lines 33-38, 40-46 — add_spectacular_to_installed_apps
-# ═══════════════════════════════════════════════════════════════════════════════
+# ── generators/api_docs.py lines 33-38, 40-46 — add_spectacular_to_installed_apps 
 
 
 class TestApiDocsAddToInstalledApps:
@@ -1584,11 +1523,7 @@ class TestApiDocsAddToInstalledApps:
         generate_api_docs_urls(name)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/celery.py lines 90-91 — settings not found
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── generators/celery.py lines 90-91 — settings not found ─
 class TestCelerySettingsNotFound:
     def test_update_settings_celery_no_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -1617,10 +1552,7 @@ class TestDependenciesEmptyList:
         uninstall_packages([])  # Should return early without subprocess call
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/docker.py lines 146-147 — celery broker env vars
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── generators/docker.py lines 146-147 — celery broker env vars 
 
 class TestDockerCeleryEnvVars:
     def test_docker_compose_with_celery(self, tmp_path, monkeypatch):
@@ -1635,10 +1567,7 @@ class TestDockerCeleryEnvVars:
         assert "CELERY_RESULT_BACKEND: redis://redis:6379/0" in content
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/features.py lines 184, 202 — circular dep + unknown conflict
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── generators/features.py lines 184, 202 — circular dep + unknown conflict 
 
 class TestFeaturesCircularDependency:
     def test_circular_dependency_detected(self):
@@ -1670,11 +1599,7 @@ class TestFeaturesCircularDependency:
         assert result == []
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/kubernetes.py lines 20-21 — bad manage.py
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── generators/kubernetes.py lines 20-21 — bad manage.py ─
 class TestKubernetesBadManage:
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -1684,10 +1609,7 @@ class TestKubernetesBadManage:
         assert get_project_name() is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/logging_config.py lines 18-19 — bad manage.py
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── generators/logging_config.py lines 18-19 — bad manage.py 
 
 class TestLoggingConfigBadManage:
     def test_get_project_name_bad_manage(self, tmp_path, monkeypatch):
@@ -1698,10 +1620,7 @@ class TestLoggingConfigBadManage:
         assert get_project_name() is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/safe_engine.py lines 404-405 — JSON decode error
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── generators/safe_engine.py lines 404-405 — JSON decode error 
 
 class TestSafeEngineJsonDecode:
     def test_save_change_record_corrupt_json(self, tmp_path, monkeypatch):
@@ -1727,11 +1646,7 @@ class TestSafeEngineJsonDecode:
         assert len(data) == 1
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# generators/validators.py lines 25, 115, 142-145
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── generators/validators.py lines 25, 115, 142-145 ─
 class TestValidatorsEdgeCases:
     def test_validate_name_empty_string(self):
         """Lines 142-145: validate_name with empty string."""
@@ -1770,10 +1685,7 @@ class TestValidatorsEdgeCases:
         assert result is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/management/validate.py lines 43, 124, 155, 176
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── commands/management/validate.py lines 43, 124, 155, 176 
 
 class TestValidateCommandEdgeCases:
     def test_validate_missing_essential_packages(self, tmp_path, monkeypatch):
@@ -1855,11 +1767,7 @@ class TestValidateCommandEdgeCases:
         validate_command()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/remove/api_docs.py lines 43-44 — plan errors
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/remove/api_docs.py lines 43-44 — plan errors ─
 class TestRemoveApiDocsEdges:
     def test_remove_api_docs_plan_errors(self, tmp_path, monkeypatch):
         """Lines 43-44: plan.errors path when not dry_run."""
@@ -1894,11 +1802,7 @@ class TestRemoveApiDocsEdges:
             remove_api_docs_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/remove/celery_beat.py lines 50-51, 74
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/remove/celery_beat.py lines 50-51, 74 ─
 class TestRemoveCeleryBeatEdges:
     def test_remove_celery_beat_plan_errors(self, tmp_path, monkeypatch):
         """Lines 50-51: plan.errors path when not dry_run."""
@@ -1956,10 +1860,7 @@ class TestRemoveCeleryBeatEdges:
             remove_celery_beat_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/remove/cicd.py lines 56-57, 66-67 — gitlab paths
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── commands/remove/cicd.py lines 56-57, 66-67 — gitlab paths 
 
 class TestRemoveCicdGitlab:
     def test_remove_gitlab_ci_not_present(self, tmp_path, monkeypatch):
@@ -2047,11 +1948,7 @@ class TestRemoveCicdGitlab:
                 remove_cicd_command(provider="github", dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/remove/kubernetes.py line 37 — plan errors
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/remove/kubernetes.py line 37 — plan errors ─
 class TestRemoveKubernetesEdges:
     def test_remove_kubernetes_plan_errors(self, tmp_path, monkeypatch):
         """Line 37: plan.errors path when not dry_run."""
@@ -2085,10 +1982,7 @@ class TestRemoveKubernetesEdges:
             remove_kubernetes_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/add/api_docs.py lines 34-36 — unsupported provider
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── commands/add/api_docs.py lines 34-36 — unsupported provider 
 
 class TestAddApiDocsEdges:
     def test_unsupported_provider(self, tmp_path, monkeypatch):
@@ -2123,10 +2017,7 @@ class TestAddApiDocsEdges:
                 add_api_docs_command(provider="swagger", dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/add/celery_beat.py lines 30-32, 35-36 — celery not installed
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── commands/add/celery_beat.py lines 30-32, 35-36 — celery not installed 
 
 class TestAddCeleryBeatEdges:
     def test_celery_not_installed(self, tmp_path, monkeypatch):
@@ -2163,11 +2054,7 @@ class TestAddCeleryBeatEdges:
                 add_celery_beat_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/add/cicd.py lines 32-34 — plan errors
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/add/cicd.py lines 32-34 — plan errors ─
 class TestAddCicdEdges:
     def test_cicd_plan_errors(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -2202,10 +2089,7 @@ class TestAddCicdEdges:
                 add_cicd_command(provider="github", dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/add/scheduler.py lines 33-35 — celery-beat conflict
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── commands/add/scheduler.py lines 33-35 — celery-beat conflict 
 
 class TestAddSchedulerEdges:
     def test_scheduler_conflicts_with_celery_beat(self, tmp_path, monkeypatch):
@@ -2265,11 +2149,7 @@ class TestAddSchedulerEdges:
                 add_scheduler_command(dry_run=False, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/create/accounts.py line 23 — no project name
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/create/accounts.py line 23 — no project name ─
 class TestCreateAccountsNoProject:
     def test_accounts_no_manage(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -2283,11 +2163,7 @@ class TestCreateAccountsNoProject:
                 create_accounts_command()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/create/app.py lines 50, 131-132
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/create/app.py lines 50, 131-132 ─
 class TestCreateAppEdgeCases:
     def test_app_already_exists(self, tmp_path, monkeypatch):
         """Line 50: app already exists."""
@@ -2368,11 +2244,7 @@ class TestCreateAppEdgeCases:
         update_urls("proj", "myapp")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/create/project.py line 7
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/create/project.py line 7 ─
 class TestCreateProject:
     def test_create_project_command(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
@@ -2383,11 +2255,7 @@ class TestCreateProject:
             mock_create.assert_called_once_with("testproject")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/management/doctor.py line 41
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/management/doctor.py line 41 ─
 class TestDoctorEdges:
     def test_doctor_custom_secret_key(self, tmp_path, monkeypatch):
         """Line 41: SECRET_KEY is custom (not default)."""
@@ -2407,11 +2275,7 @@ class TestDoctorEdges:
         doctor_command()
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# commands/management/info.py lines 35-36, 57
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── commands/management/info.py lines 35-36, 57 ─
 class TestInfoEdges:
     def test_info_with_project(self, tmp_path, monkeypatch):
         """Lines 35-36, 57: various import/version detection."""
@@ -2439,16 +2303,14 @@ class TestInfoEdges:
             info_command()
 
 
-# ── Coverage gap tests — final 100% ────────────────────────────────────────────
-
+# ── Coverage gap tests — final 100% ─
 import os
 import sys
 import textwrap
 
 import typer
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility.\"\"\"
@@ -2547,11 +2409,7 @@ def setup_project(tmp_path, name="proj"):
 VPATCH = patch("djboost.generators.safe_engine._validate_project", return_value=(True, []))
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 1. __init__.py + __main__.py + cli.py encoding
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 1. __init__.py + __main__.py + cli.py encoding ─
 class TestInitAndMain:
     def test_version_fallback(self):
         from importlib.metadata import PackageNotFoundError
@@ -2585,11 +2443,7 @@ class TestInitAndMain:
         assert cli_mod.app is not None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 2. COMMANDS/ADD — ERROR, IDEMPOTENT, DRY_RUN PATHS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 2. COMMANDS/ADD — ERROR, IDEMPOTENT, DRY_RUN PATHS ─
 class TestAddCommandsErrorPaths:
     """Test the error printing + Exit(1) path (plan.errors and not dry_run)."""
 
@@ -2759,11 +2613,7 @@ class TestAddCommandsDryRunExit:
                 add_celery_beat_command(dry_run=True, force=False)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 3. COMMANDS/REMOVE — DRY_RUN + ERROR + NO-FILES PATHS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 3. COMMANDS/REMOVE — DRY_RUN + ERROR + NO-FILES PATHS ─
 class TestRemoveDryRun:
     """Test dry_run → return path for all remove commands."""
 
@@ -2889,10 +2739,7 @@ class TestRemoveCeleryBeatDryRun:
             remove_celery_beat_command(dry_run=True, force=True)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 4. GENERATORS — API_DOCS get_project_name NO-MANAGE PATH
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── 4. GENERATORS — API_DOCS get_project_name NO-MANAGE PATH 
 
 class TestApiDocsGetProjectName:
     def test_get_project_name_no_manage(self, tmp_path, monkeypatch):
@@ -2909,10 +2756,7 @@ class TestApiDocsGetProjectName:
         assert get_project_name() is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 5. GENERATORS/CELERY — ALREADY CONFIGURED + NO-CELERY PATHS
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── 5. GENERATORS/CELERY — ALREADY CONFIGURED + NO-CELERY PATHS 
 
 class TestCeleryGeneratorEdgeCases:
     def test_generate_celery_files_init_already_has_celery(self, tmp_path, monkeypatch):
@@ -2950,11 +2794,7 @@ class TestCeleryGeneratorEdgeCases:
         assert generate_celery_beat_config("proj") is True
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 6. SAFE_ENGINE — EDGE CASES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 6. SAFE_ENGINE — EDGE CASES ─
 class TestSafeEngineEdgeCases:
     def test_generate_add_plan_unknown_feature(self):
         from djboost.generators.safe_engine import generate_add_plan
@@ -3022,11 +2862,7 @@ class TestSafeEngineEdgeCases:
         assert result is None
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 7. VALIDATORS — validate_name DIGIT PATH
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 7. VALIDATORS — validate_name DIGIT PATH ─
 class TestValidateNameLegacy:
     def test_name_starts_with_digit(self):
         from djboost.generators.validators import validate_name
@@ -3057,11 +2893,7 @@ class TestValidateNameLegacy:
             validate_name("")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 8. GENERATORS/FEATURES — EDGE CASES
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── 8. GENERATORS/FEATURES — EDGE CASES ─
 class TestFeaturesEdgeCases:
     def test_scan_enabled_features_no_project(self):
         from djboost.generators.features import scan_enabled_features
@@ -3097,8 +2929,7 @@ import pytest
 import typer
 from typer.testing import CliRunner
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
-
+# ── Helpers ─
 MANAGE_PY_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env python
     \"\"\"Django's command-line utility for administrative tasks.\"\"\"
@@ -3203,10 +3034,7 @@ def setup_django_project(tmp_path, name="testproject"):
     return tmp_path, name
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CLI TESTS (with CliRunner)
-# ═══════════════════════════════════════════════════════════════════════════════
-
+# ── CLI TESTS (with CliRunner) ─
 runner = CliRunner()
 
 
@@ -3546,11 +3374,7 @@ class TestCliRunner:
         assert result.exit_code == 0
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# GENERATOR (ORCHESTRATOR) TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── GENERATOR (ORCHESTRATOR) TESTS ─
 class TestGeneratorOrchestrator:
     """Test djboost.generator module — the main orchestrator."""
 
@@ -3627,11 +3451,7 @@ class TestGeneratorOrchestrator:
             create_project("my-project")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# APP STRUCTURE TESTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── APP STRUCTURE TESTS ─
 class TestAppStructure:
     """Test djboost.generators.app_structure module."""
 
@@ -3808,11 +3628,7 @@ class TestAppStructure:
         assert "OrdersModelTest" in content
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# VALIDATORS TESTS (full coverage)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── VALIDATORS TESTS (full coverage) ─
 class TestValidatorsFull:
     """Test djboost.generators.validators — full coverage."""
 
@@ -3929,11 +3745,7 @@ class TestValidatorsFull:
             assert "source" in result
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# COMMAND MODULES — full CLI runner tests
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
+# ── COMMAND MODULES — full CLI runner tests ─
 class TestCommandModulesViaCliRunner:
     """Test all command modules through CliRunner for maximum coverage."""
 
