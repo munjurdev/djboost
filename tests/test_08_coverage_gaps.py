@@ -2420,7 +2420,7 @@ class TestInitAndMain:
             import djboost
 
             importlib.reload(djboost)
-            assert djboost.__version__ == "0.8.0"
+            assert djboost.__version__ == "0.8.1"
 
     def test_main_entry_point(self):
         """__main__.py imports app and calls it — just verify the import works."""

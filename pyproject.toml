@@ -1,10 +1,11 @@
 [project]
 name = "djboost"
-version = "0.8.0"
+version = "0.8.1"
 description = "The modern lifecycle CLI for Django — create, build, extend, validate, and maintain. Safely evolve your project with modular features. djboost gives you a production-ready Django foundation in seconds — DRF, JWT, testing, and more. Build incrementally, ship confidently."
 readme = "README.md"
 requires-python = ">=3.10,<4"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 
 authors = [
     { name = "Munjur Alom", email = "munjuralom.devs@gmail.com" }
@@ -31,7 +32,6 @@ classifiers = [
   "Framework :: Django :: 5.2",
   "Framework :: Django :: 6.0",
   "Framework :: Django :: 6.1",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Environment :: Console",
   "Intended Audience :: Developers",
@@ -53,7 +53,7 @@ Repository = "https://github.com/munjurdev/djboost"
 djboost = "djboost.cli:app"
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
