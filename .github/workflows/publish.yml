@@ -19,10 +19,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: |
-          pip install -e .
-          pip install pytest pytest-cov
-          pip install Django 'djangorestframework>=3.15' 'djangorestframework-simplejwt>=5.3' 'django-cors-headers>=4.3' 'drf-spectacular>=0.27' 'python-decouple>=3.8' 'whitenoise>=6.6'
+        run: pip install -e ".[dev]"
 
       - name: Run tests
         run: pytest tests/ -v
